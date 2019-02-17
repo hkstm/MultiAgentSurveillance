@@ -162,10 +162,6 @@ public class WorldBuilder extends BorderPane {
         grid.getChildren().clear();
         createTiles();
         grid.getChildren().addAll(toAdd);
-
-        for(Node aNode: grid.getChildren()) {
-            GridPane.setHalignment(aNode, HPos.CENTER);
-        }
     }
 
     /**
@@ -192,7 +188,6 @@ public class WorldBuilder extends BorderPane {
         for (int r = 0; r < worldMap.getSize(); r++) {
             for (int c = 0; c < worldMap.getSize(); c++) {
                 toAdd.add(new TileButton(r, c, tileImgArray[worldMap.getTileState(r,c)], tileSize, worldMap.getTileState(r,c)));
-                System.out.println("r " + r + " c " + c);
                 toAdd.get(c + (r * worldMap.getSize())).setOnAction((event) -> {
                     TileButton button = (TileButton)event.getSource();
                     updateWorldMap(button.getX(), button.getY(), activeTile); // Actual communication with worldMap, says which button has been clicked and thus which worldMap cell needs to be checked

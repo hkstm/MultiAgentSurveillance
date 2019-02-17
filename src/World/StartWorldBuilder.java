@@ -5,7 +5,6 @@ import javafx.stage.Stage;
 
 public class StartWorldBuilder extends Application {
     public static void main(String[] args) {launch(args);}
-
     private Stage primaryStage;
     private SettingsScene settingsScene;
 

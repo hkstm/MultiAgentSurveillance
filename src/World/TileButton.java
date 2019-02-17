@@ -11,11 +11,7 @@ public class TileButton extends Button {
     private int tileStatus;
 
     public TileButton(int x, int y, Image image, int tileSize, int tileStatus) {
-//        super(null, new ImageView(image));
         super(null);
-//        BackgroundImage backgroundImage = new BackgroundImage(image, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, BackgroundSize.DEFAULT);
-//        Background background = new Background(backgroundImage);
-//        setBackground(background);
         setMinSize(tileSize, tileSize);
         setMaxSize(tileSize, tileSize);
         BackgroundImage bImage = new BackgroundImage(image, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, new BackgroundSize(tileSize, tileSize, true, true, true, false));
