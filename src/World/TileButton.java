@@ -1,15 +1,25 @@
 package World;
 
 import javafx.scene.control.Button;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
 
 public class TileButton extends Button {
     private int x;
     private int y;
-    public TileButton(int x, int y, ImageView imageView) {
-        super(null, imageView);
+    private int tileStatus;
+
+    public TileButton(int x, int y, Image image, int tileSize, int tileStatus) {
+        super(null);
+        setMinSize(tileSize, tileSize);
+        setMaxSize(tileSize, tileSize);
+        BackgroundImage bImage = new BackgroundImage(image, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, new BackgroundSize(tileSize, tileSize, true, true, true, false));
+        Background backGround = new Background(bImage);
+        setBackground(backGround);
         this.x = x;
         this.y = y;
+        this.tileStatus = tileStatus;
     }
     public int getX() {
         return x;
@@ -25,5 +35,13 @@ public class TileButton extends Button {
 
     public void setY(int y) {
         this.y = y;
+    }
+
+    public int getTileStatus() {
+        return tileStatus;
+    }
+
+    public void setTileStatus(int tileStatus) {
+        this.tileStatus = tileStatus;
     }
 }

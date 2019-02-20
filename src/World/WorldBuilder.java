@@ -8,8 +8,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 import javax.swing.*;
@@ -29,8 +28,8 @@ public class WorldBuilder extends BorderPane {
     private BorderPane bPane;
     private Scene scene;
     private WorldMap worldMap;
-    private GridPane grid = new GridPane();
-    private int windowSize = 600;
+    private GridPane grid;
+    private int windowSize = 1000;
     private int tileSize;
 
     private List<TileButton> toAdd = new ArrayList<>();
@@ -56,21 +55,22 @@ public class WorldBuilder extends BorderPane {
     private static final long timeForMoveInMs = 500;
 
     public WorldBuilder(Stage primaryStage, Settings settings) {
+        this.grid = new GridPane();
         this.settings = settings;
         this.primaryStage = primaryStage;
         this.worldMap = new WorldMap(settings.getWorldMap());
         this.tileSize = windowSize / worldMap.getSize();
 
-        this.emptyTileImg = new Image(new File("src/Assets/emptyTile.png").toURI().toString(), tileSize, tileSize, false, false);
-        this.structureTileImg = new Image(new File("src/Assets/structureTile.png").toURI().toString(), tileSize, tileSize, false, false);
-        this.doorTileImg = new Image(new File("src/Assets/doorTile.png").toURI().toString(), tileSize, tileSize, false, false);
-        this.windowTileImg = new Image(new File("src/Assets/windowTile.png").toURI().toString(), tileSize, tileSize, false, false);
-        this.targetTileImg = new Image(new File("src/Assets/targetTile.png").toURI().toString(), tileSize, tileSize, false, false);
-        this.sentryTileImg = new Image(new File("src/Assets/sentryTile.png").toURI().toString(), tileSize, tileSize, false, false);
-        this.decreasedVisRangeTileImg = new Image(new File("src/Assets/decreasedVisRangeTile.png").toURI().toString(), tileSize, tileSize, false, false);
-        this.wallTileImg = new Image(new File("src/Assets/wallTile.png").toURI().toString(), tileSize, tileSize, false, false);
+        this.emptyTileImg = new Image(new File("src/Assets/emptyTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        this.structureTileImg = new Image(new File("src/Assets/structureTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        this.doorTileImg = new Image(new File("src/Assets/doorTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        this.windowTileImg = new Image(new File("src/Assets/windowTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        this.targetTileImg = new Image(new File("src/Assets/targetTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        this.sentryTileImg = new Image(new File("src/Assets/sentryTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        this.decreasedVisRangeTileImg = new Image(new File("src/Assets/decreasedVisRangeTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        this.wallTileImg = new Image(new File("src/Assets/wallTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
         this.tileImgArray = new Image[]{emptyTileImg, structureTileImg, doorTileImg, windowTileImg, targetTileImg, sentryTileImg, decreasedVisRangeTileImg, wallTileImg};
-        this.bgrImg = new Image(new File("src/Assets/bgr.png").toURI().toString(), tileSize, tileSize, false, false);
+        this.bgrImg = new Image(new File("src/Assets/bgr.png").toURI().toString(), tileSize, tileSize, false, false, true);
 
         tileTypeSelection = new ComboBox<>();
         tileTypeSelection.getItems().addAll(Settings.TILE_TYPES);
@@ -110,7 +110,7 @@ public class WorldBuilder extends BorderPane {
         });
         this.restartGameBut.setWrapText(true);
 
-        this.saveBoardBut = new Button("Save this worldMap");
+        this.saveBoardBut = new Button("Save this World Map");
         saveBoardBut.setOnAction(e -> { // Save current worldMap
             try {
                 File recordsDir = new File(System.getProperty("user.home"), ".MultiAgentSurveillance/maps");
@@ -131,10 +131,27 @@ public class WorldBuilder extends BorderPane {
 
         grid.setGridLinesVisible(false);
         grid.setAlignment(Pos.CENTER);
+        initTiles();
         redrawBoard();
+
+        VBox vBox = new VBox();
+        VBox.setVgrow(goToMenuBut, Priority.ALWAYS);
+        VBox.setVgrow(restartGameBut, Priority.ALWAYS);
+        VBox.setVgrow(saveBoardBut, Priority.ALWAYS);
+        VBox.setVgrow(tileTypeSelection, Priority.ALWAYS);
+        goToMenuBut.setMaxHeight(Double.MAX_VALUE);
+        restartGameBut.setMaxHeight(Double.MAX_VALUE);
+        saveBoardBut.setMaxHeight(Double.MAX_VALUE);
+        tileTypeSelection.setMaxHeight(Double.MAX_VALUE);
+        goToMenuBut.setMaxWidth(Double.MAX_VALUE);
+        restartGameBut.setMaxWidth(Double.MAX_VALUE);
+        saveBoardBut.setMaxWidth(Double.MAX_VALUE);
+        tileTypeSelection.setMaxWidth(Double.MAX_VALUE);
+        vBox.getChildren().addAll(goToMenuBut, restartGameBut, saveBoardBut,  tileTypeSelection);
 
         bPane = new BorderPane();
         bPane.setCenter(grid); //can directly create scene from grid if borderpane layout is not gonna be used
+        bPane.setRight(vBox);
         scene = new Scene(bPane);
     }
 
@@ -144,17 +161,7 @@ public class WorldBuilder extends BorderPane {
     public void redrawBoard (){
         grid.getChildren().clear();
         createTiles();
-
-        GridPane.setConstraints(goToMenuBut, worldMap.getSize() + 2, 2);
-        GridPane.setConstraints(restartGameBut, worldMap.getSize(), 2);
-        GridPane.setConstraints(tileTypeSelection, worldMap.getSize(), 3);
-        GridPane.setConstraints(saveBoardBut, worldMap.getSize(), 4);
-
         grid.getChildren().addAll(toAdd);
-        grid.getChildren().addAll(goToMenuBut, restartGameBut, saveBoardBut,  tileTypeSelection);
-        for(Node aNode: grid.getChildren()) {
-            GridPane.setHalignment(aNode, HPos.CENTER);
-        }
     }
 
     /**
@@ -162,11 +169,26 @@ public class WorldBuilder extends BorderPane {
      * if someone places a disk in that certain cell
      */
     public void createTiles(){
+        for (int r = 0; r < worldMap.getSize(); r++) {
+            for (int c = 0; c < worldMap.getSize(); c++) {
+                if(toAdd.get(c + (r * worldMap.getSize())).getTileStatus() != worldMap.getTileState(r, c)) {
+                    toAdd.set(c + (r * worldMap.getSize()), new TileButton(r, c, tileImgArray[worldMap.getTileState(r,c)], tileSize, worldMap.getTileState(r,c)));
+                }
+                toAdd.get(c + (r * worldMap.getSize())).setOnAction((event) -> {
+                    TileButton button = (TileButton)event.getSource();
+                    updateWorldMap(button.getX(), button.getY(), activeTile); // Actual communication with worldMap, says which button has been clicked and thus which worldMap cell needs to be checked
+                });
+                GridPane.setConstraints(toAdd.get(c + (r * worldMap.getSize())), r, c);
+            }
+        }
+    }
+
+    public void initTiles(){
         toAdd.clear();
         for (int r = 0; r < worldMap.getSize(); r++) {
             for (int c = 0; c < worldMap.getSize(); c++) {
-                toAdd.add(new TileButton(r, c, new ImageView(tileImgArray[worldMap.getTileState(r,c)])));
-                toAdd.get(toAdd.size()-1).setOnAction((event) -> {
+                toAdd.add(new TileButton(r, c, tileImgArray[worldMap.getTileState(r,c)], tileSize, worldMap.getTileState(r,c)));
+                toAdd.get(c + (r * worldMap.getSize())).setOnAction((event) -> {
                     TileButton button = (TileButton)event.getSource();
                     updateWorldMap(button.getX(), button.getY(), activeTile); // Actual communication with worldMap, says which button has been clicked and thus which worldMap cell needs to be checked
                 });

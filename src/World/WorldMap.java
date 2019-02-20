@@ -23,12 +23,18 @@ public class WorldMap implements Serializable {
     private int size;
 
     public WorldMap() {
-        this(8);
+        this(200);
     }
 
     public WorldMap(int size) {
         this.size = size;
         this.worldGrid = new int[size][size];
+        for(int i = 0; i < size; i++) {
+            worldGrid[0][i] = WALL;
+            worldGrid[i][0] = WALL;
+            worldGrid[size-1][i] = WALL;
+            worldGrid[i][size-1] = WALL;
+        }
     }
 
     public WorldMap(WorldMap worldMap) {

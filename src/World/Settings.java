@@ -5,12 +5,12 @@ public class Settings {
     private int worldSize;
     private WorldMap worldMap;
     public static final String[] TILE_TYPES = {"Empty", "Structure", "Door", "Window", "Target", "Sentry", "Decreased Vis. Range", "Wall"};
-    public static final int SIZE_SMALL = 4;
-    public static final int SIZE_MEDIUM = 6;
-    public static final int SIZE_LARGE = 8;
+    public static final int SIZE_SMALL = 50;
+    public static final int SIZE_MEDIUM = 200;
+    public static final int SIZE_LARGE = 500;
 
     public Settings() {
-        this(8);
+        this(200);
     }
 
     public Settings(int worldSize) {
