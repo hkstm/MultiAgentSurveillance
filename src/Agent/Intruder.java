@@ -4,7 +4,7 @@ import java.lang.Math;
 import World.WorldMap;
 import java.awt.*;
 
-public class Intruder {
+public class Intruder extends Agent{
     private Point position;
     private double direction;
     private int[][] knownTerrain;
@@ -12,8 +12,7 @@ public class Intruder {
     private boolean tired; //after sprinting update this
     public Intruder(Point position, double direction)
     {
-        this.position = position;
-        this.direction = direction;
+        super(position, direction);
         this.tired = false;
         for (int i = 1;i < 200;i++)
         {
@@ -21,84 +20,7 @@ public class Intruder {
                 knownTerrain[i][j] = 8; //8 indicates unexplored terrain
         }
     }
-    public void turn(double angle)
-    {
-        this.direction = this.direction+angle;
-        while (this.direction > 180 || this.direction < -180)
-        {
-            if (this.direction > 180)
-            {
-                this.direction = (this.direction-180)-180;
-            }
-            if (this.direction < 180)
-            {
-                this.direction = (this.direction+180)+180;
-            }
-        }
-    }
-    public Point getMove(double distance, double facingDirection)
-    {
-        if (facingDirection > 0 && facingDirection <= 90)
-        {
-            double angle = 90-facingDirection;
-            double newXCoordinate = this.position.getX()+distance*Math.cos(angle);
-            double newYCoordinate = this.position.getY()+distance*Math.sin(angle);
-            Point newLocation = new Point();
-            newLocation.setLocation(newXCoordinate, newYCoordinate);
-            return newLocation;
-        }
-        else if (facingDirection > 90 && this.facingDirection <= 180)
-        {
-            double angle = 180-facingDirection;
-            double newXCoordinate = this.position.getX()+distance*Math.sin(angle);
-            double newYCoordinate = this.position.getY()-distance*Math.cos(angle);
-            Point newLocation = new Point();
-            newLocation.setLocation(newXCoordinate, newYCoordinate);
-            return newLocation;
-        }
-        else if (facingDirection > 90 && facingDirection <= 180)
-        {
-            double angle = -1*(180-facingDirection);
-            double newXCoordinate = this.position.getX()-distance*Math.sin(angle);
-            double newYCoordinate = this.position.getY()-distance*Math.cos(angle);
-            Point newLocation = new Point();
-            newLocation.setLocation(newXCoordinate, newYCoordinate);
-            return newLocation;
-        }
-        //else if (facingDirection <= -90 || facingDirection > -180)
-        else
-        {
-            double angle = -1*(90+facingDirection);
-            double newXCoordinate = this.position.getX()-distance*Math.cos(angle);
-            double newYCoordinate = this.position.getY()+distance*Math.sin(angle);
-            Point newLocation = new Point();
-            newLocation.setLocation(newXCoordinate, newYCoordinate);
-            return newLocation;
-        }
-    }
-    public void move(double distance, double facingDirection)
-    {
-        this.position.setLocation(getMove(distance, this.direction));
-    }
-
-    public boolean legalMoveCheck(double distance)
-    {
-        Point positionToCheck = getMove(distance, this.direction);
-        if (coordinatesToCell(positionToCheck) == 1 || coordinatesToCell(positionToCheck) == 5 || coordinatesToCell(positionToCheck) == 7)
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
-    }
-    public int coordinatesToCell(Point location)
-    {
-        int xIndex = (int) location.getX();
-        int yIndex = (int) location.getY();
-        return WorldMap.getTileState(xIndex, yIndex);
-    }
+    //@overwrite
     public void updateKnownTerrain() //must add that you cannot see through walls!
     {
         //setting search bounds
@@ -119,8 +41,26 @@ public class Intruder {
         {
             for (int j = XMin;j <= XMax;j++)
             {
+                //NOTE this can be done more efficiently, if a corner is within range immediately add all surrounding squares to knownTerrain rather than rechecking corners for adjacent squares
+                //either this ^ or add a small value to each corner to check if its really IN the square rather than on the boarder
                 //to check all corners
-                if (this.WorldMap) //
+                //top left
+                if (Math.sqrt(((this.position.getX()-j)*(this.position.getX()-j))+((this.position.getY()-i)*(this.position.getY()))-i) <= 7.5 && ((Math.atan((Math.abs(this.position.getX()-j))/(Math.abs(this.position.getY()-i))))+(Math.abs(this.direction))) <= 22.5)
+                {
+                    knownTerrain[i][j] = this.WorldMap.getTileState(i, j);
+                }
+                else if (Math.sqrt(((this.position.getX()-(j+1))*(this.position.getX()-(j+1)))+((this.position.getY()-i)*(this.position.getY()))-i) <= 7.5 && ((Math.atan((Math.abs(this.position.getX()-(j+1))/(Math.abs(this.position.getY()-i))))+(Math.abs(this.direction))) <= 22.5))
+                {
+                    knownTerrain[i][j] = this.WorldMap.getTileState(i, j);
+                }
+                else if (Math.sqrt(((this.position.getX()-(j+1))*(this.position.getX()-(j+1)))+((this.position.getY()-(i+1))*(this.position.getY()))-(i+1)) <= 7.5 && ((Math.atan((Math.abs(this.position.getX()-(j+1))/(Math.abs(this.position.getY()-(i+1)))))+(Math.abs(this.direction))) <= 22.5))
+                {
+                    knownTerrain[i][j] = this.WorldMap.getTileState(i, j);
+                }
+                else if (Math.sqrt(((this.position.getX()-j)*(this.position.getX()-j))+((this.position.getY()-(i+1))*(this.position.getY()))-(i+1)) <= 7.5 && ((Math.atan((Math.abs(this.position.getX()-j))/(Math.abs(this.position.getY()-(i+1)))))+(Math.abs(this.direction))) <= 22.5)
+                {
+                    knownTerrain[i][j] = this.WorldMap.getTileState(i, j);
+                }
             }
         }
     }

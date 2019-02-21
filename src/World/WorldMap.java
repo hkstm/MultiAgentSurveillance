@@ -19,6 +19,10 @@ public class WorldMap implements Serializable {
     public static final int SENTRY = 5;
     public static final int DECREASED_VIS_RANGE = 6;
     public static final int WALL = 7;
+    public static final int UNEXPLORED = 8;
+    public static final int GUARD = 9;
+    public static final int INTRUDER = 10;
+    public static final int SOUND = 11;
 
     private int size;
 
