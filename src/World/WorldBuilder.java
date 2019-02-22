@@ -1,22 +1,22 @@
 package World;
 
-import javafx.geometry.HPos;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-
-import static World.WorldMap.EMPTY;
 
 /**
  * Main in game screen
@@ -29,7 +29,7 @@ public class WorldBuilder extends BorderPane {
     private Scene scene;
     private WorldMap worldMap;
     private GridPane grid;
-    private int windowSize = 1000;
+    private int windowSize;
     private int tileSize;
 
     private List<TileButton> toAdd = new ArrayList<>();
@@ -48,14 +48,12 @@ public class WorldBuilder extends BorderPane {
 
     private Button goToMenuBut;
     private Button restartGameBut;
-    private Button loadBoardBut;
     private Button saveBoardBut;
     private ComboBox<String> tileTypeSelection;
     private int activeTile;
-    private static final long timeForMoveInMs = 500;
-
     public WorldBuilder(Stage primaryStage, Settings settings) {
         this.grid = new GridPane();
+        this.windowSize = 1000;
         this.settings = settings;
         this.primaryStage = primaryStage;
         this.worldMap = new WorldMap(settings.getWorldMap());
@@ -118,6 +116,7 @@ public class WorldBuilder extends BorderPane {
                     recordsDir.mkdirs();
                 }
                 String fileName = JOptionPane.showInputDialog(null,"Enter a file name for the current worldMap");
+                saveAsPng(grid, fileName + "IMG");
                 FileOutputStream fileOutputStream = new FileOutputStream(new File(System.getProperty("user.home"), ".MultiAgentSurveillance/maps/" + fileName + ".txt"));
                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
                 objectOutputStream.writeObject(worldMap);
@@ -129,7 +128,7 @@ public class WorldBuilder extends BorderPane {
         });
         this.saveBoardBut.setWrapText(true);
 
-        grid.setGridLinesVisible(false);
+        grid.setGridLinesVisible(true);
         grid.setAlignment(Pos.CENTER);
         initTiles();
         redrawBoard();
@@ -205,6 +204,17 @@ public class WorldBuilder extends BorderPane {
 
     public Scene getWorldBuilder() {
         return scene;
+    }
+
+    public static final void saveAsPng(final Node NODE, final String FILE_NAME) {
+        final WritableImage SNAPSHOT = NODE.snapshot(new SnapshotParameters(), null);
+        final String        NAME     = FILE_NAME.replace("\\.[a-zA-Z]{3,4}", "");
+        final File          FILE     = new File(System.getProperty("user.home"), ".MultiAgentSurveillance/maps/" + NAME + ".png");
+        try {
+            ImageIO.write(SwingFXUtils.fromFXImage(SNAPSHOT, null), "png", FILE);
+        } catch (IOException exception) {
+            System.out.println("cant save as image");
+        }
     }
 }
 
