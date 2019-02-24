@@ -8,10 +8,6 @@ import java.awt.*;
  */
 
 public class Guard extends Agent {
-    private Point position;
-    private double direction;
-    private int[][] knownTerrain;
-    private World.WorldMap WorldMap;
 
     /**
      * A subclass of Agent for the Guards with an internal map containing the starting positions of other guards and the terrain across the map
@@ -21,6 +17,16 @@ public class Guard extends Agent {
     public Guard(Point position, double direction)
     {
         super(position, direction);
-        this.knownTerrain = WorldMap.getWorldGrid();
+        //this.knownTerrain = WorldMap.getWorldGrid();
+    }
+
+    public boolean equals(Object obj) {
+        boolean equals = false;
+        if (obj == null) return false;
+        if (obj == this) return true;
+        if (!(obj instanceof Guard)) return false;
+        Guard o = (Guard) obj;
+        if((o.direction == this.direction) && (o.position.equals(this.position))) equals = true;
+        return equals;
     }
 }

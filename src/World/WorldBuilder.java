@@ -48,6 +48,7 @@ public class WorldBuilder extends BorderPane {
     private Button saveBoardBut;
     private ComboBox<String> tileTypeSelection;
     private int activeTile;
+
     public WorldBuilder(Stage primaryStage, Settings settings) {
         this.grid = new GridPane();
         this.windowSize = 1000;

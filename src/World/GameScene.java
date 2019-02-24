@@ -1,18 +1,21 @@
 package World;
 
 import javafx.geometry.Pos;
+import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+
+import Agent.*;
 
 /**
  * Main in game screen
@@ -21,7 +24,7 @@ import java.util.List;
 public class GameScene extends BorderPane {
     private Settings settings;
     private Stage primaryStage;
-    private BorderPane bPane;
+    private HBox hBox;
     private Scene scene;
     private WorldMap worldMap;
     private GridPane grid;
@@ -43,6 +46,8 @@ public class GameScene extends BorderPane {
     private Button goToMenuBut;
     private Button restartGameBut;
     private Button startGameBut;
+
+    private Group agentGroup = new Group();
 
     public GameScene(Stage primaryStage, Settings settings) {
         this.grid = new GridPane();
@@ -94,9 +99,6 @@ public class GameScene extends BorderPane {
         });
         this.startGameBut.setWrapText(true);
 
-
-
-
         redrawBoard();
         grid.setGridLinesVisible(true);
         grid.setAlignment(Pos.CENTER);
@@ -113,10 +115,12 @@ public class GameScene extends BorderPane {
         startGameBut.setMaxWidth(Double.MAX_VALUE);
         vBox.getChildren().addAll(goToMenuBut, restartGameBut, startGameBut);
 
-        bPane = new BorderPane();
-        bPane.setCenter(grid); //can directly create scene from grid if borderpane layout is not gonna be used
-        bPane.setRight(vBox);
-        scene = new Scene(bPane);
+        hBox = new HBox();
+        StackPane worldPane = new StackPane();
+        worldPane.getChildren().addAll(grid, agentGroup);
+        hBox.getChildren().addAll(worldPane, vBox); //can directly create scene from grid if borderpane layout is not gonna be used
+        scene = new Scene(hBox);
+        hBox.setMinSize(windowSize + windowSize * 0.1, windowSize);
     }
 
     /**
@@ -125,6 +129,8 @@ public class GameScene extends BorderPane {
     public void redrawBoard() {
         grid.getChildren().clear();
         createTiles();
+        createAgents();
+//        grid.getChildren().addAll(agentGroup);
         grid.setGridLinesVisible(true);
     }
 
@@ -134,6 +140,31 @@ public class GameScene extends BorderPane {
                 ImageView tmpImage = new ImageView(tileImgArray[worldMap.getTileState(r, c)]);
                 tmpImage.setSmooth(false);
                 grid.add((tmpImage), r, c);
+            }
+        }
+    }
+
+    public void createAgents() {
+        agentGroup.getChildren().clear();
+        for(Agent agent : worldMap.getAgents()) {
+            if(agent instanceof Guard) {
+                Guard guard = (Guard) agent;
+                AgentCircle circle = new AgentCircle(guard.getPosition());
+                circle.setFill(Color.PEACHPUFF);
+                agentGroup.getChildren().add(new Pane(circle));
+                System.out.println("Added guard");
+            }
+            if(agent instanceof Intruder) {
+                Intruder intruder = (Intruder) agent;
+                AgentCircle circle = new AgentCircle(intruder.getPosition());
+                System.out.println(circle.getLayoutX());
+                circle.setFill(Color.DARKRED);
+                Pane tmpPane = new Pane();
+                tmpPane.getChildren().addAll(circle);
+                circle.setCenterX(230);
+                circle.setCenterY(-100);
+                agentGroup.getChildren().add(tmpPane);
+                System.out.println("added agent");
             }
         }
     }

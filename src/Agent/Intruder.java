@@ -9,10 +9,6 @@ import java.awt.*;
  */
 
 public class Intruder extends Agent{
-    private Point position;
-    private double direction;
-    private int[][] knownTerrain;
-    private World.WorldMap WorldMap;
     private boolean tired;
 
     /**
@@ -24,11 +20,22 @@ public class Intruder extends Agent{
     public Intruder(Point position, double direction)
     {
         super(position, direction);
+        //this.knownTerrain = WorldMap.getWorldGrid();
         this.tired = false;
-        for (int i = 1;i < 200;i++)
-        {
-            for (int j = 1;j<200;j++)
-                knownTerrain[i][j] = 8; //8 indicates unexplored terrain
-        }
+//        for (int i = 1;i < 200;i++)
+//        {
+//            for (int j = 1;j<200;j++)
+//                knownTerrain[i][j] = 8; //8 indicates unexplored terrain
+//        }
+    }
+
+    public boolean equals(Object obj) {
+        boolean equals = false;
+        if (obj == null) return false;
+        if (obj == this) return true;
+        if (!(obj instanceof Guard)) return false;
+        Intruder o = (Intruder) obj;
+        if((o.direction == this.direction) && (o.position.equals(this.position)) && (o.tired == this.tired)) equals = true;
+        return equals;
     }
 }

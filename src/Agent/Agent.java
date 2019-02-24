@@ -8,10 +8,10 @@ import java.awt.*;
  */
 
 public class Agent {
-    private Point position;
-    private double direction;
-    private int[][] knownTerrain;
-    private World.WorldMap WorldMap;
+    protected Point position;
+    protected double direction;
+    protected int[][] knownTerrain;
+    protected WorldMap WorldMap;
 
     /**
      * Constructor for Agent
@@ -24,6 +24,12 @@ public class Agent {
         this.position = position;
         this.direction = direction;
     }
+
+//    public Agent(int x, int y, double direction)
+//    {
+//        this.position = new Point(x, y);
+//        this.direction = direction;
+//    }
 
     /**
      * to update the direction which an agent is facing
@@ -220,5 +226,13 @@ public class Agent {
             }
         }
         knownTerrain = tempTerrainKnowledge;
+    }
+
+    public Point getPosition() {
+        return position;
+    }
+
+    public void setPosition(Point position) {
+        this.position = position;
     }
 }
