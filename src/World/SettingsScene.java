@@ -36,7 +36,7 @@ public class SettingsScene extends VBox {
     public static final int SIZE_LARGE = 500;
 
     public SettingsScene(Stage primaryStage) {
-        this.windowSize  = 800;
+        this.windowSize  = 1000;
         worldSizeSelection = SIZE_SMALL;
         worldMapSelection = new WorldMap(worldSizeSelection);
         imageSelection = new Image(new File("src/Assets/emptyWorldIMG.png").toURI().toString(), worldMapSelection.getSize(), worldMapSelection.getSize(), false, false, true);

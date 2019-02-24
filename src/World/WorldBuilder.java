@@ -43,9 +43,6 @@ public class WorldBuilder extends BorderPane {
     private Image decreasedVisRangeTileImg;
     private Image wallTileImg;
     private Image[] tileImgArray;
-    
-    private Image bgrImg;
-
     private Button goToMenuBut;
     private Button restartGameBut;
     private Button saveBoardBut;
@@ -66,9 +63,8 @@ public class WorldBuilder extends BorderPane {
         this.targetTileImg = new Image(new File("src/Assets/targetTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
         this.sentryTileImg = new Image(new File("src/Assets/sentryTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
         this.decreasedVisRangeTileImg = new Image(new File("src/Assets/decreasedVisRangeTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
-        this.wallTileImg = new Image(new File("src/Assets/wallTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        this.wallTileImg = new Image(new File("src/Assets/wallTile16.png").toURI().toString(), tileSize, tileSize, false, false, true);
         this.tileImgArray = new Image[]{emptyTileImg, structureTileImg, doorTileImg, windowTileImg, targetTileImg, sentryTileImg, decreasedVisRangeTileImg, wallTileImg};
-        this.bgrImg = new Image(new File("src/Assets/bgr.png").toURI().toString(), tileSize, tileSize, false, false, true);
 
         tileTypeSelection = new ComboBox<>();
         tileTypeSelection.getItems().addAll(Settings.TILE_TYPES);
@@ -128,10 +124,10 @@ public class WorldBuilder extends BorderPane {
         });
         this.saveBoardBut.setWrapText(true);
 
-        grid.setGridLinesVisible(true);
-        grid.setAlignment(Pos.CENTER);
+
         initTiles();
         redrawBoard();
+        grid.setGridLinesVisible(true);
 
         VBox vBox = new VBox();
         VBox.setVgrow(goToMenuBut, Priority.ALWAYS);
@@ -161,6 +157,7 @@ public class WorldBuilder extends BorderPane {
         grid.getChildren().clear();
         createTiles();
         grid.getChildren().addAll(toAdd);
+        grid.setGridLinesVisible(true);
     }
 
     /**

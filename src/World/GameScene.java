@@ -59,7 +59,7 @@ public class GameScene extends BorderPane {
         this.targetTileImg = new Image(new File("src/Assets/targetTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
         this.sentryTileImg = new Image(new File("src/Assets/sentryTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
         this.decreasedVisRangeTileImg = new Image(new File("src/Assets/decreasedVisRangeTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
-        this.wallTileImg = new Image(new File("src/Assets/wallTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        this.wallTileImg = new Image(new File("src/Assets/wallTile16.png").toURI().toString(), tileSize, tileSize, false, false, true);
         this.tileImgArray = new Image[]{emptyTileImg, structureTileImg, doorTileImg, windowTileImg, targetTileImg, sentryTileImg, decreasedVisRangeTileImg, wallTileImg};
 
         this.goToMenuBut = new Button("Menu");
@@ -94,8 +94,10 @@ public class GameScene extends BorderPane {
         });
         this.startGameBut.setWrapText(true);
 
-        redrawBoard();
 
+
+
+        redrawBoard();
         grid.setGridLinesVisible(true);
         grid.setAlignment(Pos.CENTER);
 
@@ -111,8 +113,6 @@ public class GameScene extends BorderPane {
         startGameBut.setMaxWidth(Double.MAX_VALUE);
         vBox.getChildren().addAll(goToMenuBut, restartGameBut, startGameBut);
 
-        redrawBoard();
-
         bPane = new BorderPane();
         bPane.setCenter(grid); //can directly create scene from grid if borderpane layout is not gonna be used
         bPane.setRight(vBox);
@@ -125,6 +125,7 @@ public class GameScene extends BorderPane {
     public void redrawBoard() {
         grid.getChildren().clear();
         createTiles();
+        grid.setGridLinesVisible(true);
     }
 
     public void createTiles() {
@@ -133,7 +134,6 @@ public class GameScene extends BorderPane {
                 ImageView tmpImage = new ImageView(tileImgArray[worldMap.getTileState(r, c)]);
                 tmpImage.setSmooth(false);
                 grid.add((tmpImage), r, c);
-
             }
         }
     }
