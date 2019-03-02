@@ -20,26 +20,34 @@ public class SettingsScene extends VBox {
 
     private Stage primaryStage;
     private Scene scene;
-    private Button submit;
+    private Button startWorldBuilder;
+    private Button startGameScene;
     private Button loadWorldMap;
-    private ComboBox<String> size;
+    private Button loadWorldImage;
+    private ComboBox<String> sizeComboBox;
 
-    private static int actionWorldSize;
-    private static WorldMap actionWorld;
-    private int windowSize = 800;
+    private static int worldSizeSelection;
+    private static WorldMap worldMapSelection;
+    private static Image imageSelection;
+    private int windowSize;
+
+    public static final int SIZE_SMALL = 50;
+    public static final int SIZE_MEDIUM = 200;
+    public static final int SIZE_LARGE = 500;
 
     public SettingsScene(Stage primaryStage) {
-        this.windowSize  = 800;
-        actionWorldSize = Settings.SIZE_SMALL;
-        actionWorld = new WorldMap(actionWorldSize);
+        this.windowSize  = 1000;
+        worldSizeSelection = SIZE_SMALL;
+        worldMapSelection = new WorldMap(worldSizeSelection);
+        imageSelection = new Image(new File("src/Assets/emptyWorldIMG.png").toURI().toString(), worldMapSelection.getSize(), worldMapSelection.getSize(), false, false, true);
         this.primaryStage = primaryStage;
         this.primaryStage.setTitle("Multi-Agent Surveillance - Settings");
         Label label = new Label("Welcome to the Multi-Agent Surveillance demo!");
         label.setTextFill(Color.web("#FFFFFF"));
 
-        submit = new Button("Start");
-        submit.setOnAction(e -> {
-            Settings settings = new Settings(actionWorldSize, actionWorld);    //instantiating the settings object with the int values
+        startWorldBuilder = new Button("Start World Builder");
+        startWorldBuilder.setOnAction(e -> {
+            Settings settings = new Settings(worldMapSelection);
             WorldBuilder worldBuilder = new WorldBuilder(primaryStage, settings);
             Node source = (Node) e.getSource();
             Stage stage = (Stage) source.getScene().getWindow();
@@ -47,6 +55,19 @@ public class SettingsScene extends VBox {
             this.primaryStage = new Stage();
             this.primaryStage.setTitle("MultiAgentScene");
             this.primaryStage.setScene(worldBuilder.getWorldBuilder());
+            this.primaryStage.show();
+        });
+
+        startGameScene = new Button("Start Game Scene");
+        startGameScene.setOnAction(e -> {
+            Settings settings = new Settings(worldMapSelection);
+            GameScene gameScene = new GameScene(primaryStage, settings);
+            Node source = (Node) e.getSource();
+            Stage stage = (Stage) source.getScene().getWindow();
+            stage.close();
+            this.primaryStage = new Stage();
+            this.primaryStage.setTitle("MultiAgentGameScene");
+            this.primaryStage.setScene(gameScene.getGameScene());
             this.primaryStage.show();
         });
 
@@ -65,31 +86,31 @@ public class SettingsScene extends VBox {
             try {
                 fileInputStream = new FileInputStream(selectedFile);
                 ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-                actionWorld = (WorldMap) objectInputStream.readObject();
+                worldMapSelection = (WorldMap) objectInputStream.readObject();
                 objectInputStream.close();
             } catch (Exception err) {
                 err.printStackTrace();
             }
         });
 
-        size = new ComboBox<>();
-        size.getItems().addAll("Small", "Medium", "Large");
-        size.setPromptText("Select board size");
-        size.setOnAction(e -> {
-            if (size.getValue() == "Small") {
-                actionWorldSize = Settings.SIZE_SMALL;
-            } else if (size.getValue() == "Medium") {
-                actionWorldSize = Settings.SIZE_MEDIUM;
+        sizeComboBox = new ComboBox<>();
+        sizeComboBox.getItems().addAll("Small", "Medium", "Large");
+        sizeComboBox.setPromptText("Select World Size");
+        sizeComboBox.setOnAction(e -> {
+            if (sizeComboBox.getValue() == "Small") {
+                worldSizeSelection = SIZE_SMALL;
+            } else if (sizeComboBox.getValue() == "Medium") {
+                worldSizeSelection = SIZE_MEDIUM;
             } else {
-                actionWorldSize = Settings.SIZE_LARGE;
+                worldSizeSelection = SIZE_LARGE;
             }
         });
 
         VBox layout = new VBox(20);
-        layout.getChildren().addAll(label, size, loadWorldMap, submit);
+        layout.getChildren().addAll(label, sizeComboBox, loadWorldMap, startWorldBuilder, startGameScene);
         layout.setAlignment(Pos.CENTER);
-        File backgrFile = new File("src/Assets/Othello.jpg");
-        BackgroundImage myBI= new BackgroundImage(new Image(backgrFile.toURI().toString(),windowSize, windowSize * 0.75,true,true),
+        File backgrFile = new File("src/Assets/MultiAgentSurveillance.jpg");
+        BackgroundImage myBI= new BackgroundImage(new Image(backgrFile.toURI().toString(),windowSize, windowSize,false,true),
                 BackgroundRepeat.REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT,
                 BackgroundSize.DEFAULT);
         layout.setBackground(new Background(myBI));
@@ -100,4 +121,3 @@ public class SettingsScene extends VBox {
         return scene;
     }
 }
-

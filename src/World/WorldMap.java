@@ -1,7 +1,13 @@
 package World;
 
 
+import Agent.*;
+
+import java.awt.*;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.awt.geom.Point2D;
 
 /**
  * WorldMap data structure
@@ -25,6 +31,7 @@ public class WorldMap implements Serializable {
     public static final int GUARD = 9;
     public static final int INTRUDER = 10;
     public static final int SOUND = 11;
+    private List<Agent> agents = new ArrayList<Agent>();
 
     private int size;
 
@@ -33,8 +40,14 @@ public class WorldMap implements Serializable {
     }
 
     public WorldMap(int size) {
+        this(size, new ArrayList<Agent>());
+    }
+
+    public WorldMap(int size, ArrayList<Agent> agents) {
         this.size = size;
         this.worldGrid = new int[size][size];
+        this.agents = agents;
+        agents.add(new Intruder(new Point2D.Double(0, 0), 0));
         for(int i = 0; i < size; i++) {
             worldGrid[0][i] = WALL;
             worldGrid[i][0] = WALL;
@@ -46,6 +59,7 @@ public class WorldMap implements Serializable {
     public WorldMap(WorldMap worldMap) {
         this.size = worldMap.getSize();
         this.worldGrid = new int[size][size];
+        this.agents = worldMap.getAgents();
         for(int r = 0; r < size; r++) {
             for(int c = 0; c < size; c++) {
                 this.worldGrid[r][c] = worldMap.getWorldGrid()[r][c];
@@ -99,5 +113,20 @@ public class WorldMap implements Serializable {
         return (worldGrid[r][c] == state);
     }
 
+    public List<Agent> getAgents() {
+        return this.agents;
+    }
+
+    public void setAgents(List<Agent> agents) {
+        this.agents = agents;
+    }
+
+    public boolean removeAgent(Agent toBeRemoved) {
+        return agents.remove(toBeRemoved);
+    }
+
+    public void addAgent(Agent toBeAdded) {
+        this.agents.add(toBeAdded);
+    }
 }
 
