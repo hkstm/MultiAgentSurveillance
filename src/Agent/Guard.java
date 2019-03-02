@@ -1,6 +1,6 @@
 package Agent;
 import World.WorldMap;
-import java.awt.*;
+import java.awt.geom.Point2D;
 
 /**
  * A subclass of Agent for the Intruders
@@ -8,19 +8,19 @@ import java.awt.*;
  */
 
 public class Guard extends Agent {
-    private Point position;
+    private Point2D.Double position;
     private double direction;
     private int[][] knownTerrain;
-    private World.WorldMap WorldMap;
+    private WorldMap worldMap;
 
     /**
      * A subclass of Agent for the Guards with an internal map containing the starting positions of other guards and the terrain across the map
      * @author Benjamin
      */
 
-    public Guard(Point position, double direction)
+    public Guard(Point2D.Double position, double direction)
     {
         super(position, direction);
-        this.knownTerrain = WorldMap.getWorldGrid();
+        this.knownTerrain = worldMap.getWorldGrid();
     }
 }

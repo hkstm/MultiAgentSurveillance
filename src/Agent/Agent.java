@@ -1,6 +1,7 @@
 package Agent;
 import World.WorldMap;
-import java.awt.*;
+import java.awt.Point;
+import java.awt.geom.Point2D;
 
 /**
  * This is the superclass of Intruder and Guard, which contains methods for actions
@@ -8,10 +9,10 @@ import java.awt.*;
  */
 
 public class Agent {
-    private Point position;
+    private Point2D.Double position;
     private double direction;
     private int[][] knownTerrain;
-    private World.WorldMap WorldMap;
+    private WorldMap worldMap;
 
     /**
      * Constructor for Agent
@@ -19,7 +20,7 @@ public class Agent {
      * @param direction is the angle which the agent is facing, this spans from -180 to 180 degrees
      */
 
-    public Agent(Point position, double direction)
+    public Agent(Point2D.Double position, double direction)
     {
         this.position = position;
         this.direction = direction;
@@ -54,15 +55,14 @@ public class Agent {
      * @return a point at which the Agent would end up if this move were made
      */
 
-    public Point getMove(double distance, double facingDirection)
+    public Point2D.Double getMove(double distance, double facingDirection)
     {
         if (facingDirection > 0 && facingDirection <= 90)
         {
             double angle = 90-facingDirection;
             double newXCoordinate = this.position.getX()+distance*Math.cos(angle);
             double newYCoordinate = this.position.getY()+distance*Math.sin(angle);
-            Point newLocation = new Point();
-            newLocation.setLocation(newXCoordinate, newYCoordinate);
+            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
             return newLocation;
         }
         else if (facingDirection > 90 && facingDirection <= 180)
@@ -70,8 +70,7 @@ public class Agent {
             double angle = 180-facingDirection;
             double newXCoordinate = this.position.getX()+distance*Math.sin(angle);
             double newYCoordinate = this.position.getY()-distance*Math.cos(angle);
-            Point newLocation = new Point();
-            newLocation.setLocation(newXCoordinate, newYCoordinate);
+            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
             return newLocation;
         }
         else if (facingDirection <= 0 && facingDirection > -90)
@@ -79,8 +78,7 @@ public class Agent {
             double angle = -1*(180-facingDirection);
             double newXCoordinate = this.position.getX()-distance*Math.sin(angle);
             double newYCoordinate = this.position.getY()-distance*Math.cos(angle);
-            Point newLocation = new Point();
-            newLocation.setLocation(newXCoordinate, newYCoordinate);
+            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
             return newLocation;
         }
         //else if (facingDirection <= -90 || facingDirection > -180)
@@ -89,8 +87,7 @@ public class Agent {
             double angle = -1*(90+facingDirection);
             double newXCoordinate = this.position.getX()-distance*Math.cos(angle);
             double newYCoordinate = this.position.getY()+distance*Math.sin(angle);
-            Point newLocation = new Point();
-            newLocation.setLocation(newXCoordinate, newYCoordinate);
+            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
             return newLocation;
         }
     }
@@ -115,7 +112,7 @@ public class Agent {
      */
 
     public boolean legalMoveCheck(double distance) {
-        Point positionToCheck = getMove(distance, this.direction);
+        Point2D.Double positionToCheck = getMove(distance, this.direction);
         if (coordinatesToCell(positionToCheck) == 1 || coordinatesToCell(positionToCheck) == 5 || coordinatesToCell(positionToCheck) == 7) {
             return false;
         } else {
@@ -129,11 +126,11 @@ public class Agent {
      * @return an integer describing the terrain type in the worldGrid corresponding to the input location
      */
 
-    public int coordinatesToCell(Point location)
+    public int coordinatesToCell(Point2D.Double location)
     {
         int xIndex = (int) location.getX();
         int yIndex = (int) -location.getY();
-        return WorldMap.getTileState(xIndex, yIndex);
+        return worldMap.getTileState(xIndex, yIndex);
     }
 
     /**
@@ -147,11 +144,11 @@ public class Agent {
         //setting search bounds
         int[][] tempTerrainKnowledge = knownTerrain;
         Point corner1 = new Point((int) this.position.getX(), (int) this.position.getY());
-        Point straight = getMove(radius, this.direction);
+        Point2D.Double straight = getMove(radius, this.direction);
         Point corner2 = new Point((int) straight.getX(), (int) straight.getY());
-        Point left = getMove(radius, this.direction-(angle/2));
+        Point2D.Double left = getMove(radius, this.direction-(angle/2));
         Point corner3 = new Point((int) left.getX(), (int) left.getY());
-        Point right = getMove(radius, this.direction+(angle/2));
+        Point2D.Double right = getMove(radius, this.direction+(angle/2));
         Point corner4 = new Point((int) right.getX(), (int) right.getY());
         int XMax = Math.max((int) Math.max(corner1.getX(), corner2.getX()), (int) Math.max(corner3.getX(), corner4.getX()));
         int XMin = Math.min((int) Math.min(corner1.getX(), corner2.getX()), (int) Math.min(corner3.getX(), corner4.getX()));
@@ -165,22 +162,22 @@ public class Agent {
                 //top left corner
                 if (Math.sqrt(((this.position.getX()-j)*(this.position.getX()-j))+((this.position.getY()-i)*(this.position.getY()))-i) <= radius && Math.atan((Math.abs(this.position.getX()-j))/(Math.abs(this.position.getY()-i)))+(Math.abs(this.direction)) <= angle/2)
                 {
-                    tempTerrainKnowledge[i][j] = this.WorldMap.getTileState(i, j);
+                    tempTerrainKnowledge[i][j] = this.worldMap.getTileState(i, j);
                 }
                 //top right corner
                 else if (Math.sqrt(((this.position.getX()-(j+1))*(this.position.getX()-(j+1)))+((this.position.getY()-i)*(this.position.getY()))-i) <= radius && Math.atan((Math.abs(this.position.getX()-(j+1)))/(Math.abs(this.position.getY()-i)))+(Math.abs(this.direction)) <= angle/2)
                 {
-                    tempTerrainKnowledge[i][j] = this.WorldMap.getTileState(i, j);
+                    tempTerrainKnowledge[i][j] = this.worldMap.getTileState(i, j);
                 }
                 //bottom right corner
                 else if (Math.sqrt(((this.position.getX()-(j+1))*(this.position.getX()-(j+1)))+((this.position.getY()-(i+1))*(this.position.getY()))-(i+1)) <= radius && Math.atan((Math.abs(this.position.getX()-(j+1)))/(Math.abs(this.position.getY()-(i+1))))+(Math.abs(this.direction)) <= angle/2)
                 {
-                    tempTerrainKnowledge[i][j] = this.WorldMap.getTileState(i, j);
+                    tempTerrainKnowledge[i][j] = this.worldMap.getTileState(i, j);
                 }
                 //bottom left corner
                 else if (Math.sqrt(((this.position.getX()-j)*(this.position.getX()-j))+((this.position.getY()-(i+1))*(this.position.getY()))-(i+1)) <= radius && Math.atan((Math.abs(this.position.getX()-j))/(Math.abs(this.position.getY()-(i+1))))+(Math.abs(this.direction)) <= angle/2)
                 {
-                    tempTerrainKnowledge[i][j] = this.WorldMap.getTileState(i, j);
+                    tempTerrainKnowledge[i][j] = this.worldMap.getTileState(i, j);
                 }
             }
         }
