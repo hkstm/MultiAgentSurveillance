@@ -14,6 +14,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -135,7 +136,7 @@ public class GameScene extends BorderPane implements Runnable {
         scene = new Scene(hBox);
         hBox.setMinSize(windowSize + windowSize * 0.1, windowSize);
 
-        worldMap.addAgent(new Intruder(new Point(0, 0), 0));
+        worldMap.addAgent(new Intruder(new Point2D.Double(0, 0), 0));
         worldMap.startAgents();
         System.out.println("Started agents");
         new AnimationTimer() {
