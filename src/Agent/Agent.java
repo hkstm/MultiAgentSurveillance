@@ -12,8 +12,10 @@ public class Agent implements Runnable{
     protected Point2D.Double position;
     protected double direction;
     protected int[][] knownTerrain;
-    protected WorldMap worldMap;
+    public static WorldMap worldMap;
     protected boolean exitThread;
+    protected double previousTime;
+    protected Point2D.Double goalPosition;
 
     /**
      * Constructor for Agent
@@ -25,22 +27,43 @@ public class Agent implements Runnable{
     {
         this.position = position;
         this.direction = direction;
+        this.goalPosition = position;
     }
 
     public void run() {
+        double currentTime;
+        double delta;
+        double xCurrent;
+        double yCurrent;
+        double xGoal;
+        double yGoal;
+        double deltaScaling = 0.001; //arbitrary as fuck dependent on how fast we are allowed to walk and how big the actual world is
+        previousTime = System.nanoTime();
         while(!exitThread) {
-            position.getX();
-            for(int i = 100; i < 900; i++) {
-                position.setLocation(i, i);
-            }
+            currentTime = System.nanoTime();
+            delta = currentTime - previousTime;
+            delta /= 1e6; //makes it ms
+            previousTime = currentTime;
+            xCurrent = position.getX();
+            yCurrent = position.getY();
+            updateGoalPosition();
+            xGoal = goalPosition.getX();
+            yGoal = goalPosition.getY();
+//            System.out.println(
+//                    "xCurrent: " + xCurrent + " yCurrent: " + yCurrent);
+//            System.out.println(
+//                    "xGoal: " + xGoal + " yGoal: " + yGoal);
+//            System.out.println("delta: " + (delta) + "ms");
+            position.setLocation((xCurrent + ((xGoal - xCurrent) * (delta * deltaScaling))), (yCurrent + ((yGoal - yCurrent) * (delta * deltaScaling))));
         }
     }
 
-//    public Agent(int x, int y, double direction)
-//    {
-//        this.position = new Point(x, y);
-//        this.direction = direction;
-//    }
+    public void updateGoalPosition() {
+        //some logic with the worldMap and whatever algorithms we are using
+        double x = 100;
+        double y = 500;
+        goalPosition.setLocation(x, y);
+    }
 
     /**
      * to update the direction which an agent is facing

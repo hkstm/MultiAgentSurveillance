@@ -136,6 +136,7 @@ public class GameScene extends BorderPane implements Runnable {
         scene = new Scene(hBox);
         hBox.setMinSize(windowSize + windowSize * 0.1, windowSize);
 
+        Agent.worldMap = worldMap;
         worldMap.addAgent(new Intruder(new Point2D.Double(0, 0), 0));
         worldMap.startAgents();
         System.out.println("Started agents");
@@ -158,6 +159,7 @@ public class GameScene extends BorderPane implements Runnable {
 //
 //                //updater.accept(secondsElapsedCapped);
                 redrawBoard();
+//                System.out.println("board is redrawn");
 //
 //                secondsElapsedSinceLastFpsUpdate += secondsElapsed;
 //                framesSinceLastFpsUpdate++;
@@ -185,7 +187,6 @@ public class GameScene extends BorderPane implements Runnable {
         createAgents();
 //        grid.getChildren().addAll(agentGroup);
         grid.setGridLinesVisible(true);
-        System.out.println("redrawn board");
     }
 
     public void createTiles() {
@@ -207,17 +208,14 @@ public class GameScene extends BorderPane implements Runnable {
                 AgentCircle circle = new AgentCircle(guard.getPosition());
                 circle.setFill(Color.PEACHPUFF);
                 agentGroup.getChildren().add(new Pane(circle));
-                System.out.println("Added guard");
             }
             if(agent instanceof Intruder) {
                 Intruder intruder = (Intruder) agent;
                 AgentCircle circle = new AgentCircle(intruder.getPosition());
-                System.out.println(circle.getLayoutX());
                 circle.setFill(Color.DARKRED);
                 Pane tmpPane = new Pane();
                 tmpPane.getChildren().addAll(circle);
                 agentGroup.getChildren().add(tmpPane);
-                System.out.println("added agent");
             }
             //System.out.println("proceeding after while loop, agent on seperate thread");
         }
