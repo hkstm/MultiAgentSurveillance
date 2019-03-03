@@ -60,18 +60,18 @@ public class SettingsScene extends VBox {
 
         startGameScene = new Button("Start Game Scene");
         startGameScene.setOnAction(e -> {
-            Settings settings = new Settings(worldMapSelection);
-            GameScene gameScene = new GameScene(primaryStage, settings);
             Node source = (Node) e.getSource();
             Stage stage = (Stage) source.getScene().getWindow();
             stage.close();
             this.primaryStage = new Stage();
+            Settings settings = new Settings(worldMapSelection);
+            GameScene gameScene = new GameScene(primaryStage, settings);
             this.primaryStage.setTitle("MultiAgentGameScene");
             this.primaryStage.setScene(gameScene.getGameScene());
             this.primaryStage.show();
         });
 
-        loadWorldMap = new Button("Load a custom WorldMap");
+        loadWorldMap = new Button("Load a custom worldMap");
         loadWorldMap.setOnAction(e -> {
             File recordsDir = new File(System.getProperty("user.home"), ".MultiAgentSurveillance/maps");
             if (! recordsDir.exists()) {
@@ -79,7 +79,7 @@ public class SettingsScene extends VBox {
             }
             FileChooser fileChooser = new FileChooser();
             fileChooser.setInitialDirectory(recordsDir);
-            fileChooser.setTitle("Open WorldMap File");
+            fileChooser.setTitle("Open worldMap File");
             fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
             File selectedFile = fileChooser.showOpenDialog(primaryStage);
             FileInputStream fileInputStream = null;

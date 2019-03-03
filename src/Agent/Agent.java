@@ -7,11 +7,13 @@ import java.awt.*;
  * @author Benjamin
  */
 
-public class Agent {
+public class Agent implements Runnable {
     protected Point position;
     protected double direction;
     protected int[][] knownTerrain;
-    protected WorldMap WorldMap;
+    protected WorldMap worldMap;
+    protected volatile boolean exitThread = false;
+    public static volatile long currentTime;
 
     /**
      * Constructor for Agent
@@ -23,6 +25,15 @@ public class Agent {
     {
         this.position = position;
         this.direction = direction;
+    }
+
+    public void run() {
+        while(!exitThread) {
+            position.getX();
+            for(int i = 100; i < 900; i++) {
+                position.setLocation(i, i);
+            }
+        }
     }
 
 //    public Agent(int x, int y, double direction)
@@ -139,7 +150,7 @@ public class Agent {
     {
         int xIndex = (int) location.getX();
         int yIndex = (int) -location.getY();
-        return WorldMap.getTileState(xIndex, yIndex);
+        return worldMap.getTileState(xIndex, yIndex);
     }
 
     /**
@@ -171,22 +182,22 @@ public class Agent {
                 //top left corner
                 if (Math.sqrt(((this.position.getX()-j)*(this.position.getX()-j))+((this.position.getY()-i)*(this.position.getY()))-i) <= radius && Math.atan((Math.abs(this.position.getX()-j))/(Math.abs(this.position.getY()-i)))+(Math.abs(this.direction)) <= angle/2)
                 {
-                    tempTerrainKnowledge[i][j] = this.WorldMap.getTileState(i, j);
+                    tempTerrainKnowledge[i][j] = this.worldMap.getTileState(i, j);
                 }
                 //top right corner
                 else if (Math.sqrt(((this.position.getX()-(j+1))*(this.position.getX()-(j+1)))+((this.position.getY()-i)*(this.position.getY()))-i) <= radius && Math.atan((Math.abs(this.position.getX()-(j+1)))/(Math.abs(this.position.getY()-i)))+(Math.abs(this.direction)) <= angle/2)
                 {
-                    tempTerrainKnowledge[i][j] = this.WorldMap.getTileState(i, j);
+                    tempTerrainKnowledge[i][j] = this.worldMap.getTileState(i, j);
                 }
                 //bottom right corner
                 else if (Math.sqrt(((this.position.getX()-(j+1))*(this.position.getX()-(j+1)))+((this.position.getY()-(i+1))*(this.position.getY()))-(i+1)) <= radius && Math.atan((Math.abs(this.position.getX()-(j+1)))/(Math.abs(this.position.getY()-(i+1))))+(Math.abs(this.direction)) <= angle/2)
                 {
-                    tempTerrainKnowledge[i][j] = this.WorldMap.getTileState(i, j);
+                    tempTerrainKnowledge[i][j] = this.worldMap.getTileState(i, j);
                 }
                 //bottom left corner
                 else if (Math.sqrt(((this.position.getX()-j)*(this.position.getX()-j))+((this.position.getY()-(i+1))*(this.position.getY()))-(i+1)) <= radius && Math.atan((Math.abs(this.position.getX()-j))/(Math.abs(this.position.getY()-(i+1))))+(Math.abs(this.direction)) <= angle/2)
                 {
-                    tempTerrainKnowledge[i][j] = this.WorldMap.getTileState(i, j);
+                    tempTerrainKnowledge[i][j] = this.worldMap.getTileState(i, j);
                 }
             }
         }
@@ -234,5 +245,13 @@ public class Agent {
 
     public void setPosition(Point position) {
         this.position = position;
+    }
+
+    public boolean isThreadStopped() {
+        return exitThread;
+    }
+
+    public void setThreadStopped(boolean exit) {
+        this.exitThread = exit;
     }
 }

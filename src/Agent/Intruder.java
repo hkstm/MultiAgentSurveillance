@@ -20,7 +20,7 @@ public class Intruder extends Agent{
     public Intruder(Point position, double direction)
     {
         super(position, direction);
-        //this.knownTerrain = WorldMap.getWorldGrid();
+        //this.knownTerrain = worldMap.getWorldGrid();
         this.tired = false;
 //        for (int i = 1;i < 200;i++)
 //        {

@@ -17,7 +17,7 @@ public class Guard extends Agent {
     public Guard(Point position, double direction)
     {
         super(position, direction);
-        //this.knownTerrain = WorldMap.getWorldGrid();
+        //this.knownTerrain = worldMap.getWorldGrid();
     }
 
     public boolean equals(Object obj) {

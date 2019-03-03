@@ -15,5 +15,7 @@ public class StartWorldBuilder extends Application {
         settingsScene = new SettingsScene(primaryStage);
         primaryStage.setScene(settingsScene.getSettingsScene());
         primaryStage.show();
+        primaryStage.getScene();
     }
+
 }

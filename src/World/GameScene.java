@@ -1,5 +1,7 @@
 package World;
 
+import javafx.animation.AnimationTimer;
+import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -11,17 +13,23 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
+import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import Agent.*;
+import javafx.stage.WindowEvent;
 
 /**
  * Main in game screen
  * @author Kailhan Hokstam
  */
-public class GameScene extends BorderPane {
+public class GameScene extends BorderPane implements Runnable {
+
     private Settings settings;
     private Stage primaryStage;
     private HBox hBox;
@@ -54,6 +62,11 @@ public class GameScene extends BorderPane {
         this.windowSize = 1000;
         this.settings = settings;
         this.primaryStage = primaryStage;
+        this.primaryStage.setOnCloseRequest(we -> {
+            System.out.println("Stage is closing");
+            worldMap.removeAllAgents();
+            System.exit(0);
+        });
         this.worldMap = new WorldMap(settings.getWorldMap());
         this.tileSize = windowSize / worldMap.getSize();
 
@@ -121,6 +134,45 @@ public class GameScene extends BorderPane {
         hBox.getChildren().addAll(worldPane, vBox); //can directly create scene from grid if borderpane layout is not gonna be used
         scene = new Scene(hBox);
         hBox.setMinSize(windowSize + windowSize * 0.1, windowSize);
+
+        worldMap.addAgent(new Intruder(new Point(0, 0), 0));
+        worldMap.startAgents();
+        System.out.println("Started agents");
+        new AnimationTimer() {
+            private long previousTime = 0;
+            private float secondsElapsedSinceLastFpsUpdate = 0f;
+            private int framesSinceLastFpsUpdate = 0;
+
+            @Override
+            public void handle(long currentTime)
+            {
+//                if (previousTime == 0) {
+//                    previousTime = currentTime;
+//                    return;
+//                }
+//
+//                float secondsElapsed = (currentTime - previousTime) / 1e9f;
+//                //float secondsElapsedCapped = Math.min(secondsElapsed, getMaximumStep());
+//                previousTime = currentTime;
+//
+//                //updater.accept(secondsElapsedCapped);
+                redrawBoard();
+//
+//                secondsElapsedSinceLastFpsUpdate += secondsElapsed;
+//                framesSinceLastFpsUpdate++;
+//                if (secondsElapsedSinceLastFpsUpdate >= 0.5f) {
+//                    //int fps = Math.round(framesSinceLastFpsUpdate / secondsElapsedSinceLastFpsUpdate);
+//                    //fpsReporter.accept(fps);
+//                    secondsElapsedSinceLastFpsUpdate = 0;
+//                    framesSinceLastFpsUpdate = 0;
+//                }
+//                System.out.println("handled");
+            }
+        }.start();
+    }
+
+    public void run(){
+     redrawBoard();
     }
 
     /**
@@ -132,11 +184,13 @@ public class GameScene extends BorderPane {
         createAgents();
 //        grid.getChildren().addAll(agentGroup);
         grid.setGridLinesVisible(true);
+        System.out.println("redrawn board");
     }
 
     public void createTiles() {
         for (int r = 0; r < worldMap.getSize(); r++) {
             for (int c = 0; c < worldMap.getSize(); c++) {
+                //System.out.println("r" + r + "c" + c);
                 ImageView tmpImage = new ImageView(tileImgArray[worldMap.getTileState(r, c)]);
                 tmpImage.setSmooth(false);
                 grid.add((tmpImage), r, c);
@@ -161,11 +215,10 @@ public class GameScene extends BorderPane {
                 circle.setFill(Color.DARKRED);
                 Pane tmpPane = new Pane();
                 tmpPane.getChildren().addAll(circle);
-                circle.setCenterX(230);
-                circle.setCenterY(-100);
                 agentGroup.getChildren().add(tmpPane);
                 System.out.println("added agent");
             }
+            //System.out.println("proceeding after while loop, agent on seperate thread");
         }
     }
 

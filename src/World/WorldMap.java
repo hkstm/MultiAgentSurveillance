@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * WorldMap data structure
+ * worldMap data structure
  * @author Kailhan Hokstam, Marco Rietjens
  */
 
@@ -29,6 +29,7 @@ public class WorldMap implements Serializable {
     public static final int INTRUDER = 10;
     public static final int SOUND = 11;
     private List<Agent> agents = new ArrayList<Agent>();
+    private List<Thread> agentThreads = new ArrayList<Thread>();
 
     private int size;
 
@@ -44,7 +45,6 @@ public class WorldMap implements Serializable {
         this.size = size;
         this.worldGrid = new int[size][size];
         this.agents = agents;
-        agents.add(new Intruder(new Point(0, 0), 0));
         for(int i = 0; i < size; i++) {
             worldGrid[0][i] = WALL;
             worldGrid[i][0] = WALL;
@@ -118,12 +118,28 @@ public class WorldMap implements Serializable {
         this.agents = agents;
     }
 
-    public boolean removeAgent(Agent toBeRemoved) {
-        return agents.remove(toBeRemoved);
+    public int removeAgent(Agent toBeRemoved) {
+        int index = agents.indexOf(toBeRemoved);
+        agents.get(index).setThreadStopped(true);
+        agents.remove(index);
+        return index;
     }
 
     public void addAgent(Agent toBeAdded) {
         this.agents.add(toBeAdded);
+        this.agentThreads.add(new Thread(toBeAdded));
+    }
+
+    public void startAgents() {
+        for(Thread thread : agentThreads) {
+            thread.start();
+        }
+    }
+
+    public void removeAllAgents() {
+        for(Agent agent : agents) {
+            removeAgent(agent);
+        }
+        System.out.println("Removed all agents");
     }
 }
-
