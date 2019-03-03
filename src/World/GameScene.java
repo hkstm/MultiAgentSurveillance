@@ -137,7 +137,7 @@ public class GameScene extends BorderPane implements Runnable {
         hBox.setMinSize(windowSize + windowSize * 0.1, windowSize);
 
         Agent.worldMap = worldMap;
-        worldMap.addAgent(new Intruder(new Point2D.Double(0, 0), 0));
+        worldMap.addAgent(new Intruder(new Point2D.Double(-200, -50), 0));
         worldMap.startAgents();
         System.out.println("Started agents");
         new AnimationTimer() {

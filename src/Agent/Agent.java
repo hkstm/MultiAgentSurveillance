@@ -37,7 +37,7 @@ public class Agent implements Runnable{
         double yCurrent;
         double xGoal;
         double yGoal;
-        double deltaScaling = 0.001; //arbitrary as fuck dependent on how fast we are allowed to walk and how big the actual world is
+        double deltaScaling = 0.0001; //arbitrary as fuck dependent on how fast we are allowed to walk and how big the actual world is
         previousTime = System.nanoTime();
         while(!exitThread) {
             currentTime = System.nanoTime();
