@@ -1,19 +1,19 @@
 package Agent;
 import World.WorldMap;
-import java.awt.*;
+import java.awt.Point;
+import java.awt.geom.Point2D;
 
 /**
  * This is the superclass of Intruder and Guard, which contains methods for actions
  * @author Benjamin
  */
 
-public class Agent implements Runnable {
-    protected Point position;
+public class Agent implements Runnable{
+    protected Point2D.Double position;
     protected double direction;
     protected int[][] knownTerrain;
     protected WorldMap worldMap;
-    protected volatile boolean exitThread = false;
-    public static volatile long currentTime;
+    protected boolean exitThread;
 
     /**
      * Constructor for Agent
@@ -21,7 +21,7 @@ public class Agent implements Runnable {
      * @param direction is the angle which the agent is facing, this spans from -180 to 180 degrees
      */
 
-    public Agent(Point position, double direction)
+    public Agent(Point2D.Double position, double direction)
     {
         this.position = position;
         this.direction = direction;
@@ -71,15 +71,14 @@ public class Agent implements Runnable {
      * @return a point at which the Agent would end up if this move were made
      */
 
-    public Point getMove(double distance, double facingDirection)
+    public Point2D.Double getMove(double distance, double facingDirection)
     {
         if (facingDirection > 0 && facingDirection <= 90)
         {
             double angle = 90-facingDirection;
             double newXCoordinate = this.position.getX()+distance*Math.cos(angle);
             double newYCoordinate = this.position.getY()+distance*Math.sin(angle);
-            Point newLocation = new Point();
-            newLocation.setLocation(newXCoordinate, newYCoordinate);
+            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
             return newLocation;
         }
         else if (facingDirection > 90 && facingDirection <= 180)
@@ -87,8 +86,7 @@ public class Agent implements Runnable {
             double angle = 180-facingDirection;
             double newXCoordinate = this.position.getX()+distance*Math.sin(angle);
             double newYCoordinate = this.position.getY()-distance*Math.cos(angle);
-            Point newLocation = new Point();
-            newLocation.setLocation(newXCoordinate, newYCoordinate);
+            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
             return newLocation;
         }
         else if (facingDirection <= 0 && facingDirection > -90)
@@ -96,8 +94,7 @@ public class Agent implements Runnable {
             double angle = -1*(180-facingDirection);
             double newXCoordinate = this.position.getX()-distance*Math.sin(angle);
             double newYCoordinate = this.position.getY()-distance*Math.cos(angle);
-            Point newLocation = new Point();
-            newLocation.setLocation(newXCoordinate, newYCoordinate);
+            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
             return newLocation;
         }
         //else if (facingDirection <= -90 || facingDirection > -180)
@@ -106,8 +103,7 @@ public class Agent implements Runnable {
             double angle = -1*(90+facingDirection);
             double newXCoordinate = this.position.getX()-distance*Math.cos(angle);
             double newYCoordinate = this.position.getY()+distance*Math.sin(angle);
-            Point newLocation = new Point();
-            newLocation.setLocation(newXCoordinate, newYCoordinate);
+            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
             return newLocation;
         }
     }
@@ -132,7 +128,7 @@ public class Agent implements Runnable {
      */
 
     public boolean legalMoveCheck(double distance) {
-        Point positionToCheck = getMove(distance, this.direction);
+        Point2D.Double positionToCheck = getMove(distance, this.direction);
         if (coordinatesToCell(positionToCheck) == 1 || coordinatesToCell(positionToCheck) == 5 || coordinatesToCell(positionToCheck) == 7) {
             return false;
         } else {
@@ -146,7 +142,7 @@ public class Agent implements Runnable {
      * @return an integer describing the terrain type in the worldGrid corresponding to the input location
      */
 
-    public int coordinatesToCell(Point location)
+    public int coordinatesToCell(Point2D.Double location)
     {
         int xIndex = (int) location.getX();
         int yIndex = (int) -location.getY();
@@ -164,11 +160,11 @@ public class Agent implements Runnable {
         //setting search bounds
         int[][] tempTerrainKnowledge = knownTerrain;
         Point corner1 = new Point((int) this.position.getX(), (int) this.position.getY());
-        Point straight = getMove(radius, this.direction);
+        Point2D.Double straight = getMove(radius, this.direction);
         Point corner2 = new Point((int) straight.getX(), (int) straight.getY());
-        Point left = getMove(radius, this.direction-(angle/2));
+        Point2D.Double left = getMove(radius, this.direction-(angle/2));
         Point corner3 = new Point((int) left.getX(), (int) left.getY());
-        Point right = getMove(radius, this.direction+(angle/2));
+        Point2D.Double right = getMove(radius, this.direction+(angle/2));
         Point corner4 = new Point((int) right.getX(), (int) right.getY());
         int XMax = Math.max((int) Math.max(corner1.getX(), corner2.getX()), (int) Math.max(corner3.getX(), corner4.getX()));
         int XMin = Math.min((int) Math.min(corner1.getX(), corner2.getX()), (int) Math.min(corner3.getX(), corner4.getX()));
@@ -239,13 +235,13 @@ public class Agent implements Runnable {
         knownTerrain = tempTerrainKnowledge;
     }
 
-    public Point getPosition() {
+    public Point2D.Double getPosition() {
         return position;
     }
-
-    public void setPosition(Point position) {
-        this.position = position;
-    }
+//
+//    public void setPosition(Point position) {
+//        this.position = position;
+//    }
 
     public boolean isThreadStopped() {
         return exitThread;
@@ -253,5 +249,8 @@ public class Agent implements Runnable {
 
     public void setThreadStopped(boolean exit) {
         this.exitThread = exit;
+    }
+    public void setPosition(Point2D.Double position) {
+        this.position = position;
     }
 }
