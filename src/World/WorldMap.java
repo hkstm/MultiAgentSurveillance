@@ -125,6 +125,7 @@ public class WorldMap implements Serializable {
         int index = agents.indexOf(toBeRemoved);
         agents.get(index).setThreadStopped(true);
         agents.remove(index);
+        agentThreads.remove(index);
         return index;
     }
 
@@ -141,8 +142,10 @@ public class WorldMap implements Serializable {
 
     public void removeAllAgents() {
         for(Agent agent : agents) {
-            removeAgent(agent);
+            agent.setThreadStopped(true);
         }
+        agents.clear();
+        agentThreads.clear();
         System.out.println("Removed all agents");
     }
 }

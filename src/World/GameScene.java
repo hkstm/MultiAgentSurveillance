@@ -58,6 +58,8 @@ public class GameScene extends BorderPane implements Runnable {
 
     private Group agentGroup = new Group();
 
+    private boolean gameStarted = false;
+
     public GameScene(Stage primaryStage, Settings settings) {
         this.grid = new GridPane();
         this.windowSize = 1000;
@@ -107,8 +109,24 @@ public class GameScene extends BorderPane implements Runnable {
         });
         this.restartGameBut.setWrapText(true);
 
-        this.startGameBut = new Button("Start Game");
+        this.startGameBut = new Button("Start/Stop Game");
         startGameBut.setOnAction(e -> { //
+            if(!gameStarted) {
+                Agent.worldMap = worldMap;
+                worldMap.addAgent(new Intruder(new Point2D.Double(-200, -50), 0));
+                worldMap.startAgents();
+                System.out.println("Started agents");
+                new AnimationTimer() {
+                    @Override
+                    public void handle(long currentTime) {
+                        redrawBoard();
+                    }
+                }.start();
+                gameStarted = true;
+            } else {
+                worldMap.removeAllAgents();
+                gameStarted = false;
+            }
 
         });
         this.startGameBut.setWrapText(true);
@@ -136,42 +154,7 @@ public class GameScene extends BorderPane implements Runnable {
         scene = new Scene(hBox);
         hBox.setMinSize(windowSize + windowSize * 0.1, windowSize);
 
-        Agent.worldMap = worldMap;
-        worldMap.addAgent(new Intruder(new Point2D.Double(-200, -50), 0));
-        worldMap.startAgents();
-        System.out.println("Started agents");
-        new AnimationTimer() {
-            private long previousTime = 0;
-            private float secondsElapsedSinceLastFpsUpdate = 0f;
-            private int framesSinceLastFpsUpdate = 0;
 
-            @Override
-            public void handle(long currentTime)
-            {
-//                if (previousTime == 0) {
-//                    previousTime = currentTime;
-//                    return;
-//                }
-//
-//                float secondsElapsed = (currentTime - previousTime) / 1e9f;
-//                //float secondsElapsedCapped = Math.min(secondsElapsed, getMaximumStep());
-//                previousTime = currentTime;
-//
-//                //updater.accept(secondsElapsedCapped);
-                redrawBoard();
-//                System.out.println("board is redrawn");
-//
-//                secondsElapsedSinceLastFpsUpdate += secondsElapsed;
-//                framesSinceLastFpsUpdate++;
-//                if (secondsElapsedSinceLastFpsUpdate >= 0.5f) {
-//                    //int fps = Math.round(framesSinceLastFpsUpdate / secondsElapsedSinceLastFpsUpdate);
-//                    //fpsReporter.accept(fps);
-//                    secondsElapsedSinceLastFpsUpdate = 0;
-//                    framesSinceLastFpsUpdate = 0;
-//                }
-//                System.out.println("handled");
-            }
-        }.start();
     }
 
     public void run(){
@@ -216,6 +199,7 @@ public class GameScene extends BorderPane implements Runnable {
                 Pane tmpPane = new Pane();
                 tmpPane.getChildren().addAll(circle);
                 agentGroup.getChildren().add(tmpPane);
+                //System.out.println("position" + intruder.getPosition().toString());
             }
             //System.out.println("proceeding after while loop, agent on seperate thread");
         }

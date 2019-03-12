@@ -9,52 +9,61 @@ import java.awt.geom.Point2D;
  */
 
 public class Agent implements Runnable{
-    protected Point2D.Double position;
+    protected volatile Point2D.Double position;
     protected double direction;
     protected int[][] knownTerrain;
+
+    protected volatile double xCurrent;
+    protected volatile double yCurrent;
+    protected volatile double xGoal;
+    protected volatile double yGoal;
+
     public static WorldMap worldMap;
-    protected boolean exitThread;
-    protected double previousTime;
-    protected Point2D.Double goalPosition;
-
-    /**
-     * Constructor for Agent
-     * @param position is a point containing the coordinates of an Agent
-     * @param direction is the angle which the agent is facing, this spans from -180 to 180 degrees
-     */
-
-    public Agent(Point2D.Double position, double direction)
-    {
-        this.position = position;
-        this.direction = direction;
-        this.goalPosition = position;
-    }
-
-    public void run() {
         double currentTime;
         double delta;
-        double xCurrent;
-        double yCurrent;
-        double xGoal;
-        double yGoal;
+//        ;
+//        ;
+        protected boolean exitThread;
+        protected double previousTime;
+        protected volatile Point2D.Double goalPosition;
+
+        /**
+         * Constructor for Agent
+         * @param position is a point containing the coordinates of an Agent
+         * @param direction is the angle which the agent is facing, this spans from -180 to 180 degrees
+         */
+
+    public Agent(Point2D.Double position, double direction)
+        {
+            this.position = position;
+            this.direction = direction;
+            this.goalPosition = position;
+        }
+
+        public void run() {
+//        ;
+//        ;
         double deltaScaling = 0.0001; //arbitrary as fuck dependent on how fast we are allowed to walk and how big the actual world is
         previousTime = System.nanoTime();
+        goalPosition = new Point2D.Double(100, 500);
         while(!exitThread) {
             currentTime = System.nanoTime();
             delta = currentTime - previousTime;
             delta /= 1e6; //makes it ms
             previousTime = currentTime;
-            xCurrent = position.getX();
-            yCurrent = position.getY();
+            xCurrent = getPosition().getX();
+            yCurrent = getPosition().getY();
             updateGoalPosition();
-            xGoal = goalPosition.getX();
-            yGoal = goalPosition.getY();
+            xGoal = getGoalPosition().getX();
+            yGoal = getGoalPosition().getY();
 //            System.out.println(
 //                    "xCurrent: " + xCurrent + " yCurrent: " + yCurrent);
 //            System.out.println(
 //                    "xGoal: " + xGoal + " yGoal: " + yGoal);
 //            System.out.println("delta: " + (delta) + "ms");
             position.setLocation((xCurrent + ((xGoal - xCurrent) * (delta * deltaScaling))), (yCurrent + ((yGoal - yCurrent) * (delta * deltaScaling))));
+//            System.out.println("xCurrent" + xCurrent);
+//            System.out.println("yCurrent" + yCurrent);
         }
     }
 
@@ -261,7 +270,12 @@ public class Agent implements Runnable{
     public Point2D.Double getPosition() {
         return position;
     }
-//
+
+    public Point2D.Double getGoalPosition() {
+        return goalPosition;
+    }
+
+    //
 //    public void setPosition(Point position) {
 //        this.position = position;
 //    }
@@ -273,7 +287,7 @@ public class Agent implements Runnable{
     public void setThreadStopped(boolean exit) {
         this.exitThread = exit;
     }
-    public void setPosition(Point2D.Double position) {
+    public synchronized void setPosition(Point2D.Double position) {
         this.position = position;
     }
 }
