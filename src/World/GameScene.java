@@ -190,7 +190,7 @@ public class GameScene extends BorderPane implements Runnable {
             if(agent instanceof Guard) {
                 Guard guard = (Guard) agent;
                 AgentCircle circle = new AgentCircle(guard.getPosition());
-                circle.setFill(Color.PEACHPUFF;
+                circle.setFill(Color.PEACHPUFF);
                 Pane tmpPane = new Pane();
                 tmpPane.getChildren().addAll(circle);
                 agentGroup.getChildren().add(tmpPane);
