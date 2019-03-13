@@ -125,10 +125,8 @@ public class WorldBuilder extends BorderPane {
         });
         this.saveBoardBut.setWrapText(true);
 
-
-        initTiles();
-        redrawBoard();
-        grid.setGridLinesVisible(true);
+//        initTiles();
+//        redrawBoard();
 
         VBox vBox = new VBox();
         VBox.setVgrow(goToMenuBut, Priority.ALWAYS);
@@ -149,6 +147,9 @@ public class WorldBuilder extends BorderPane {
         bPane.setCenter(grid); //can directly create scene from grid if borderpane layout is not gonna be used
         bPane.setRight(vBox);
         scene = new Scene(bPane);
+
+        initTiles();
+        redrawBoard();
     }
 
     /**
@@ -158,7 +159,6 @@ public class WorldBuilder extends BorderPane {
         grid.getChildren().clear();
         createTiles();
         grid.getChildren().addAll(toAdd);
-        grid.setGridLinesVisible(true);
     }
 
     /**
@@ -174,7 +174,9 @@ public class WorldBuilder extends BorderPane {
                 toAdd.get(c + (r * worldMap.getSize())).setOnAction((event) -> {
                     TileButton button = (TileButton)event.getSource();
                     updateWorldMap(button.getX(), button.getY(), activeTile); // Actual communication with worldMap, says which button has been clicked and thus which worldMap cell needs to be checked
+                    System.out.println("update world map");
                 });
+                //System.out.println("creating tiles");
                 GridPane.setConstraints(toAdd.get(c + (r * worldMap.getSize())), r, c);
             }
         }
@@ -198,7 +200,7 @@ public class WorldBuilder extends BorderPane {
     {
         worldMap.updateTile(r, c, state);
         redrawBoard();
-    }
+            }
 
     public Scene getWorldBuilder() {
         return scene;
