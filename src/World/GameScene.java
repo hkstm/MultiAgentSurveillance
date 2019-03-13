@@ -58,21 +58,22 @@ public class GameScene extends BorderPane implements Runnable {
 
     private Group agentGroup = new Group();
 
-    private boolean gameStarted = false;
+    private boolean gameStarted = false; //used for start and stop button
 
     public GameScene(Stage primaryStage, Settings settings) {
-        this.grid = new GridPane();
+        this.grid = new GridPane(); //main grid that shows the tiles
         this.windowSize = 1000;
         this.settings = settings;
         this.primaryStage = primaryStage;
-        this.primaryStage.setOnCloseRequest(we -> {
+        this.primaryStage.setOnCloseRequest(we -> { //doesnt work properly right now, used to actually close threads when closing main window
             System.out.println("Stage is closing");
             worldMap.removeAllAgents();
             System.exit(0);
         });
-        this.worldMap = new WorldMap(settings.getWorldMap());
+        this.worldMap = new WorldMap(settings.getWorldMap()); //create world data structure
         this.tileSize = windowSize / worldMap.getSize();
 
+        //load some assets
         this.emptyTileImg = new Image(new File("src/Assets/emptyTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
         this.structureTileImg = new Image(new File("src/Assets/structureTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
         this.doorTileImg = new Image(new File("src/Assets/doorTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
@@ -132,8 +133,6 @@ public class GameScene extends BorderPane implements Runnable {
         this.startGameBut.setWrapText(true);
 
         redrawBoard();
-        grid.setGridLinesVisible(true);
-        grid.setAlignment(Pos.CENTER);
 
         VBox vBox = new VBox();
         VBox.setVgrow(goToMenuBut, Priority.ALWAYS);
@@ -169,7 +168,9 @@ public class GameScene extends BorderPane implements Runnable {
         createTiles();
         createAgents();
 //        grid.getChildren().addAll(agentGroup);
+
         grid.setGridLinesVisible(true);
+        grid.setAlignment(Pos.CENTER);
     }
 
     public void createTiles() {
@@ -190,7 +191,9 @@ public class GameScene extends BorderPane implements Runnable {
                 Guard guard = (Guard) agent;
                 AgentCircle circle = new AgentCircle(guard.getPosition());
                 circle.setFill(Color.PEACHPUFF);
-                agentGroup.getChildren().add(new Pane(circle));
+                Pane tmpPane = new Pane();
+                tmpPane.getChildren().addAll(circle);
+                agentGroup.getChildren().add(tmpPane);
             }
             if(agent instanceof Intruder) {
                 Intruder intruder = (Intruder) agent;
