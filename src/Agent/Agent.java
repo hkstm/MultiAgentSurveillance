@@ -12,9 +12,10 @@ public class Agent implements Runnable{
     protected volatile Point2D.Double position;
     protected double direction;
     protected int[][] knownTerrain;
+    private double walkingSpeed = 1.4/(10^9);
 
-    protected volatile double xCurrent;
-    protected volatile double yCurrent;
+    //protected volatile double xCurrent;
+    //protected volatile double yCurrent;
     protected volatile double xGoal;
     protected volatile double yGoal;
 
@@ -49,10 +50,19 @@ public class Agent implements Runnable{
         while(!exitThread) {
             currentTime = System.nanoTime();
             delta = currentTime - previousTime;
-            delta /= 1e6; //makes it ms
+            //delta /= 1e6; //makes it ms
+            if (legalMoveCheck(walkingSpeed))
+            {
+                move(walkingSpeed);
+            }
+            else
+            {
+                double turningAngle = Math.random()*360-180;
+                turn(turningAngle);
+            }
             previousTime = currentTime;
-            xCurrent = getPosition().getX();
-            yCurrent = getPosition().getY();
+            //xCurrent = getPosition().getX();
+            //yCurrent = getPosition().getY();
             updateGoalPosition();
             xGoal = getGoalPosition().getX();
             yGoal = getGoalPosition().getY();
@@ -61,7 +71,7 @@ public class Agent implements Runnable{
 //            System.out.println(
 //                    "xGoal: " + xGoal + " yGoal: " + yGoal);
 //            System.out.println("delta: " + (delta) + "ms");
-            position.setLocation((xCurrent + ((xGoal - xCurrent) * (delta * deltaScaling))), (yCurrent + ((yGoal - yCurrent) * (delta * deltaScaling))));
+            //position.setLocation((xCurrent + ((xGoal - xCurrent) * (delta * deltaScaling))), (yCurrent + ((yGoal - yCurrent) * (delta * deltaScaling))));
 //            System.out.println("xCurrent" + xCurrent);
 //            System.out.println("yCurrent" + yCurrent);
         }
