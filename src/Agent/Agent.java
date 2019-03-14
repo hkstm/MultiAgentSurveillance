@@ -185,6 +185,7 @@ public class Agent implements Runnable{
 
     public int coordinatesToCell(Point2D.Double location)
     {
+        convert();
         int xIndex = (int) location.getX();
         int yIndex = (int) -location.getY();
         return worldMap.getTileState(xIndex, yIndex);
@@ -219,22 +220,22 @@ public class Agent implements Runnable{
                 //top left corner
                 if (Math.sqrt(((this.position.getX()-j)*(this.position.getX()-j))+((this.position.getY()-i)*(this.position.getY()))-i) <= radius && Math.atan((Math.abs(this.position.getX()-j))/(Math.abs(this.position.getY()-i)))+(Math.abs(this.direction)) <= angle/2)
                 {
-                    tempTerrainKnowledge[i][j] = this.worldMap.getTileState(i, j);
+                    tempTerrainKnowledge[i][j] = worldMap.getTileState(i, j);
                 }
                 //top right corner
                 else if (Math.sqrt(((this.position.getX()-(j+1))*(this.position.getX()-(j+1)))+((this.position.getY()-i)*(this.position.getY()))-i) <= radius && Math.atan((Math.abs(this.position.getX()-(j+1)))/(Math.abs(this.position.getY()-i)))+(Math.abs(this.direction)) <= angle/2)
                 {
-                    tempTerrainKnowledge[i][j] = this.worldMap.getTileState(i, j);
+                    tempTerrainKnowledge[i][j] = worldMap.getTileState(i, j);
                 }
                 //bottom right corner
                 else if (Math.sqrt(((this.position.getX()-(j+1))*(this.position.getX()-(j+1)))+((this.position.getY()-(i+1))*(this.position.getY()))-(i+1)) <= radius && Math.atan((Math.abs(this.position.getX()-(j+1)))/(Math.abs(this.position.getY()-(i+1))))+(Math.abs(this.direction)) <= angle/2)
                 {
-                    tempTerrainKnowledge[i][j] = this.worldMap.getTileState(i, j);
+                    tempTerrainKnowledge[i][j] = worldMap.getTileState(i, j);
                 }
                 //bottom left corner
                 else if (Math.sqrt(((this.position.getX()-j)*(this.position.getX()-j))+((this.position.getY()-(i+1))*(this.position.getY()))-(i+1)) <= radius && Math.atan((Math.abs(this.position.getX()-j))/(Math.abs(this.position.getY()-(i+1))))+(Math.abs(this.direction)) <= angle/2)
                 {
-                    tempTerrainKnowledge[i][j] = this.worldMap.getTileState(i, j);
+                    tempTerrainKnowledge[i][j] = worldMap.getTileState(i, j);
                 }
             }
         }
@@ -298,6 +299,12 @@ public class Agent implements Runnable{
     }
     public synchronized void setPosition(Point2D.Double position) {
         this.position = position;
+    }
+
+    public double convert()
+    {
+        World.SettingsScene temp = new World.SettingsScene();
+        return temp.getSize()/worldMap.getSize();
     }
 }
 

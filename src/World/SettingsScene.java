@@ -35,6 +35,11 @@ public class SettingsScene extends VBox {
     public static final int SIZE_MEDIUM = 200;
     public static final int SIZE_LARGE = 500;
 
+    public SettingsScene()
+    {
+        this.windowSize  = 1000;
+    }
+
     public SettingsScene(Stage primaryStage) {
         this.windowSize  = 1000;
         worldSizeSelection = SIZE_SMALL;
@@ -119,5 +124,10 @@ public class SettingsScene extends VBox {
 
     public Scene getSettingsScene() {
         return scene;
+    }
+
+    public double getSize()
+    {
+        return windowSize;
     }
 }
