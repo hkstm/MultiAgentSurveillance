@@ -12,7 +12,6 @@ public class Agent implements Runnable{
     protected volatile Point2D.Double position;
     protected double direction;
     protected int[][] knownTerrain;
-    private double walkingSpeed = 1.4/(10^9);
 
     //protected volatile double xCurrent;
     //protected volatile double yCurrent;
@@ -46,18 +45,20 @@ public class Agent implements Runnable{
 //        ;
         double deltaScaling = 0.0001; //arbitrary as fuck dependent on how fast we are allowed to walk and how big the actual world is
         previousTime = System.nanoTime();
-        goalPosition = new Point2D.Double(100, 500);
+        goalPosition = new Point2D.Double(25, 25);
         while(!exitThread) {
             currentTime = System.nanoTime();
             delta = currentTime - previousTime;
             //delta /= 1e6; //makes it ms
-            if (legalMoveCheck(walkingSpeed))
+            double walkingDistance = 1.4/delta;
+            if (legalMoveCheck(walkingDistance))
             {
-                move(walkingSpeed);
+                move(walkingDistance);
+                System.out.println("position: "+position);
             }
             else
             {
-                double turningAngle = Math.random()*360-180;
+                double turningAngle = Math.random()*90-45;
                 turn(turningAngle);
             }
             previousTime = currentTime;
@@ -301,3 +302,4 @@ public class Agent implements Runnable{
         this.position = position;
     }
 }
+

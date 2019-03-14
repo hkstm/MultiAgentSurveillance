@@ -1,0 +1,3 @@
+make vision searching more efficient - use a corner for all adjacent squares
+make sure you cannot see cells out of map area (arrayoutofbounds)
+check EVERYTHING :)
