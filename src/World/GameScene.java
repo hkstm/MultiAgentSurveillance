@@ -84,7 +84,7 @@ public class GameScene extends BorderPane implements Runnable {
         this.wallTileImg = new Image(new File("src/Assets/wallTile16.png").toURI().toString(), tileSize, tileSize, false, false, true);
         this.tileImgArray = new Image[]{emptyTileImg, structureTileImg, doorTileImg, windowTileImg, targetTileImg, sentryTileImg, decreasedVisRangeTileImg, wallTileImg};
 
-        this.goToMenuBut = new Button("Menu");
+        this.goToMenuBut = new Button("Menu"); //menu button on right side
         goToMenuBut.setOnAction(e -> { // Switch to settings
             SettingsScene settingsScene = new SettingsScene(primaryStage);
             Node source = (Node) e.getSource();
@@ -97,7 +97,7 @@ public class GameScene extends BorderPane implements Runnable {
         });
         this.goToMenuBut.setWrapText(true);
 
-        this.restartGameBut = new Button("Restart Game");
+        this.restartGameBut = new Button("Restart Game"); //restart button on right side
         restartGameBut.setOnAction(e -> { // Create a new game with the same setings
             GameScene gameScene = new GameScene(primaryStage, settings);
             Node source = (Node) e.getSource();
@@ -110,7 +110,7 @@ public class GameScene extends BorderPane implements Runnable {
         });
         this.restartGameBut.setWrapText(true);
 
-        this.startGameBut = new Button("Start/Stop Game");
+        this.startGameBut = new Button("Start/Stop Game"); //should stop and start game, not properly working atm
         startGameBut.setOnAction(e -> { //
             if(!gameStarted) {
                 Agent.worldMap = worldMap;
@@ -132,8 +132,9 @@ public class GameScene extends BorderPane implements Runnable {
         });
         this.startGameBut.setWrapText(true);
 
-        redrawBoard();
+        redrawBoard(); //redrawing board otherwise window that displays board and button is not properly sized
 
+        //setting box that contains buttons
         VBox vBox = new VBox();
         VBox.setVgrow(goToMenuBut, Priority.ALWAYS);
         VBox.setVgrow(restartGameBut, Priority.ALWAYS);
@@ -146,12 +147,12 @@ public class GameScene extends BorderPane implements Runnable {
         startGameBut.setMaxWidth(Double.MAX_VALUE);
         vBox.getChildren().addAll(goToMenuBut, restartGameBut, startGameBut);
 
-        hBox = new HBox();
-        StackPane worldPane = new StackPane();
+        hBox = new HBox(); //container that stores the box containing buttons and the stackpane with the world and the agents drawn ontop of it
+        StackPane worldPane = new StackPane(); //allows us to drap agents on top of world
         worldPane.getChildren().addAll(grid, agentGroup);
         hBox.getChildren().addAll(worldPane, vBox); //can directly create scene from grid if borderpane layout is not gonna be used
-        scene = new Scene(hBox);
-        hBox.setMinSize(windowSize + windowSize * 0.1, windowSize);
+        scene = new Scene(hBox); // allows us to actually display the world, agents and buttons
+        hBox.setMinSize(windowSize + windowSize * 0.1, windowSize); //dont think
 
 
     }

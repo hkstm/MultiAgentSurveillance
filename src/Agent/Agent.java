@@ -41,8 +41,6 @@ public class Agent implements Runnable{
         }
 
         public void run() {
-//        ;
-//        ;
         double deltaScaling = 0.0001; //arbitrary as fuck dependent on how fast we are allowed to walk and how big the actual world is
         previousTime = System.nanoTime();
         goalPosition = new Point2D.Double(25, 25);

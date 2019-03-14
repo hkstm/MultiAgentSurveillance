@@ -24,6 +24,8 @@ public class Guard extends Agent {
         //this.knownTerrain = worldMap.getWorldGrid();
     }
 
+
+
     public boolean equals(Object obj) {
         boolean equals = false;
         if (obj == null) return false;
