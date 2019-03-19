@@ -186,6 +186,8 @@ public class Agent implements Runnable{
     {
         int xIndex = (int) location.getX();
         int yIndex = (int) -location.getY();
+//        System.out.println(xIndex);
+//        System.out.println(yIndex);
         return worldMap.getTileState(xIndex, yIndex);
     }
 
