@@ -115,6 +115,7 @@ public class GameScene extends BorderPane implements Runnable {
             if(!gameStarted) {
                 Agent.worldMap = worldMap;
                 worldMap.addAgent(new Intruder(new Point2D.Double(0, 0), 0));
+                worldMap.startAgents();
                 System.out.println("Started agents");
                 new AnimationTimer() {
                     @Override

@@ -17,7 +17,6 @@ public class Agent implements Runnable{
     //protected volatile double yCurrent;
     protected volatile double xGoal;
     protected volatile double yGoal;
-    private double convertedDistance;
 
     public static WorldMap worldMap;
         double currentTime;
@@ -42,7 +41,6 @@ public class Agent implements Runnable{
         }
 
         public void run() {
-        System.out.println("running");
         double deltaScaling = 0.0001; //arbitrary as fuck dependent on how fast we are allowed to walk and how big the actual world is
         previousTime = System.nanoTime();
         goalPosition = new Point2D.Double(25, 25);
@@ -115,7 +113,9 @@ public class Agent implements Runnable{
 
     public Point2D.Double getMove(double distance, double facingDirection)
     {
-        convert();
+        double convertedDistance = convert();
+        //System.out.println("x: "+position.getX()+"   y: "+position.getY());
+        //System.out.println("convertedDistance: "+convertedDistance+" distance :"+distance);
         if (facingDirection > 0 && facingDirection <= 90)
         {
             double angle = 90-facingDirection;
@@ -302,9 +302,12 @@ public class Agent implements Runnable{
         this.position = position;
     }
 
+    //this method must be cleaned up (its not a good way of accessing worldSizeSelection by creating a temporary object
     public double convert()
     {
         World.SettingsScene temp = new World.SettingsScene();
+        System.out.println(worldMap.getSize());
+        //double size = wordSizeSelection
         return temp.getSize()/worldMap.getSize();
     }
 }
