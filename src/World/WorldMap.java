@@ -36,9 +36,9 @@ public class WorldMap implements Serializable {
 
     private int size;
 
-    public WorldMap() {
-        this(200);
-    }
+    //public WorldMap() {
+    //    this(200);
+    //}
 
     public WorldMap(int size) {
         this(size, new ArrayList<Agent>());

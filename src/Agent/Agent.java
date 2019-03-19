@@ -12,12 +12,12 @@ public class Agent implements Runnable{
     protected volatile Point2D.Double position;
     protected double direction;
     protected int[][] knownTerrain;
-    private double walkingSpeed = 1.4/(10^9);
 
     //protected volatile double xCurrent;
     //protected volatile double yCurrent;
     protected volatile double xGoal;
     protected volatile double yGoal;
+    private double convertedDistance;
 
     public static WorldMap worldMap;
         double currentTime;
@@ -42,20 +42,22 @@ public class Agent implements Runnable{
         }
 
         public void run() {
+        System.out.println("running");
         double deltaScaling = 0.0001; //arbitrary as fuck dependent on how fast we are allowed to walk and how big the actual world is
         previousTime = System.nanoTime();
-        goalPosition = new Point2D.Double(100, 500);
+        goalPosition = new Point2D.Double(25, 25);
         while(!exitThread) {
             currentTime = System.nanoTime();
             delta = currentTime - previousTime;
             //delta /= 1e6; //makes it ms
-            if (legalMoveCheck(walkingSpeed))
+            double walkingDistance = 1.4/delta;
+            if (legalMoveCheck(walkingDistance))
             {
-                move(walkingSpeed);
+                move(walkingDistance);
             }
             else
             {
-                double turningAngle = Math.random()*360-180;
+                double turningAngle = Math.random()*90-45;
                 turn(turningAngle);
             }
             previousTime = currentTime;
@@ -89,16 +91,16 @@ public class Agent implements Runnable{
 
     public void turn(double angle)
     {
-        this.direction = this.direction+angle;
-        while (this.direction > 180 || this.direction < -180)
+        direction = direction+angle;
+        while (direction > 180 || direction < -180)
         {
-            if (this.direction > 180)
+            if (direction > 180)
             {
-                this.direction = (this.direction-180)-180;
+                direction = (direction-180)-180;
             }
-            if (this.direction < 180)
+            if (direction < 180)
             {
-                this.direction = (this.direction+180)+180;
+                direction = (direction+180)+180;
             }
         }
     }
@@ -113,36 +115,37 @@ public class Agent implements Runnable{
 
     public Point2D.Double getMove(double distance, double facingDirection)
     {
+        convert();
         if (facingDirection > 0 && facingDirection <= 90)
         {
             double angle = 90-facingDirection;
-            double newXCoordinate = this.position.getX()+distance*Math.cos(angle);
-            double newYCoordinate = this.position.getY()+distance*Math.sin(angle);
+            double newXCoordinate = (distance*Math.cos(angle)-position.getX())*convertedDistance;
+            double newYCoordinate = (position.getY()-distance*Math.sin(angle))*convertedDistance;
             Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
             return newLocation;
         }
         else if (facingDirection > 90 && facingDirection <= 180)
         {
             double angle = 180-facingDirection;
-            double newXCoordinate = this.position.getX()+distance*Math.sin(angle);
-            double newYCoordinate = this.position.getY()-distance*Math.cos(angle);
+            double newXCoordinate = (distance*Math.sin(angle)-position.getX())*convertedDistance;
+            double newYCoordinate = (position.getY()+distance*Math.cos(angle))*convertedDistance;
             Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
             return newLocation;
         }
         else if (facingDirection <= 0 && facingDirection > -90)
         {
-            double angle = -1*(180-facingDirection);
-            double newXCoordinate = this.position.getX()-distance*Math.sin(angle);
-            double newYCoordinate = this.position.getY()-distance*Math.cos(angle);
+            double angle = -facingDirection;
+            double newXCoordinate = (position.getX()-distance*Math.sin(angle)*convertedDistance);
+            double newYCoordinate = (position.getY()-distance*Math.cos(angle)*convertedDistance);
             Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
             return newLocation;
         }
         //else if (facingDirection <= -90 || facingDirection > -180)
         else
         {
-            double angle = -1*(90+facingDirection);
-            double newXCoordinate = this.position.getX()-distance*Math.cos(angle);
-            double newYCoordinate = this.position.getY()+distance*Math.sin(angle);
+            double angle = 180+facingDirection;
+            double newXCoordinate = (position.getX()-distance*Math.sin(angle)*convertedDistance);
+            double newYCoordinate = (position.getY()+distance*Math.cos(angle)*convertedDistance);
             Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
             return newLocation;
         }
@@ -157,7 +160,7 @@ public class Agent implements Runnable{
 
     public void move(double distance)
     {
-        this.position.setLocation(getMove(distance, this.direction));
+        this.position.setLocation(getMove(distance, direction));
     }
 
     /**
@@ -168,7 +171,7 @@ public class Agent implements Runnable{
      */
 
     public boolean legalMoveCheck(double distance) {
-        Point2D.Double positionToCheck = getMove(distance, this.direction);
+        Point2D.Double positionToCheck = getMove(distance, direction);
         if (coordinatesToCell(positionToCheck) == 1 || coordinatesToCell(positionToCheck) == 5 || coordinatesToCell(positionToCheck) == 7) {
             return false;
         } else {
@@ -184,10 +187,8 @@ public class Agent implements Runnable{
 
     public int coordinatesToCell(Point2D.Double location)
     {
-        int xIndex = (int) location.getX();
-        int yIndex = (int) -location.getY();
-//        System.out.println(xIndex);
-//        System.out.println(yIndex);
+        int xIndex = ((int) location.getX())+(worldMap.getSize()/2);
+        int yIndex = ((int) location.getY())+(worldMap.getSize()/2);
         return worldMap.getTileState(xIndex, yIndex);
     }
 
@@ -201,12 +202,12 @@ public class Agent implements Runnable{
     {
         //setting search bounds
         int[][] tempTerrainKnowledge = knownTerrain;
-        Point corner1 = new Point((int) this.position.getX(), (int) this.position.getY());
-        Point2D.Double straight = getMove(radius, this.direction);
+        Point corner1 = new Point((int) position.getX(), (int) position.getY());
+        Point2D.Double straight = getMove(radius, direction);
         Point corner2 = new Point((int) straight.getX(), (int) straight.getY());
-        Point2D.Double left = getMove(radius, this.direction-(angle/2));
+        Point2D.Double left = getMove(radius, direction-(angle/2));
         Point corner3 = new Point((int) left.getX(), (int) left.getY());
-        Point2D.Double right = getMove(radius, this.direction+(angle/2));
+        Point2D.Double right = getMove(radius, direction+(angle/2));
         Point corner4 = new Point((int) right.getX(), (int) right.getY());
         int XMax = Math.max((int) Math.max(corner1.getX(), corner2.getX()), (int) Math.max(corner3.getX(), corner4.getX()));
         int XMin = Math.min((int) Math.min(corner1.getX(), corner2.getX()), (int) Math.min(corner3.getX(), corner4.getX()));
@@ -218,24 +219,24 @@ public class Agent implements Runnable{
             for (int j = XMin;j <= XMax;j++)
             {
                 //top left corner
-                if (Math.sqrt(((this.position.getX()-j)*(this.position.getX()-j))+((this.position.getY()-i)*(this.position.getY()))-i) <= radius && Math.atan((Math.abs(this.position.getX()-j))/(Math.abs(this.position.getY()-i)))+(Math.abs(this.direction)) <= angle/2)
+                if (Math.sqrt(((position.getX()-j)*(position.getX()-j))+((position.getY()-i)*(position.getY()))-i) <= radius && Math.atan((Math.abs(position.getX()-j))/(Math.abs(position.getY()-i)))+(Math.abs(direction)) <= angle/2)
                 {
-                    tempTerrainKnowledge[i][j] = this.worldMap.getTileState(i, j);
+                    tempTerrainKnowledge[i][j] = worldMap.getTileState(i, j);
                 }
                 //top right corner
-                else if (Math.sqrt(((this.position.getX()-(j+1))*(this.position.getX()-(j+1)))+((this.position.getY()-i)*(this.position.getY()))-i) <= radius && Math.atan((Math.abs(this.position.getX()-(j+1)))/(Math.abs(this.position.getY()-i)))+(Math.abs(this.direction)) <= angle/2)
+                else if (Math.sqrt(((position.getX()-(j+1))*(position.getX()-(j+1)))+((position.getY()-i)*(position.getY()))-i) <= radius && Math.atan((Math.abs(position.getX()-(j+1)))/(Math.abs(position.getY()-i)))+(Math.abs(direction)) <= angle/2)
                 {
-                    tempTerrainKnowledge[i][j] = this.worldMap.getTileState(i, j);
+                    tempTerrainKnowledge[i][j] = worldMap.getTileState(i, j);
                 }
                 //bottom right corner
-                else if (Math.sqrt(((this.position.getX()-(j+1))*(this.position.getX()-(j+1)))+((this.position.getY()-(i+1))*(this.position.getY()))-(i+1)) <= radius && Math.atan((Math.abs(this.position.getX()-(j+1)))/(Math.abs(this.position.getY()-(i+1))))+(Math.abs(this.direction)) <= angle/2)
+                else if (Math.sqrt(((position.getX()-(j+1))*(position.getX()-(j+1)))+((position.getY()-(i+1))*(position.getY()))-(i+1)) <= radius && Math.atan((Math.abs(position.getX()-(j+1)))/(Math.abs(position.getY()-(i+1))))+(Math.abs(direction)) <= angle/2)
                 {
-                    tempTerrainKnowledge[i][j] = this.worldMap.getTileState(i, j);
+                    tempTerrainKnowledge[i][j] = worldMap.getTileState(i, j);
                 }
                 //bottom left corner
-                else if (Math.sqrt(((this.position.getX()-j)*(this.position.getX()-j))+((this.position.getY()-(i+1))*(this.position.getY()))-(i+1)) <= radius && Math.atan((Math.abs(this.position.getX()-j))/(Math.abs(this.position.getY()-(i+1))))+(Math.abs(this.direction)) <= angle/2)
+                else if (Math.sqrt(((position.getX()-j)*(position.getX()-j))+((position.getY()-(i+1))*(position.getY()))-(i+1)) <= radius && Math.atan((Math.abs(position.getX()-j))/(Math.abs(position.getY()-(i+1))))+(Math.abs(direction)) <= angle/2)
                 {
-                    tempTerrainKnowledge[i][j] = this.worldMap.getTileState(i, j);
+                    tempTerrainKnowledge[i][j] = worldMap.getTileState(i, j);
                 }
             }
         }
@@ -250,21 +251,21 @@ public class Agent implements Runnable{
                     {
                         for (int l = XMin;l <= XMax;l++)
                         {
-                            if (Math.sqrt(((this.position.getX()-l)*(this.position.getX()-l))+((this.position.getY()-k)*(this.position.getY()))-k) > Math.sqrt(((this.position.getX()-j)*(this.position.getX()-j))+((this.position.getY()-i)*(this.position.getY()))-i))
+                            if (Math.sqrt(((position.getX()-l)*(position.getX()-l))+((position.getY()-k)*(position.getY()))-k) > Math.sqrt(((position.getX()-j)*(position.getX()-j))+((position.getY()-i)*(position.getY()))-i))
                             {
-                                if (direction > 0 && direction <= 90 && Math.atan((l-this.position.getX())/(k-this.position.getY())) >= Math.atan((j-this.position.getX())/(i-this.position.getY())) && Math.atan(((l+1)-this.position.getX())/((k-1)-this.position.getY())) <= Math.atan(((j+1)-this.position.getX())/((i-1)-this.position.getY())))
+                                if (direction > 0 && direction <= 90 && Math.atan((l-position.getX())/(k-position.getY())) >= Math.atan((j-position.getX())/(i-position.getY())) && Math.atan(((l+1)-position.getX())/((k-1)-position.getY())) <= Math.atan(((j+1)-position.getX())/((i-1)-position.getY())))
                                 {
                                     tempTerrainKnowledge[k][l] = knownTerrain[k][l];
                                 }
-                                else if (direction > 90 && direction <= 180 && Math.atan((k-this.position.getY())/((l+1)-this.position.getX())) >= Math.atan((i-this.position.getY())/((j+1)-this.position.getX())) && Math.atan(((k-1)-this.position.getY())/(l-this.position.getX())) <= Math.atan(((i+1)-this.position.getY())/(j-this.position.getX())))
+                                else if (direction > 90 && direction <= 180 && Math.atan((k-position.getY())/((l+1)-position.getX())) >= Math.atan((i-position.getY())/((j+1)-position.getX())) && Math.atan(((k-1)-position.getY())/(l-position.getX())) <= Math.atan(((i+1)-position.getY())/(j-position.getX())))
                                 {
                                     tempTerrainKnowledge[k][l] = knownTerrain[k][l];
                                 }
-                                else if (direction <= 0 && direction > -90 && Math.atan(((l+1)-this.position.getX())/(k-this.position.getY())) <= Math.atan(((j+1)-this.position.getX())/(i-this.position.getY())) && Math.atan((l-this.position.getX())/((k-1)-this.position.getY())) >= Math.atan((j-this.position.getX())/((i-1)-this.position.getY())))
+                                else if (direction <= 0 && direction > -90 && Math.atan(((l+1)-position.getX())/(k-position.getY())) <= Math.atan(((j+1)-position.getX())/(i-position.getY())) && Math.atan((l-position.getX())/((k-1)-position.getY())) >= Math.atan((j-position.getX())/((i-1)-position.getY())))
                                 {
                                     tempTerrainKnowledge[k][l] = knownTerrain[k][l];
                                 }
-                                else if (direction <= -90 && direction > -180 && Math.atan((k-this.position.getY())/(l-this.position.getX())) <= Math.atan((i-this.position.getY())/(j-this.position.getX())) && Math.atan(((k-1)-this.position.getY())/((l+1)-this.position.getX())) >= Math.atan(((i-1)-this.position.getY())/((j+1)-this.position.getX())))
+                                else if (direction <= -90 && direction > -180 && Math.atan((k-position.getY())/(l-position.getX())) <= Math.atan((i-position.getY())/(j-position.getX())) && Math.atan(((k-1)-position.getY())/((l+1)-position.getX())) >= Math.atan(((i-1)-position.getY())/((j+1)-position.getX())))
                                 {
                                     tempTerrainKnowledge[k][l] = knownTerrain[k][l];
                                 }
@@ -300,4 +301,11 @@ public class Agent implements Runnable{
     public synchronized void setPosition(Point2D.Double position) {
         this.position = position;
     }
+
+    public double convert()
+    {
+        World.SettingsScene temp = new World.SettingsScene();
+        return temp.getSize()/worldMap.getSize();
+    }
 }
+
