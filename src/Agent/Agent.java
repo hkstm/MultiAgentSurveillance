@@ -186,7 +186,7 @@ public class Agent implements Runnable{
      */
 
     public boolean legalMoveCheck(double distance) {
-        Point2D.Double positionToCheck = getMove(distance, direction);
+        Point2D.Double positionToCheck = new Point2D.Double(getMove(distance, direction).getX()/convert(), getMove(distance, direction).getY()/convert());
         if (coordinatesToCell(positionToCheck) == 1 || coordinatesToCell(positionToCheck) == 5 || coordinatesToCell(positionToCheck) == 7) {
             return false;
         } else {
