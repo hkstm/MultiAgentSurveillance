@@ -17,7 +17,7 @@ public class Intruder extends Agent{
 
     /**
      * An Intruder constructor with an empty internal map
-     * @param position is a point containing the coordinates of the Intruder
+     * @param position is a point containing the coordinates of the Intruderq
      * @param direction is the angle which the agent is facing, this spans from -180 to 180 degrees
      */
 

@@ -99,7 +99,7 @@ public class WorldMap implements Serializable {
     }
 
     public int getTileState(int r, int c) {
-        return worldGrid[r][c];
+         return worldGrid[r][c];
     }
 
     /**

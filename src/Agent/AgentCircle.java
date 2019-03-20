@@ -7,7 +7,7 @@ import java.awt.geom.Point2D;
 
 public class AgentCircle extends Circle {
 
-    public static final int AGENT_RADIUS = 10;
+    public static final int AGENT_RADIUS = 3;
     public AgentCircle(Point2D.Double position) {
         super(position.getX(), position.getY(), AGENT_RADIUS);
     }
