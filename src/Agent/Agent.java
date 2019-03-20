@@ -46,9 +46,10 @@ public class Agent implements Runnable{
         goalPosition = new Point2D.Double(25, 25);
         while(!exitThread) {
             currentTime = System.nanoTime();
+            //ISSUES - delta should be in seconds? check this
             delta = currentTime - previousTime;
             //delta /= 1e6; //makes it ms
-            double walkingDistance = 1.4/delta;
+            double walkingDistance = (1.4/delta);
             if (legalMoveCheck(walkingDistance))
             {
                 move(walkingDistance);
@@ -121,7 +122,7 @@ public class Agent implements Runnable{
             double angle = facingDirection;
             double newXCoordinate = position.getX()+distance*Math.sin(angle)*convertedDistance;
             double newYCoordinate = position.getY()-distance*Math.cos(angle)*convertedDistance;
-            System.out.println(newXCoordinate+" "+newYCoordinate);
+            //.println(newXCoordinate+" "+newYCoordinate);
             Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
             return newLocation;
         }
@@ -176,7 +177,7 @@ public class Agent implements Runnable{
      */
 
     public boolean legalMoveCheck(double distance) {
-        Point2D.Double positionToCheck = getMove(distance, direction);
+        Point2D.Double positionToCheck = new Point2D.Double (getMove(distance, direction).getX()/convert(), getMove(distance, direction).getY()/convert());
         if (coordinatesToCell(positionToCheck) == 1 || coordinatesToCell(positionToCheck) == 5 || coordinatesToCell(positionToCheck) == 7) {
             return false;
         } else {
@@ -312,7 +313,7 @@ public class Agent implements Runnable{
     {
         World.SettingsScene temp = new World.SettingsScene();
         //double size = wordSizeSelection
-                return temp.getSize()/worldMap.getSize();
+        return temp.getSize()/worldMap.getSize();
     }
 }
 
