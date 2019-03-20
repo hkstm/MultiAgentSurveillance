@@ -12,18 +12,11 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-
-import java.awt.*;
 import java.awt.geom.Point2D;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
 import Agent.*;
-import javafx.stage.WindowEvent;
 
 /**
  * Main in game screen
@@ -153,8 +146,8 @@ public class GameScene extends BorderPane implements Runnable {
         hBox.getChildren().addAll(worldPane, vBox); //can directly create scene from grid if borderpane layout is not gonna be used
         //hBox.getChildren().addAll(worldPane); //can directly create scene from grid if borderpane layout is not gonna be used
         scene = new Scene(hBox); // allows us to actually display the world, agents and buttons
-        //hBox.setMinSize(windowSize + windowSize * 0.1, windowSize); //dont think this is done properly but it helps with sizing
-        hBox.setMinSize(windowSize, windowSize); //dont think this is done properly but it helps with sizing
+        hBox.setMinSize(windowSize + windowSize * 0.1, windowSize); //dont think this is done properly but it helps with sizing
+        //hBox.setMinSize(windowSize, windowSize); //dont think this is done properly but it helps with sizing
 
 
     }
@@ -170,7 +163,6 @@ public class GameScene extends BorderPane implements Runnable {
         grid.getChildren().clear();
         createTiles();
         createAgents();
-        grid.setGridLinesVisible(true);
         grid.setAlignment(Pos.CENTER);
     }
 

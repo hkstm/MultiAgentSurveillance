@@ -52,6 +52,7 @@ public class Agent implements Runnable{
             this.direction = direction;
             this.goalPosition = position;
         }
+
     public void run() {
         System.out.println("in run");
         double deltaScaling = 0.0001; //arbitrary as fuck dependent on how fast we are allowed to walk and how big the actual world is
@@ -129,8 +130,6 @@ public class Agent implements Runnable{
     public Point2D.Double getMove(double distance, double facingDirection)
     {
         double convertedDistance = convert();
-        //System.out.println("x: "+position.getX()+"   y: "+position.getY());
-        //System.out.println("convertedDistance: "+convertedDistance+" distance :"+distance);
         if (facingDirection > 0 && facingDirection <= 90)
         {
             double angle = facingDirection;
@@ -295,6 +294,9 @@ public class Agent implements Runnable{
         knownTerrain = tempTerrainKnowledge;
     }
 
+    /**
+     * Checks if we can hear other agents and if so add it personal memory with noise
+     */
     public void checkForAgentSound(){
         Point2D tmpPoint = getMove(1000, direction);
         for(Agent agent: worldMap.getAgents()) {
