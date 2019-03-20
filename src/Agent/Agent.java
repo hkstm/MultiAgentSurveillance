@@ -2,6 +2,9 @@ package Agent;
 import World.WorldMap;
 import java.awt.Point;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 /**
  * This is the superclass of Intruder and Guard, which contains methods for actions
@@ -9,24 +12,35 @@ import java.awt.geom.Point2D;
  */
 
 public class Agent implements Runnable{
+    public static final double WALK_SPEED_SLOW = 0; //speed <0.5m/s
+    public static final double WALK_SPEED_MEDIUM = 0.5; //speed >0.5 & <1 m/s
+    public static final double WALK_SPEED_MEDIUMFAST = 1; //speed >1 & 2 m/s
+    public static final double WALK_SPEED_FAST = 2; //speed >2m/s
+    public static final double SOUNDRANGE_CLOSE = 1; //distance 1m
+    public static final double SOUNDRANGE_MEDIUM = 3; //distance 3m
+    public static final double SOUNDRANGE_MEDIUMFAR = 5; //distance 5m
+    public static final double SOUNDRANGE_FAR = 10;  //distance 10m
+    public static final double SOUND_NOISE_STDEV = 10;  //stndard dev of normal distributed noise
+
     protected volatile Point2D.Double position;
     protected double direction;
     protected int[][] knownTerrain;
+    protected List<AudioLog> audioLogs = new ArrayList<AudioLog>();
 
     //protected volatile double xCurrent;
     //protected volatile double yCurrent;
     protected volatile double xGoal;
     protected volatile double yGoal;
-    private double convertedDistance;
+    protected double convertedDistance;
+    protected double currentSpeed;
+
 
     public static WorldMap worldMap;
-        double currentTime;
-        double delta;
-//        ;
-//        ;
-        protected boolean exitThread;
-        protected double previousTime;
-        protected volatile Point2D.Double goalPosition;
+    private double currentTime;
+    private double delta;
+    protected boolean exitThread;
+    protected double previousTime;
+    protected volatile Point2D.Double goalPosition;
 
         /**
          * Constructor for Agent
@@ -34,22 +48,23 @@ public class Agent implements Runnable{
          * @param direction is the angle which the agent is facing, this spans from -180 to 180 degrees
          */
 
-    public Agent(Point2D.Double position, double direction)
-        {
+    public Agent(Point2D.Double position, double direction) {
             this.position = position;
             this.direction = direction;
             this.goalPosition = position;
         }
 
-        public void run() {
-        System.out.println("running");
+    public void run() {
+        System.out.println("in run");
         double deltaScaling = 0.0001; //arbitrary as fuck dependent on how fast we are allowed to walk and how big the actual world is
         previousTime = System.nanoTime();
         goalPosition = new Point2D.Double(25, 25);
         while(!exitThread) {
+            System.out.println("in run loop");
             currentTime = System.nanoTime();
             delta = currentTime - previousTime;
             //delta /= 1e6; //makes it ms
+            checkForAgentSound();
             double walkingDistance = 1.4/delta;
             if (legalMoveCheck(walkingDistance))
             {
@@ -161,6 +176,7 @@ public class Agent implements Runnable{
     public void move(double distance)
     {
         this.position.setLocation(getMove(distance, direction));
+        System.out.println("location: " + this.position.toString() );
     }
 
     /**
@@ -278,6 +294,33 @@ public class Agent implements Runnable{
         knownTerrain = tempTerrainKnowledge;
     }
 
+    public void checkForAgentSound(){
+        Point2D tmpPoint = getMove(1000, direction);
+        for(Agent agent: worldMap.getAgents()) {
+            double angleBetweenPoints = angleBetweenTwoPointsWithFixedPoint(tmpPoint.getX(), tmpPoint.getY(), agent.getPosition().getX(), agent.getPosition().getY(), position.getX(), position.getY());
+            angleBetweenPoints += new Random().nextGaussian()*SOUND_NOISE_STDEV;
+            if(position.distance(agent.getPosition()) < SOUNDRANGE_FAR && agent.currentSpeed > WALK_SPEED_FAST) {
+                audioLogs.add(new AudioLog(System.nanoTime(), angleBetweenPoints, new Point2D.Double(position.getX(), position.getY())));
+            } else if(position.distance(agent.getPosition()) < SOUNDRANGE_MEDIUMFAR && agent.currentSpeed > WALK_SPEED_MEDIUMFAST) {
+                audioLogs.add(new AudioLog(System.nanoTime(), angleBetweenPoints, new Point2D.Double(position.getX(), position.getY())));
+            } else if(position.distance(agent.getPosition()) < SOUNDRANGE_MEDIUM && agent.currentSpeed > WALK_SPEED_MEDIUM) {
+                audioLogs.add(new AudioLog(System.nanoTime(), angleBetweenPoints, new Point2D.Double(position.getX(), position.getY())));
+            } else if(position.distance(agent.getPosition()) < SOUNDRANGE_CLOSE && agent.currentSpeed > WALK_SPEED_SLOW) {
+                audioLogs.add(new AudioLog(System.nanoTime(), angleBetweenPoints, new Point2D.Double(position.getX(), position.getY())));
+            }
+        }
+    }
+
+    public static double angleBetweenTwoPointsWithFixedPoint(double point1X, double point1Y,
+                                                             double point2X, double point2Y,
+                                                             double fixedX, double fixedY) {
+
+        double angle1 = Math.atan2(point1Y - fixedY, point1X - fixedX);
+        double angle2 = Math.atan2(point2Y - fixedY, point2X - fixedX);
+
+        return angle1 - angle2;
+    }
+
     public Point2D.Double getPosition() {
         return position;
     }
@@ -306,6 +349,14 @@ public class Agent implements Runnable{
     {
         World.SettingsScene temp = new World.SettingsScene();
         return temp.getSize()/worldMap.getSize();
+    }
+
+    public double getCurrentSpeed() {
+        return currentSpeed;
+    }
+
+    public void setCurrentSpeed(double currentSpeed) {
+        this.currentSpeed = currentSpeed;
     }
 }
 
