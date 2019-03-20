@@ -34,7 +34,6 @@ public class Agent implements Runnable{
     protected double convertedDistance;
     protected double currentSpeed;
 
-
     public static WorldMap worldMap;
     private double currentTime;
     private double delta;
@@ -53,7 +52,6 @@ public class Agent implements Runnable{
             this.direction = direction;
             this.goalPosition = position;
         }
-
     public void run() {
         System.out.println("in run");
         double deltaScaling = 0.0001; //arbitrary as fuck dependent on how fast we are allowed to walk and how big the actual world is
@@ -130,28 +128,30 @@ public class Agent implements Runnable{
 
     public Point2D.Double getMove(double distance, double facingDirection)
     {
-        convert();
+        double convertedDistance = convert();
+        //System.out.println("x: "+position.getX()+"   y: "+position.getY());
+        //System.out.println("convertedDistance: "+convertedDistance+" distance :"+distance);
         if (facingDirection > 0 && facingDirection <= 90)
         {
-            double angle = 90-facingDirection;
-            double newXCoordinate = (distance*Math.cos(angle)-position.getX())*convertedDistance;
-            double newYCoordinate = (position.getY()-distance*Math.sin(angle))*convertedDistance;
+            double angle = facingDirection;
+            double newXCoordinate = position.getX()+(distance*Math.sin(angle)*convertedDistance);
+            double newYCoordinate = position.getY()-(distance*Math.cos(angle)*convertedDistance);
             Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
             return newLocation;
         }
         else if (facingDirection > 90 && facingDirection <= 180)
         {
             double angle = 180-facingDirection;
-            double newXCoordinate = (distance*Math.sin(angle)-position.getX())*convertedDistance;
-            double newYCoordinate = (position.getY()+distance*Math.cos(angle))*convertedDistance;
+            double newXCoordinate = position.getX()+distance*Math.sin(angle)*convertedDistance;
+            double newYCoordinate = position.getY()+distance*Math.cos(angle)*convertedDistance;
             Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
             return newLocation;
         }
         else if (facingDirection <= 0 && facingDirection > -90)
         {
             double angle = -facingDirection;
-            double newXCoordinate = (position.getX()-distance*Math.sin(angle)*convertedDistance);
-            double newYCoordinate = (position.getY()-distance*Math.cos(angle)*convertedDistance);
+            double newXCoordinate = position.getX()-distance*Math.sin(angle)*convertedDistance;
+            double newYCoordinate = position.getY()-distance*Math.cos(angle)*convertedDistance;
             Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
             return newLocation;
         }
@@ -159,8 +159,8 @@ public class Agent implements Runnable{
         else
         {
             double angle = 180+facingDirection;
-            double newXCoordinate = (position.getX()-distance*Math.sin(angle)*convertedDistance);
-            double newYCoordinate = (position.getY()+distance*Math.cos(angle)*convertedDistance);
+            double newXCoordinate = position.getX()-distance*Math.sin(angle)*convertedDistance;
+            double newYCoordinate = position.getY()+distance*Math.cos(angle)*convertedDistance;
             Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
             return newLocation;
         }
@@ -205,6 +205,7 @@ public class Agent implements Runnable{
     {
         int xIndex = ((int) location.getX())+(worldMap.getSize()/2);
         int yIndex = ((int) location.getY())+(worldMap.getSize()/2);
+        //issue here jumps to -400 after passing 0(y axis)
         return worldMap.getTileState(xIndex, yIndex);
     }
 
@@ -345,9 +346,11 @@ public class Agent implements Runnable{
         this.position = position;
     }
 
+    //this method must be cleaned up (its not a good way of accessing worldSizeSelection by creating a temporary object
     public double convert()
     {
         World.SettingsScene temp = new World.SettingsScene();
+        //double size = wordSizeSelection
         return temp.getSize()/worldMap.getSize();
     }
 

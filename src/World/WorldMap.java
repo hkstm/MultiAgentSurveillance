@@ -132,10 +132,11 @@ public class WorldMap implements Serializable {
     public void addAgent(Agent toBeAdded) {
         this.agents.add(toBeAdded);
         this.agentThreads.add(new Thread(toBeAdded));
+        //startAgents();
     }
 
     public void startAgents() {
-        for(Thread thread : agentThreads) {
+        for(Thread thread : this.agentThreads) {
             thread.start();
         }
     }
