@@ -119,8 +119,9 @@ public class Agent implements Runnable{
         if (facingDirection > 0 && facingDirection <= 90)
         {
             double angle = facingDirection;
-            double newXCoordinate = position.getX()+(distance*Math.sin(angle)*convertedDistance);
-            double newYCoordinate = position.getY()-(distance*Math.cos(angle)*convertedDistance);
+            double newXCoordinate = position.getX()+distance*Math.sin(angle)*convertedDistance;
+            double newYCoordinate = position.getY()-distance*Math.cos(angle)*convertedDistance;
+            System.out.println(newXCoordinate+" "+newYCoordinate);
             Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
             return newLocation;
         }
@@ -129,6 +130,7 @@ public class Agent implements Runnable{
             double angle = 180-facingDirection;
             double newXCoordinate = position.getX()+distance*Math.sin(angle)*convertedDistance;
             double newYCoordinate = position.getY()+distance*Math.cos(angle)*convertedDistance;
+            System.out.println(newXCoordinate+" "+newYCoordinate);
             Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
             return newLocation;
         }
@@ -137,6 +139,7 @@ public class Agent implements Runnable{
             double angle = -facingDirection;
             double newXCoordinate = position.getX()-distance*Math.sin(angle)*convertedDistance;
             double newYCoordinate = position.getY()-distance*Math.cos(angle)*convertedDistance;
+            System.out.println(newXCoordinate+" "+newYCoordinate);
             Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
             return newLocation;
         }
@@ -146,6 +149,7 @@ public class Agent implements Runnable{
             double angle = 180+facingDirection;
             double newXCoordinate = position.getX()-distance*Math.sin(angle)*convertedDistance;
             double newYCoordinate = position.getY()+distance*Math.cos(angle)*convertedDistance;
+            System.out.println(newXCoordinate+" "+newYCoordinate);
             Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
             return newLocation;
         }
@@ -161,7 +165,7 @@ public class Agent implements Runnable{
     public void move(double distance)
     {
         this.position.setLocation(getMove(distance, direction));
-        System.out.println(position.getX()+" "+position.getY());
+        //System.out.println(position.getX()+" "+position.getY());
     }
 
     /**
@@ -190,7 +194,6 @@ public class Agent implements Runnable{
     {
         int xIndex = ((int) location.getX())+(worldMap.getSize()/2);
         int yIndex = ((int) location.getY())+(worldMap.getSize()/2);
-        //issue here jumps to -400 after passing 0(y axis)
         return worldMap.getTileState(xIndex, yIndex);
     }
 
@@ -309,7 +312,7 @@ public class Agent implements Runnable{
     {
         World.SettingsScene temp = new World.SettingsScene();
         //double size = wordSizeSelection
-        return temp.getSize()/worldMap.getSize();
+                return temp.getSize()/worldMap.getSize();
     }
 }
 
