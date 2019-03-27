@@ -174,25 +174,11 @@ public class Agent implements Runnable{
 
     public boolean legalMoveCheck(double distance) {
         Point2D.Double positionToCheck = new Point2D.Double(getMove(distance, direction).getX()/convert(), getMove(distance, direction).getY()/convert());
-        if (coordinatesToCell(positionToCheck) == 1 || coordinatesToCell(positionToCheck) == 5 || coordinatesToCell(positionToCheck) == 7) {
+        if (worldMap.coordinatesToCell(positionToCheck) == 1 || worldMap.coordinatesToCell(positionToCheck) == 5 || worldMap.coordinatesToCell(positionToCheck) == 7) {
             return false;
         } else {
             return true;
         }
-    }
-
-    /**
-     * check what type of terrain is at a given point
-     * @param location is the point at which the terrain type is desired
-     * @return an integer describing the terrain type in the worldGrid corresponding to the input location
-     */
-
-    public int coordinatesToCell(Point2D.Double location)
-    {
-        int xIndex = ((int) location.getX())+(worldMap.getSize()/2);
-        int yIndex = ((int) location.getY())+(worldMap.getSize()/2);
-        //issue here jumps to -400 after passing 0(y axis)
-        return worldMap.getTileState(xIndex, yIndex);
     }
 
     /**

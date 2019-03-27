@@ -6,6 +6,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -104,8 +105,11 @@ public class GameScene extends BorderPane implements Runnable {
         this.restartGameBut.setWrapText(true);
 
         this.startGameBut = new Button("Start/Stop Game"); //should stop and start game, not properly working atm
+
+        //Actual game "loop" in here
         startGameBut.setOnAction(e -> { //
             if(!gameStarted) {
+                gameStarted = true;
                 Agent.worldMap = worldMap;
                 worldMap.addAgent(new Intruder(new Point2D.Double(0, 0), 0));
                 worldMap.startAgents();
@@ -114,14 +118,22 @@ public class GameScene extends BorderPane implements Runnable {
                     @Override
                     public void handle(long currentTime) {
                         redrawBoard();
+                        if(worldMap.intruderInTarget()) {
+                            gameStarted = false;
+                            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                            alert.setTitle("Game Finished");
+                            alert.setHeaderText(null);
+                            alert.setContentText("INTRUDER has reached TARGET");
+                            alert.showAndWait();
+                            goToMenuBut.fire();
+                        }
                     }
                 }.start();
-                gameStarted = true;
             } else {
-                worldMap.removeAllAgents();
                 gameStarted = false;
-            }
+                worldMap.removeAllAgents();
 
+            }
         });
         this.startGameBut.setWrapText(true);
 

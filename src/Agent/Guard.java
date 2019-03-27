@@ -1,9 +1,12 @@
 package Agent;
 import World.WorldMap;
+
 import java.awt.geom.Point2D;
-import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import static World.WorldMap.SENTRY;
+import static World.WorldMap.TARGET;
 
 
 public class Guard extends Agent {
@@ -36,7 +39,7 @@ public class Guard extends Agent {
         return equals;
     }
     public int[] getVisualRange(){
-        if (coordinatesToCell(position) == 5){ // i.e. guard in on a tower
+        if (worldMap.coordinatesToCell(position) == TARGET){ // i.e. guard in on a tower
            visualRange[0] = 2;
            visualRange[1] = 15;
            viewingAngle = 30;
@@ -50,14 +53,14 @@ public class Guard extends Agent {
     }
     public void openTower()
     {
-        if (coordinatesToCell(position) == 5)
+        if (worldMap.coordinatesToCell(position) == SENTRY)
         {
             class OpenTower extends TimerTask
             {
                 public void run()
                 {
-                    //worldMap.updateTile((int)position.getX(), (int)position.getY(), 5);
-                    knownTerrain[(int)position.getX()][(int)position.getY()] = 5;
+                    //worldMap.updateTile((int)position.getX(), (int)position.getY(), SENTRY);
+                    knownTerrain[(int)position.getX()][(int)position.getY()] = SENTRY;
                 }
             }
             Timer timer = new Timer();

@@ -1,5 +1,7 @@
 package World;
 import Agent.*;
+
+import java.awt.geom.Point2D;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -166,5 +168,30 @@ public class WorldMap implements Serializable {
         agents.clear();
         agentThreads.clear();
         System.out.println("Removed all agents");
+    }
+
+    /**
+     * Loops through all agents and checks if any agent is in target location, assuming theres only 1 intruder that needs to reach it
+     * @return true if 1 agent is in target spot otherwise false
+     */
+    public boolean intruderInTarget() {
+        for(Agent agent : agents) {
+            if(agent instanceof Intruder && (coordinatesToCell(agent.getPosition()) == TARGET)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * check what type of terrain is at a given point
+     * @param location is the point at which the terrain type is desired
+     * @return an integer describing the terrain type in the worldGrid corresponding to the input location
+     */
+
+    public int coordinatesToCell(Point2D.Double location)
+    {
+        int xIndex = ((int) location.getX())+(getSize()/2);
+        int yIndex = ((int) location.getY())+(getSize()/2);
+        //issue here jumps to -400 after passing 0(y axis)
+        return getTileState(xIndex, yIndex);
     }
 }
