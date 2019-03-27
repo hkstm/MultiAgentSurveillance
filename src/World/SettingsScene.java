@@ -1,5 +1,7 @@
 package World;
 
+import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -11,6 +13,8 @@ import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.stage.WindowEvent;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
@@ -60,8 +64,8 @@ public class SettingsScene extends VBox {
             WorldBuilder worldBuilder = new WorldBuilder(primaryStage, settings);
             Node source = (Node) e.getSource();
             Stage stage = (Stage) source.getScene().getWindow();
-            stage.close();
-            this.primaryStage = new Stage();
+            //stage.close();
+            //this.primaryStage = new Stage();
             this.primaryStage.setTitle("MultiAgentScene");
             this.primaryStage.setScene(worldBuilder.getWorldBuilder());
             this.primaryStage.show();
@@ -71,13 +75,14 @@ public class SettingsScene extends VBox {
         startGameScene.setOnAction(e -> {
             Node source = (Node) e.getSource();
             Stage stage = (Stage) source.getScene().getWindow();
-            stage.close();
-            this.primaryStage = new Stage();
+            //stage.close();
+            //this.primaryStage = new Stage();
             Settings settings = new Settings(worldMapSelection);
             GameScene gameScene = new GameScene(primaryStage, settings);
             this.primaryStage.setTitle("MultiAgentGameScene");
             this.primaryStage.setScene(gameScene.getGameScene());
             this.primaryStage.show();
+
         });
 
         loadWorldMap = new Button("Load a custom worldMap");

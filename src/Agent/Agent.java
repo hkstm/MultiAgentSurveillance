@@ -56,7 +56,6 @@ public class Agent implements Runnable{
         previousTime = System.nanoTime();
         goalPosition = new Point2D.Double(25, 25);
         while(!exitThread) {
-            System.out.println("in run loop");
             currentTime = System.nanoTime();
             delta = currentTime - previousTime;
             //delta /= 1e6; //makes it ms
@@ -162,7 +161,7 @@ public class Agent implements Runnable{
     public void move(double distance)
     {
         this.position.setLocation(getMove(distance, direction));
-        System.out.println("location: " + this.position.toString() );
+        //System.out.println("location: " + this.position.toString() );
     }
 
     /**

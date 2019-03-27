@@ -1,6 +1,7 @@
 package World;
 
 import javafx.animation.AnimationTimer;
+import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
@@ -18,6 +19,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import Agent.*;
+import javafx.stage.WindowEvent;
 
 /**
  * Main in game screen
@@ -132,10 +134,12 @@ public class GameScene extends BorderPane implements Runnable {
             } else {
                 gameStarted = false;
                 worldMap.removeAllAgents();
-
+                redrawBoard();
             }
         });
         this.startGameBut.setWrapText(true);
+
+
 
         redrawBoard(); //redrawing board otherwise window that displays board and button is not properly sized
 

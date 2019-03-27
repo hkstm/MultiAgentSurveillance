@@ -176,7 +176,12 @@ public class WorldMap implements Serializable {
      */
     public boolean intruderInTarget() {
         for(Agent agent : agents) {
-            if(agent instanceof Intruder && (coordinatesToCell(agent.getPosition()) == TARGET)) return true;
+            if(agent instanceof Intruder) {
+//                if(coordinatesToCell(agent.getPosition()) == TARGET) {
+//                    System.out.println("agent intruderInTargetPos: " + agent.getPosition().toString());
+//                    return true;
+//                }
+            }
         }
         return false;
     }
@@ -192,6 +197,7 @@ public class WorldMap implements Serializable {
         int xIndex = ((int) location.getX())+(getSize()/2);
         int yIndex = ((int) location.getY())+(getSize()/2);
         //issue here jumps to -400 after passing 0(y axis)
+        //System.out.println("Location in coordinatesToCell: " + location.toString());
         return getTileState(xIndex, yIndex);
     }
 }
