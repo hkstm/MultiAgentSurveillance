@@ -114,7 +114,9 @@ public class GameScene extends BorderPane implements Runnable {
             if(!gameStarted) {
                 gameStarted = true;
                 Agent.worldMap = worldMap;
-                worldMap.addAgent(new Intruder(new Point2D.Double(0, 0), 0));
+                worldMap.addAgent(new Intruder(new Point2D.Double(500, 500), 0));
+                worldMap.addAgent(new Intruder(new Point2D.Double(500, 500), 180));
+                System.out.println("startloop:" + worldMap.getAgents().get(0).getPosition().toString());
                 worldMap.startAgents();
                 System.out.println("Started agents");
                 new AnimationTimer() {
@@ -160,7 +162,7 @@ public class GameScene extends BorderPane implements Runnable {
 
 
         hBox = new HBox(); //container that stores the box containing buttons and the stackpane with the world and the agents drawn ontop of it
-        StackPane worldPane = new StackPane(); //allows us to draw agents on top of world
+        Pane worldPane = new Pane(); //allows us to draw agents on top of world
         worldPane.getChildren().addAll(grid, agentGroup);
         hBox.getChildren().addAll(worldPane, vBox);
         scene = new Scene(hBox); // allows us to actually display the world, agents and buttons
@@ -180,7 +182,7 @@ public class GameScene extends BorderPane implements Runnable {
         grid.getChildren().clear();
         createTiles();
         createAgents();
-        grid.setAlignment(Pos.CENTER);
+        agentGroup.toFront();
     }
 
     public void createTiles() {
@@ -196,24 +198,31 @@ public class GameScene extends BorderPane implements Runnable {
 
     public void createAgents() {
         agentGroup.getChildren().clear();
+//        AgentCircle circleTmp = new AgentCircle(new Point2D.Double(1000, 1000));
+//        circleTmp.setFill(Color.CORNFLOWERBLUE);
+//        agentGroup.getChildren().add(circleTmp);
+//        agentGroup.toFront();
         for(Agent agent : worldMap.getAgents()) {
             if(agent instanceof Guard) {
                 Guard guard = (Guard) agent;
                 AgentCircle circle = new AgentCircle(guard.getPosition());
                 circle.setFill(Color.PEACHPUFF);
-                Pane tmpPane = new Pane();
-                tmpPane.getChildren().addAll(circle);
-                agentGroup.getChildren().add(tmpPane);
+//                Pane tmpPane = new Pane();
+//                tmpPane.getChildren().addAll(circle);
+//                agentGroup.getChildren().add(tmpPane);
+                agentGroup.getChildren().add(circle);
             }
             if(agent instanceof Intruder) {
                 Intruder intruder = (Intruder) agent;
                 AgentCircle circle = new AgentCircle(intruder.getPosition());
                 circle.setFill(Color.DARKRED);
-                Pane tmpPane = new Pane();
-                tmpPane.getChildren().addAll(circle);
-                agentGroup.getChildren().add(tmpPane);
-                //System.out.println("position" + intruder.getPosition().toString());
+//                Pane tmpPane = new Pane();
+//                tmpPane.getChildren().addAll(circle);
+//                agentGroup.getChildren().add(tmpPane);
+                agentGroup.getChildren().add(circle);
+//                System.out.println("position in create agents: " + intruder.getPosition().toString());
             }
+            agentGroup.toFront();
             //System.out.println("proceeding after while loop, agent on seperate thread");
         }
     }

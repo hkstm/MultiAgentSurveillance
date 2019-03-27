@@ -53,25 +53,25 @@ public class Agent implements Runnable{
         }
 
     public void run() {
-        System.out.println("in run");
-        double deltaScaling = 0.0001; //arbitrary as fuck dependent on how fast we are allowed to walk and how big the actual world is
         previousTime = System.nanoTime();
         goalPosition = new Point2D.Double(200, 200);
         while(!exitThread) {
             currentTime = System.nanoTime();
             delta = currentTime - previousTime;
+            currentSpeed = 1;
             previousTime = currentTime;
-            //delta /= 1e6; //makes it ms
             checkForAgentSound();
-            double walkingDistance = (1.4/delta)/100;
-            if (legalMoveCheck(walkingDistance))
-            {
+            int windowSize = 1000;
+            double walkingDistance = (1.4/worldMap.getSize()) * (delta/1e9) * windowSize;
+            //System.out.println("walkingdistance" + walkingDistance);
+            if(legalMoveCheck(walkingDistance)) {
                 move(walkingDistance);
+                //System.out.println("moving");
             }
-            else
-            {
+            else {
                 double turningAngle = Math.random()*90-45;
                 turn(turningAngle);
+                System.out.println("turning");
             }
 
             updateGoalPosition();
@@ -116,30 +116,28 @@ public class Agent implements Runnable{
      * @return a point at which the Agent would end up if this move were made
      */
 
-    public Point2D.Double getMove(double distance, double facingDirection)
-    {
-        double convertedDistance = convert();
+    public Point2D.Double getMove(double distance, double facingDirection) {
         if (facingDirection > 0 && facingDirection <= 90)
         {
             double angle = facingDirection;
-            double newXCoordinate = position.getX()+(distance*Math.sin(angle)*convertedDistance);
-            double newYCoordinate = position.getY()-(distance*Math.cos(angle)*convertedDistance);
+            double newXCoordinate = position.getX()+(distance*Math.sin(angle));
+            double newYCoordinate = position.getY()-(distance*Math.cos(angle));
             Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
             return newLocation;
         }
         else if (facingDirection > 90 && facingDirection <= 180)
         {
             double angle = 180-facingDirection;
-            double newXCoordinate = position.getX()+distance*Math.sin(angle)*convertedDistance;
-            double newYCoordinate = position.getY()+distance*Math.cos(angle)*convertedDistance;
+            double newXCoordinate = position.getX()+distance*Math.sin(angle);
+            double newYCoordinate = position.getY()+distance*Math.cos(angle);
             Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
             return newLocation;
         }
         else if (facingDirection <= 0 && facingDirection > -90)
         {
             double angle = -facingDirection;
-            double newXCoordinate = position.getX()-distance*Math.sin(angle)*convertedDistance;
-            double newYCoordinate = position.getY()-distance*Math.cos(angle)*convertedDistance;
+            double newXCoordinate = position.getX()-distance*Math.sin(angle);
+            double newYCoordinate = position.getY()-distance*Math.cos(angle);
             Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
             return newLocation;
         }
@@ -147,8 +145,8 @@ public class Agent implements Runnable{
         else
         {
             double angle = 180+facingDirection;
-            double newXCoordinate = position.getX()-distance*Math.sin(angle)*convertedDistance;
-            double newYCoordinate = position.getY()+distance*Math.cos(angle)*convertedDistance;
+            double newXCoordinate = position.getX()-distance*Math.sin(angle);
+            double newYCoordinate = position.getY()+distance*Math.cos(angle);
             Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
             return newLocation;
         }
@@ -175,8 +173,16 @@ public class Agent implements Runnable{
      */
 
     public boolean legalMoveCheck(double distance) {
-        Point2D.Double positionToCheck = new Point2D.Double(getMove(distance, direction).getX()/convert(), getMove(distance, direction).getY()/convert());
-        if (worldMap.coordinatesToCell(positionToCheck) == STRUCTURE || worldMap.coordinatesToCell(positionToCheck) == SENTRY || worldMap.coordinatesToCell(positionToCheck) == WALL) {
+        Point2D.Double positionToCheck = new Point2D.Double(getMove(distance, direction).getX(), getMove(distance, direction).getY());
+        int tileStatus;
+        try {
+            tileStatus = worldMap.coordinatesToCell(positionToCheck);
+        }
+        catch(Exception e) {
+            System.out.println("Location accessed in array is out of bounds");
+            return false;
+        }
+        if (tileStatus == STRUCTURE || tileStatus == SENTRY || tileStatus == WALL) {
             return false;
         } else {
             return true;
@@ -274,18 +280,26 @@ public class Agent implements Runnable{
      */
     public void checkForAgentSound(){
         Point2D tmpPoint = getMove(1000, direction);
-        for(Agent agent: worldMap.getAgents()) {
-            double angleBetweenPoints = angleBetweenTwoPointsWithFixedPoint(tmpPoint.getX(), tmpPoint.getY(), agent.getPosition().getX(), agent.getPosition().getY(), position.getX(), position.getY());
-            angleBetweenPoints += new Random().nextGaussian()*SOUND_NOISE_STDEV;
-            if(position.distance(agent.getPosition()) < SOUNDRANGE_FAR && agent.currentSpeed > WALK_SPEED_FAST) {
-                audioLogs.add(new AudioLog(System.nanoTime(), angleBetweenPoints, new Point2D.Double(position.getX(), position.getY())));
-            } else if(position.distance(agent.getPosition()) < SOUNDRANGE_MEDIUMFAR && agent.currentSpeed > WALK_SPEED_MEDIUMFAST) {
-                audioLogs.add(new AudioLog(System.nanoTime(), angleBetweenPoints, new Point2D.Double(position.getX(), position.getY())));
-            } else if(position.distance(agent.getPosition()) < SOUNDRANGE_MEDIUM && agent.currentSpeed > WALK_SPEED_MEDIUM) {
-                audioLogs.add(new AudioLog(System.nanoTime(), angleBetweenPoints, new Point2D.Double(position.getX(), position.getY())));
-            } else if(position.distance(agent.getPosition()) < SOUNDRANGE_CLOSE && agent.currentSpeed > WALK_SPEED_SLOW) {
-                audioLogs.add(new AudioLog(System.nanoTime(), angleBetweenPoints, new Point2D.Double(position.getX(), position.getY())));
+        for(Agent agent : worldMap.getAgents()) {
+            if(position.distance(agent.getPosition()) != 0) {
+                boolean soundHeard = false;
+                double angleBetweenPoints = angleBetweenTwoPointsWithFixedPoint(tmpPoint.getX(), tmpPoint.getY(), agent.getPosition().getX(), agent.getPosition().getY(), position.getX(), position.getY());
+                angleBetweenPoints += new Random().nextGaussian()*SOUND_NOISE_STDEV;
+                if(position.distance(agent.getPosition()) < SOUNDRANGE_FAR && agent.currentSpeed > WALK_SPEED_FAST) {
+                    soundHeard = true;
+                } else if(position.distance(agent.getPosition()) < SOUNDRANGE_MEDIUMFAR && agent.currentSpeed > WALK_SPEED_MEDIUMFAST) {
+                    soundHeard = true;
+                } else if(position.distance(agent.getPosition()) < SOUNDRANGE_MEDIUM && agent.currentSpeed > WALK_SPEED_MEDIUM) {
+                    soundHeard = true;
+                } else if(position.distance(agent.getPosition()) < SOUNDRANGE_CLOSE && agent.currentSpeed > WALK_SPEED_SLOW) {
+                    soundHeard = true;
+                }
+                if(soundHeard){
+                    audioLogs.add(new AudioLog(System.nanoTime(), angleBetweenPoints, new Point2D.Double(position.getX(), position.getY())));
+                    System.out.println("Agent heard sound");
+                }
             }
+
         }
     }
 
@@ -316,14 +330,6 @@ public class Agent implements Runnable{
     }
     public synchronized void setPosition(Point2D.Double position) {
         this.position = position;
-    }
-
-    //this method must be cleaned up (its not a good way of accessing worldSizeSelection by creating a temporary object
-    public double convert()
-    {
-        World.SettingsScene temp = new World.SettingsScene();
-        //double size = wordSizeSelection
-        return temp.getSize()/worldMap.getSize();
     }
 
     public double getCurrentSpeed() {
