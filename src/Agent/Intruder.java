@@ -1,11 +1,12 @@
 package Agent;
-import java.awt.geom.Point2D;
-import java.lang.Math;
 import World.WorldMap;
-import java.awt.*;
+
+import java.awt.geom.Point2D;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import static World.WorldMap.*;
 
 /**
  * A subclass of Agent for the Intruders
@@ -51,14 +52,14 @@ public class Intruder extends Agent{
 
     public void open(boolean loud)
     {
-        if (coordinatesToCell(position) == 2)
+        if (worldMap.coordinatesToCell(position) == DOOR)
         {
             class OpenDoor extends TimerTask
             {
                 public void run()
                 {
-                    worldMap.updateTile((int)position.getX(), (int)position.getY(), 22);
-                    knownTerrain[(int)position.getX()][(int)position.getY()] = 22;
+                    worldMap.updateTile((int)position.getX(), (int)position.getY(), OPEN_DOOR);
+                    knownTerrain[(int)position.getX()][(int)position.getY()] = OPEN_DOOR;
                 }
             }
             Timer timer = new Timer();
@@ -81,14 +82,14 @@ public class Intruder extends Agent{
             }
             timer.cancel();
         }
-        else if (coordinatesToCell(position) == 3)
+        else if (worldMap.coordinatesToCell(position) == WINDOW)
         {
             class OpenWindow extends TimerTask
             {
                 public void run()
                 {
-                    worldMap.updateTile((int)position.getX(), (int)position.getY(), 33);
-                    knownTerrain[(int)position.getX()][(int)position.getY()] = 33;
+                    worldMap.updateTile((int)position.getX(), (int)position.getY(), OPEN_WINDOW);
+                    knownTerrain[(int)position.getX()][(int)position.getY()] = OPEN_WINDOW;
                 }
             }
             Timer timer = new Timer();

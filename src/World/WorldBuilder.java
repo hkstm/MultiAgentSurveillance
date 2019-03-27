@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Main in game screen
+ * World Builder allows saving and loading of WorldMap objects
  * @author Kailhan Hokstam
  */
 public class WorldBuilder extends BorderPane {
@@ -113,8 +113,8 @@ public class WorldBuilder extends BorderPane {
                     recordsDir.mkdirs();
                 }
                 String fileName = JOptionPane.showInputDialog(null,"Enter a file name for the current worldMap");
-                saveAsPng(grid, fileName + "IMG");
-                FileOutputStream fileOutputStream = new FileOutputStream(new File(System.getProperty("user.home"), ".MultiAgentSurveillance/maps/" + fileName + ".txt"));
+                //saveAsPng(grid, fileName + "IMG");
+                FileOutputStream fileOutputStream = new FileOutputStream(new File(System.getProperty("user.home"), ".MultiAgentSurveillance/maps/" + fileName + ".dat"));
                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
                 objectOutputStream.writeObject(worldMap);
                 objectOutputStream.flush();
@@ -144,7 +144,7 @@ public class WorldBuilder extends BorderPane {
         vBox.getChildren().addAll(goToMenuBut, restartGameBut, saveBoardBut,  tileTypeSelection);
 
         bPane = new BorderPane();
-        bPane.setCenter(grid); //can directly create scene from grid if borderpane layout is not gonna be used
+        bPane.setCenter(grid);
         bPane.setRight(vBox);
         scene = new Scene(bPane);
 
@@ -153,7 +153,7 @@ public class WorldBuilder extends BorderPane {
     }
 
     /**
-     * Updates tiles and general information displayed in the actual game screen
+     * Redraws board by deleting previous elements, creating clickable tiles and adding other elements of the worldBuilder screen
      */
     public void redrawBoard (){
         grid.getChildren().clear();
@@ -162,8 +162,8 @@ public class WorldBuilder extends BorderPane {
     }
 
     /**
-     * Creates different kind of tiles depending on who owns a certain cell and how many disks will be flipped
-     * if someone places a disk in that certain cell
+     * Create tiles that can be clicked to change their state to currently selected state (activeTile) based on a WorldMap
+     * Should not update all displayed tiles, only those whose state have been changed in selected WorldMap
      */
     public void createTiles(){
         for (int r = 0; r < worldMap.getSize(); r++) {
@@ -182,6 +182,9 @@ public class WorldBuilder extends BorderPane {
         }
     }
 
+    /**
+     * Creates initial tiles for display
+     */
     public void initTiles(){
         toAdd.clear();
         for (int r = 0; r < worldMap.getSize(); r++) {
@@ -206,6 +209,11 @@ public class WorldBuilder extends BorderPane {
         return scene;
     }
 
+    /**
+     * Not used anymore, but could be used for more efficient drawing of world by creating one big image and just loading that (problem with opening doors)
+     * @param NODE
+     * @param FILE_NAME
+     */
     public static final void saveAsPng(final Node NODE, final String FILE_NAME) {
         final WritableImage SNAPSHOT = NODE.snapshot(new SnapshotParameters(), null);
         final String        NAME     = FILE_NAME.replace("\\.[a-zA-Z]{3,4}", "");

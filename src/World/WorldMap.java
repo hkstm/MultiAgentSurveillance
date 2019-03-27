@@ -1,17 +1,14 @@
 package World;
-
-
 import Agent.*;
 
-import java.awt.*;
+import java.awt.geom.Point2D;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.awt.geom.Point2D;
 
 /**
- * worldMap data structure
- * @author Kailhan Hokstam, Marco Rietjens
+ * WorldMap data structure
+ * @author Kailhan Hokstam
  */
 
 public class WorldMap implements Serializable {
@@ -94,6 +91,12 @@ public class WorldMap implements Serializable {
         return size;
     }
 
+    /**
+     * updates tile at r, c to certain type e.g. WALL
+     * @param r row
+     * @param c column
+     * @param state state to compare to
+     */
     public void updateTile(int r, int c, int state) {
         worldGrid[r][c] = state;
     }
@@ -121,6 +124,12 @@ public class WorldMap implements Serializable {
         this.agents = agents;
     }
 
+    /**
+     * Removes an agent by exiting its while logic loop (where we determine what an agent does every tick)
+     * And removes it from a worlds list of active agent and active threads
+     * @param toBeRemoved
+     * @return index of agent removed
+     */
     public int removeAgent(Agent toBeRemoved) {
         int index = agents.indexOf(toBeRemoved);
         agents.get(index).setThreadStopped(true);
@@ -129,18 +138,29 @@ public class WorldMap implements Serializable {
         return index;
     }
 
+
+    /**
+     * Adds an agent and its (not yet running thread) to a world, needs to be started for it to actually start executing its logic
+     * @param toBeAdded the agent that we want to add (probably want to at least specify its location before adding to world)
+     */
     public void addAgent(Agent toBeAdded) {
         this.agents.add(toBeAdded);
         this.agentThreads.add(new Thread(toBeAdded));
         //startAgents();
     }
 
+    /**
+     * Starts all agents whos threads have been added to the world
+     */
     public void startAgents() {
         for(Thread thread : this.agentThreads) {
             thread.start();
         }
     }
 
+    /**
+     * Removes all agents from the world, first stops their threads
+     */
     public void removeAllAgents() {
         for(Agent agent : agents) {
             agent.setThreadStopped(true);
@@ -148,5 +168,36 @@ public class WorldMap implements Serializable {
         agents.clear();
         agentThreads.clear();
         System.out.println("Removed all agents");
+    }
+
+    /**
+     * Loops through all agents and checks if any agent is in target location, assuming theres only 1 intruder that needs to reach it
+     * @return true if 1 agent is in target spot otherwise false
+     */
+    public boolean intruderInTarget() {
+        for(Agent agent : agents) {
+            if(agent instanceof Intruder) {
+//                if(coordinatesToCell(agent.getPosition()) == TARGET) {
+//                    System.out.println("agent intruderInTargetPos: " + agent.getPosition().toString());
+//                    return true;
+//                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * check what type of terrain is at a given point
+     * @param location is the point at which the terrain type is desired
+     * @return an integer describing the terrain type in the worldGrid corresponding to the input location
+     */
+
+    public int coordinatesToCell(Point2D.Double location)
+    {
+        int xIndex = ((int) location.getX())+(getSize()/2);
+        int yIndex = ((int) location.getY())+(getSize()/2);
+        //issue here jumps to -400 after passing 0(y axis)
+        //System.out.println("Location in coordinatesToCell: " + location.toString());
+        return getTileState(xIndex, yIndex);
     }
 }

@@ -1,5 +1,7 @@
 package World;
 
+import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -11,10 +13,16 @@ import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.stage.WindowEvent;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
+
+/**
+ * Screen from which you can load a map, start the worldBuilder or start an actual "game"
+ * @author Kailhan Hokstam
+ */
 
 public class SettingsScene extends VBox {
 
@@ -56,8 +64,8 @@ public class SettingsScene extends VBox {
             WorldBuilder worldBuilder = new WorldBuilder(primaryStage, settings);
             Node source = (Node) e.getSource();
             Stage stage = (Stage) source.getScene().getWindow();
-            stage.close();
-            this.primaryStage = new Stage();
+            //stage.close();
+            //this.primaryStage = new Stage();
             this.primaryStage.setTitle("MultiAgentScene");
             this.primaryStage.setScene(worldBuilder.getWorldBuilder());
             this.primaryStage.show();
@@ -67,13 +75,14 @@ public class SettingsScene extends VBox {
         startGameScene.setOnAction(e -> {
             Node source = (Node) e.getSource();
             Stage stage = (Stage) source.getScene().getWindow();
-            stage.close();
-            this.primaryStage = new Stage();
+            //stage.close();
+            //this.primaryStage = new Stage();
             Settings settings = new Settings(worldMapSelection);
             GameScene gameScene = new GameScene(primaryStage, settings);
             this.primaryStage.setTitle("MultiAgentGameScene");
             this.primaryStage.setScene(gameScene.getGameScene());
             this.primaryStage.show();
+
         });
 
         loadWorldMap = new Button("Load a custom worldMap");
@@ -85,7 +94,7 @@ public class SettingsScene extends VBox {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setInitialDirectory(recordsDir);
             fileChooser.setTitle("Open worldMap File");
-            fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
+            fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Text Files", "*.dat"));
             File selectedFile = fileChooser.showOpenDialog(primaryStage);
             FileInputStream fileInputStream = null;
             try {
