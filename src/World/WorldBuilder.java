@@ -113,8 +113,8 @@ public class WorldBuilder extends BorderPane {
                     recordsDir.mkdirs();
                 }
                 String fileName = JOptionPane.showInputDialog(null,"Enter a file name for the current worldMap");
-                saveAsPng(grid, fileName + "IMG");
-                FileOutputStream fileOutputStream = new FileOutputStream(new File(System.getProperty("user.home"), ".MultiAgentSurveillance/maps/" + fileName + ".txt"));
+                //saveAsPng(grid, fileName + "IMG");
+                FileOutputStream fileOutputStream = new FileOutputStream(new File(System.getProperty("user.home"), ".MultiAgentSurveillance/maps/" + fileName + ".dat"));
                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
                 objectOutputStream.writeObject(worldMap);
                 objectOutputStream.flush();

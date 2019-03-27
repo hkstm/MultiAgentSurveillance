@@ -89,7 +89,7 @@ public class SettingsScene extends VBox {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setInitialDirectory(recordsDir);
             fileChooser.setTitle("Open worldMap File");
-            fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
+            fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Text Files", "*.dat"));
             File selectedFile = fileChooser.showOpenDialog(primaryStage);
             FileInputStream fileInputStream = null;
             try {
