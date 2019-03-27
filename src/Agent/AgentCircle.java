@@ -12,7 +12,7 @@ import java.awt.geom.Point2D;
 
 public class AgentCircle extends Circle {
 
-    public static final int AGENT_RADIUS = 3; //determines size of displaced circle/dot in world
+    public static final int AGENT_RADIUS = 2; //determines size of displaced circle/dot in world
 
     public AgentCircle(Point2D.Double position) {
         super(position.getX(), position.getY(), AGENT_RADIUS);

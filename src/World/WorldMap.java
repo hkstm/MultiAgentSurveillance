@@ -194,8 +194,15 @@ public class WorldMap implements Serializable {
 
     public int coordinatesToCell(Point2D.Double location)
     {
-        int xIndex = ((int) location.getX())+(getSize()/2);
-        int yIndex = ((int) location.getY())+(getSize()/2);
+//        int xIndex = ((int) location.getX())+(getSize()/2);
+//        int yIndex = ((int) location.getY())+(getSize()/2);
+        int windowSize = 1000;
+        int xIndex = (int) location.getX()/(windowSize/worldGrid.length);
+//        System.out.println("location.getX: " + location.getX());
+//        System.out.println("xIndex: " + xIndex);
+        int yIndex = (int) location.getY()/(windowSize/worldGrid[0].length);
+//        System.out.println("location.getY: " + location.getY());
+//        System.out.println("yIndex: " + yIndex);
         //issue here jumps to -400 after passing 0(y axis)
         //System.out.println("Location in coordinatesToCell: " + location.toString());
         return getTileState(xIndex, yIndex);
