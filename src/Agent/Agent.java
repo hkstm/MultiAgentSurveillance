@@ -54,17 +54,17 @@ public class Agent implements Runnable{
         }
 
     public void run() {
-        System.out.println("in run");
+        //System.out.println("in run");
         double deltaScaling = 0.0001; //arbitrary as fuck dependent on how fast we are allowed to walk and how big the actual world is
         previousTime = System.nanoTime();
         goalPosition = new Point2D.Double(25, 25);
         while(!exitThread) {
-            System.out.println("in run loop");
+            //System.out.println("in run loop");
             currentTime = System.nanoTime();
             delta = currentTime - previousTime;
-            //delta /= 1e6; //makes it ms
+            //1e9; //makes it m/s
             checkForAgentSound();
-            double walkingDistance = 1.4/delta;
+            double walkingDistance = (1.4/delta)/100;
             if (legalMoveCheck(walkingDistance))
             {
                 move(walkingDistance);
@@ -175,7 +175,7 @@ public class Agent implements Runnable{
     public void move(double distance)
     {
         this.position.setLocation(getMove(distance, direction));
-        System.out.println("location: " + this.position.toString() );
+        //System.out.println("location: " + this.position.toString() );
     }
 
     /**
