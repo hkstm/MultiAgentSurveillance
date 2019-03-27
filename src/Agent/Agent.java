@@ -60,7 +60,7 @@ public class Agent implements Runnable{
             delta = currentTime - previousTime;
             //delta /= 1e6; //makes it ms
             checkForAgentSound();
-            double walkingDistance = 1.4/delta;
+            double walkingDistance = (1.4/delta)/100;
             if (legalMoveCheck(walkingDistance))
             {
                 move(walkingDistance);
