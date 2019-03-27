@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import static World.WorldMap.*;
+
 /**
  * This is the superclass of Intruder and Guard, which contains methods for actions
  * @author Benjamin, Kailhan Hokstam
@@ -54,10 +56,11 @@ public class Agent implements Runnable{
         System.out.println("in run");
         double deltaScaling = 0.0001; //arbitrary as fuck dependent on how fast we are allowed to walk and how big the actual world is
         previousTime = System.nanoTime();
-        goalPosition = new Point2D.Double(25, 25);
+        goalPosition = new Point2D.Double(200, 200);
         while(!exitThread) {
             currentTime = System.nanoTime();
             delta = currentTime - previousTime;
+            previousTime = currentTime;
             //delta /= 1e6; //makes it ms
             checkForAgentSound();
             double walkingDistance = (1.4/delta)/100;
@@ -70,7 +73,7 @@ public class Agent implements Runnable{
                 double turningAngle = Math.random()*90-45;
                 turn(turningAngle);
             }
-            previousTime = currentTime;
+
             updateGoalPosition();
             xGoal = getGoalPosition().getX();
             yGoal = getGoalPosition().getY();
@@ -79,8 +82,8 @@ public class Agent implements Runnable{
 
     public void updateGoalPosition() {
         //some logic with the worldMap and whatever algorithms we are using
-        double x = 100;
-        double y = 500;
+        double x = 200;
+        double y = 200;
         goalPosition.setLocation(x, y);
     }
 
@@ -173,7 +176,7 @@ public class Agent implements Runnable{
 
     public boolean legalMoveCheck(double distance) {
         Point2D.Double positionToCheck = new Point2D.Double(getMove(distance, direction).getX()/convert(), getMove(distance, direction).getY()/convert());
-        if (worldMap.coordinatesToCell(positionToCheck) == 1 || worldMap.coordinatesToCell(positionToCheck) == 5 || worldMap.coordinatesToCell(positionToCheck) == 7) {
+        if (worldMap.coordinatesToCell(positionToCheck) == STRUCTURE || worldMap.coordinatesToCell(positionToCheck) == SENTRY || worldMap.coordinatesToCell(positionToCheck) == WALL) {
             return false;
         } else {
             return true;
