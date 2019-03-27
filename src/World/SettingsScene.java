@@ -11,10 +11,14 @@ import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
+
+/**
+ * Screen from which you can load a map, start the worldBuilder or start an actual "game"
+ * @author Kailhan Hokstam
+ */
 
 public class SettingsScene extends VBox {
 

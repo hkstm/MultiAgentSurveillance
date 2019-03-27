@@ -8,7 +8,7 @@ import java.util.Random;
 
 /**
  * This is the superclass of Intruder and Guard, which contains methods for actions
- * @author Benjamin
+ * @author Benjamin, Kailhan Hokstam
  */
 
 public class Agent implements Runnable{
@@ -26,17 +26,14 @@ public class Agent implements Runnable{
     protected double direction;
     protected int[][] knownTerrain;
     protected List<AudioLog> audioLogs = new ArrayList<AudioLog>();
-
-    //protected volatile double xCurrent;
-    //protected volatile double yCurrent;
     protected volatile double xGoal;
     protected volatile double yGoal;
     protected double convertedDistance;
     protected double currentSpeed;
 
     public static WorldMap worldMap;
-    private double currentTime;
-    private double delta;
+    protected double currentTime;
+    protected double delta;
     protected boolean exitThread;
     protected double previousTime;
     protected volatile Point2D.Double goalPosition;
@@ -75,19 +72,9 @@ public class Agent implements Runnable{
                 turn(turningAngle);
             }
             previousTime = currentTime;
-            //xCurrent = getPosition().getX();
-            //yCurrent = getPosition().getY();
             updateGoalPosition();
             xGoal = getGoalPosition().getX();
             yGoal = getGoalPosition().getY();
-//            System.out.println(
-//                    "xCurrent: " + xCurrent + " yCurrent: " + yCurrent);
-//            System.out.println(
-//                    "xGoal: " + xGoal + " yGoal: " + yGoal);
-//            System.out.println("delta: " + (delta) + "ms");
-            //position.setLocation((xCurrent + ((xGoal - xCurrent) * (delta * deltaScaling))), (yCurrent + ((yGoal - yCurrent) * (delta * deltaScaling))));
-//            System.out.println("xCurrent" + xCurrent);
-//            System.out.println("yCurrent" + yCurrent);
         }
     }
 
@@ -331,11 +318,6 @@ public class Agent implements Runnable{
     public Point2D.Double getGoalPosition() {
         return goalPosition;
     }
-
-    //
-//    public void setPosition(Point position) {
-//        this.position = position;
-//    }
 
     public boolean isThreadStopped() {
         return exitThread;

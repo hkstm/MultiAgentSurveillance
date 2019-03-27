@@ -1,17 +1,12 @@
 package World;
-
-
 import Agent.*;
-
-import java.awt.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.awt.geom.Point2D;
 
 /**
- * worldMap data structure
- * @author Kailhan Hokstam, Marco Rietjens
+ * WorldMap data structure
+ * @author Kailhan Hokstam
  */
 
 public class WorldMap implements Serializable {
@@ -94,6 +89,12 @@ public class WorldMap implements Serializable {
         return size;
     }
 
+    /**
+     * updates tile at r, c to certain type e.g. WALL
+     * @param r row
+     * @param c column
+     * @param state state to compare to
+     */
     public void updateTile(int r, int c, int state) {
         worldGrid[r][c] = state;
     }
@@ -121,6 +122,12 @@ public class WorldMap implements Serializable {
         this.agents = agents;
     }
 
+    /**
+     * Removes an agent by exiting its while logic loop (where we determine what an agent does every tick)
+     * And removes it from a worlds list of active agent and active threads
+     * @param toBeRemoved
+     * @return index of agent removed
+     */
     public int removeAgent(Agent toBeRemoved) {
         int index = agents.indexOf(toBeRemoved);
         agents.get(index).setThreadStopped(true);
@@ -129,18 +136,29 @@ public class WorldMap implements Serializable {
         return index;
     }
 
+
+    /**
+     * Adds an agent and its (not yet running thread) to a world, needs to be started for it to actually start executing its logic
+     * @param toBeAdded the agent that we want to add (probably want to at least specify its location before adding to world)
+     */
     public void addAgent(Agent toBeAdded) {
         this.agents.add(toBeAdded);
         this.agentThreads.add(new Thread(toBeAdded));
         //startAgents();
     }
 
+    /**
+     * Starts all agents whos threads have been added to the world
+     */
     public void startAgents() {
         for(Thread thread : this.agentThreads) {
             thread.start();
         }
     }
 
+    /**
+     * Removes all agents from the world, first stops their threads
+     */
     public void removeAllAgents() {
         for(Agent agent : agents) {
             agent.setThreadStopped(true);

@@ -141,14 +141,12 @@ public class GameScene extends BorderPane implements Runnable {
         vBox.getChildren().addAll(goToMenuBut, restartGameBut, startGameBut);
 
         hBox = new HBox(); //container that stores the box containing buttons and the stackpane with the world and the agents drawn ontop of it
-        StackPane worldPane = new StackPane(); //allows us to drap agents on top of world
+        StackPane worldPane = new StackPane(); //allows us to draw agents on top of world
         worldPane.getChildren().addAll(grid, agentGroup);
-        hBox.getChildren().addAll(worldPane, vBox); //can directly create scene from grid if borderpane layout is not gonna be used
-        //hBox.getChildren().addAll(worldPane); //can directly create scene from grid if borderpane layout is not gonna be used
+        hBox.getChildren().addAll(worldPane, vBox);
         scene = new Scene(hBox); // allows us to actually display the world, agents and buttons
         hBox.setMinSize(windowSize + windowSize * 0.1, windowSize); //dont think this is done properly but it helps with sizing
         //hBox.setMinSize(windowSize, windowSize); //dont think this is done properly but it helps with sizing
-
 
     }
 
