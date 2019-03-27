@@ -82,29 +82,30 @@ public class GameScene extends BorderPane implements Runnable {
 
         this.goToMenuBut = new Button("Menu"); //menu button on right side
         goToMenuBut.setOnAction(e -> { // Switch to settings
+            worldMap.removeAllAgents();
             SettingsScene settingsScene = new SettingsScene(primaryStage);
             Node source = (Node) e.getSource();
             Stage stage = (Stage) source.getScene().getWindow();
-            stage.close();
-            this.primaryStage = new Stage();
+//            stage.close();
+//            this.primaryStage = new Stage();
             this.primaryStage.setTitle("Multi-Agent Surveillance Settings");
             this.primaryStage.setScene(settingsScene.getSettingsScene());
             this.primaryStage.show();
         });
         this.goToMenuBut.setWrapText(true);
 
-        this.restartGameBut = new Button("Restart Game"); //restart button on right side
-        restartGameBut.setOnAction(e -> { // Create a new game with the same setings
-            GameScene gameScene = new GameScene(primaryStage, settings);
-            Node source = (Node) e.getSource();
-            Stage stage = (Stage) source.getScene().getWindow();
-            stage.close();
-            this.primaryStage = new Stage();
-            this.primaryStage.setTitle("Multi-Agent-Surveillance Game");
-            this.primaryStage.setScene(gameScene.getGameScene());
-            this.primaryStage.show();
-        });
-        this.restartGameBut.setWrapText(true);
+//        this.restartGameBut = new Button("Restart Game"); //restart button on right side
+//        restartGameBut.setOnAction(e -> { // Create a new game with the same setings
+//            GameScene gameScene = new GameScene(primaryStage, settings);
+//            Node source = (Node) e.getSource();
+//            Stage stage = (Stage) source.getScene().getWindow();
+////            stage.close();
+////            this.primaryStage = new Stage();
+//            this.primaryStage.setTitle("Multi-Agent-Surveillance Game");
+//            this.primaryStage.setScene(gameScene.getGameScene());
+//            this.primaryStage.show();
+//        });
+//        this.restartGameBut.setWrapText(true);
 
         this.startGameBut = new Button("Start/Stop Game"); //should stop and start game, not properly working atm
 
@@ -146,15 +147,17 @@ public class GameScene extends BorderPane implements Runnable {
         //setting box that contains buttons
         VBox vBox = new VBox();
         VBox.setVgrow(goToMenuBut, Priority.ALWAYS);
-        VBox.setVgrow(restartGameBut, Priority.ALWAYS);
+        //VBox.setVgrow(restartGameBut, Priority.ALWAYS);
         VBox.setVgrow(startGameBut, Priority.ALWAYS);
         goToMenuBut.setMaxHeight(Double.MAX_VALUE);
-        restartGameBut.setMaxHeight(Double.MAX_VALUE);
+        //restartGameBut.setMaxHeight(Double.MAX_VALUE);
         startGameBut.setMaxHeight(Double.MAX_VALUE);
         goToMenuBut.setMaxWidth(Double.MAX_VALUE);
-        restartGameBut.setMaxWidth(Double.MAX_VALUE);
+        //restartGameBut.setMaxWidth(Double.MAX_VALUE);
         startGameBut.setMaxWidth(Double.MAX_VALUE);
-        vBox.getChildren().addAll(goToMenuBut, restartGameBut, startGameBut);
+//        vBox.getChildren().addAll(goToMenuBut, restartGameBut, startGameBut);
+        vBox.getChildren().addAll(goToMenuBut, startGameBut);
+
 
         hBox = new HBox(); //container that stores the box containing buttons and the stackpane with the world and the agents drawn ontop of it
         StackPane worldPane = new StackPane(); //allows us to draw agents on top of world
