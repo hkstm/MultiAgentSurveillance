@@ -40,17 +40,12 @@ public class SettingsScene extends VBox {
     private int windowSize;
 
     public static final int SIZE_SMALL = 50;
-    public static final int SIZE_MEDIUM = 200;
-    public static final int SIZE_LARGE = 500;
-
-    public SettingsScene()
-    {
-        this.windowSize  = 1000;
-    }
+    public static final int SIZE_MEDIUM = 100;
+    public static final int SIZE_LARGE = 200;
 
     public SettingsScene(Stage primaryStage) {
-        this.windowSize  = 1000;
-        worldSizeSelection = SIZE_SMALL;
+        this.windowSize  = windowSize;
+        worldSizeSelection = SIZE_MEDIUM;
         worldMapSelection = new WorldMap(worldSizeSelection);
         imageSelection = new Image(new File("src/Assets/emptyWorldIMG.png").toURI().toString(), worldMapSelection.getSize(), worldMapSelection.getSize(), false, false, true);
         this.primaryStage = primaryStage;
