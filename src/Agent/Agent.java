@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import static World.GameScene.SCALING_FACTOR;
 import static World.WorldMap.*;
 
 /**
@@ -38,6 +39,7 @@ public class Agent implements Runnable{
     protected double delta;
     protected boolean exitThread;
     protected double previousTime;
+    protected Point2D.Double previousPosition;
     protected volatile Point2D.Double goalPosition;
 
         /**
@@ -54,24 +56,26 @@ public class Agent implements Runnable{
 
     public void run() {
         previousTime = System.nanoTime();
+        previousPosition = new Point2D.Double(position.getX(), position.getY());
+        /**
+         * DONT REMOVE THIS GOALPOSITION THING IT IS NECESSARY FOR SOME REASON
+         */
         goalPosition = new Point2D.Double(200, 200);
         while(!exitThread) {
             currentTime = System.nanoTime();
             delta = currentTime - previousTime;
-            currentSpeed = 1;
+            delta /= 1e9; //makes it in seconds
             previousTime = currentTime;
+            currentSpeed = (position.distance(previousPosition)/SCALING_FACTOR)/delta;
+            //System.out.println("currentSpeed:" + currentSpeed);
+            previousPosition.setLocation(position.getX(), position.getY());
             checkForAgentSound();
-            int windowSize = 1000;
-            double walkingDistance = (1.4/worldMap.getSize()) * (delta/1e9) * windowSize;
-            //System.out.println("walkingdistance" + walkingDistance);
+            double walkingDistance = (1.4 * SCALING_FACTOR) * (delta);
             if(legalMoveCheck(walkingDistance)) {
                 move(walkingDistance);
-                //System.out.println("moving");
-            }
-            else {
+            } else {
                 double turningAngle = Math.random()*90-45;
                 turn(turningAngle);
-                System.out.println("turning");
             }
 
             updateGoalPosition();
@@ -95,17 +99,23 @@ public class Agent implements Runnable{
     public void turn(double angle)
     {
         direction = direction+angle;
-        while (direction > 180 || direction < -180)
-        {
-            if (direction > 180)
-            {
-                direction = (direction-180)-180;
-            }
-            if (direction < 180)
-            {
-                direction = (direction+180)+180;
-            }
+        if(direction > 180) {
+            direction = (direction-180)-180;
+        } else if(direction < 180) {
+            direction = (direction+180)+180;
         }
+        //your code got stuck in a loop thing the above should be fine?
+//        while (direction > 180 || direction < -180)
+//        {
+//            if (direction > 180)
+//            {
+//                direction = (direction-180)-180;
+//            } else if (direction < 180)
+//            {
+//                direction = (direction+180)+180;
+//            }
+//            System.out.println("direction: " + direction);
+//        }
     }
 
     /**
@@ -183,6 +193,7 @@ public class Agent implements Runnable{
             return false;
         }
         if (tileStatus == STRUCTURE || tileStatus == SENTRY || tileStatus == WALL) {
+            System.out.println("detected wall, sentry or structure in legal move check");
             return false;
         } else {
             return true;
@@ -194,7 +205,6 @@ public class Agent implements Runnable{
      * @param radius is the distance an Agent can see in front of them
      * @param angle is the width of view of an Agent
      */
-
     public void updateKnownTerrain(double radius, double angle)
     {
         //setting search bounds
@@ -281,7 +291,7 @@ public class Agent implements Runnable{
     public void checkForAgentSound(){
         Point2D tmpPoint = getMove(1000, direction);
         for(Agent agent : worldMap.getAgents()) {
-            if(position.distance(agent.getPosition()) != 0) {
+            if(position.distance(agent.getPosition()) != 0) { //to not add hearing "ourselves" to our log tho a path that we have taken might be something that we want store in the end
                 boolean soundHeard = false;
                 double angleBetweenPoints = angleBetweenTwoPointsWithFixedPoint(tmpPoint.getX(), tmpPoint.getY(), agent.getPosition().getX(), agent.getPosition().getY(), position.getX(), position.getY());
                 angleBetweenPoints += new Random().nextGaussian()*SOUND_NOISE_STDEV;
@@ -338,6 +348,22 @@ public class Agent implements Runnable{
 
     public void setCurrentSpeed(double currentSpeed) {
         this.currentSpeed = currentSpeed;
+    }
+
+    public List<AudioLog> getAudioLogs() {
+        return audioLogs;
+    }
+
+    public void setAudioLogs(List<AudioLog> audioLogs) {
+        this.audioLogs = audioLogs;
+    }
+
+    public double getDirection() {
+        return direction;
+    }
+
+    public void setDirection(double direction) {
+        this.direction = direction;
     }
 }
 
