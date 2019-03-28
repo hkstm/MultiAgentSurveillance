@@ -70,6 +70,7 @@ public class Agent implements Runnable{
             }
             else
             {
+                System.out.println("turning");
                 double turningAngle = Math.random()*90-45;
                 turn(turningAngle);
             }
