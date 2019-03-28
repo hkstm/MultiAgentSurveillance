@@ -66,7 +66,6 @@ public class Agent implements Runnable{
             delta = currentTime - previousTime;
             delta /= 1e9; //makes it in seconds
             previousTime = currentTime;
-
             currentSpeed = (position.distance(previousPosition)/SCALING_FACTOR)/delta;
             //System.out.println("currentSpeed:" + currentSpeed);
             previousPosition.setLocation(position.getX(), position.getY());
@@ -349,6 +348,22 @@ public class Agent implements Runnable{
 
     public void setCurrentSpeed(double currentSpeed) {
         this.currentSpeed = currentSpeed;
+    }
+
+    public List<AudioLog> getAudioLogs() {
+        return audioLogs;
+    }
+
+    public void setAudioLogs(List<AudioLog> audioLogs) {
+        this.audioLogs = audioLogs;
+    }
+
+    public double getDirection() {
+        return direction;
+    }
+
+    public void setDirection(double direction) {
+        this.direction = direction;
     }
 }
 

@@ -15,7 +15,12 @@ import java.awt.geom.Point2D;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+
 import Agent.*;
+
+import static Agent.Agent.SOUND_NOISE_STDEV;
+import static Agent.Agent.angleBetweenTwoPointsWithFixedPoint;
 
 /**
  * Main in game screen
@@ -53,7 +58,7 @@ public class GameScene extends BorderPane implements Runnable {
     private boolean gameStarted = false; //used for start and stop button
 
     public static final double SCALING_FACTOR = 1000/200; //ASSUMING WORLD IS ALWAYS 200 X 200 WHICH MEANS THAT IF WE HAVE A SMALLER MAP IN WORLDBUILDER THE INDIVIDUAL TILES ARE "BIGGER" AND THAT WINDOWSIZE IS 1000
-
+    public static Random random = new Random();
     public GameScene(Stage primaryStage, Settings settings) {
         this.grid = new GridPane(); //main grid that shows the tiles
         this.windowSize = 1000;
@@ -123,6 +128,26 @@ public class GameScene extends BorderPane implements Runnable {
                     @Override
                     public void handle(long currentTime) {
                         redrawBoard();
+                        long delta = currentTime - previousTime;
+                        delta /= 1e9; //makes it seconds
+                        previousTime = currentTime;
+                        double occurenceRate = 0.1;
+                        occurenceRate *= 8; //map is 200 so 8 times as big as 25
+                        /**
+                         * Random sound according to sort of poisson process (more binomial with low probability which should approximate it probs&stat stuff
+                         */
+                        if(random.nextDouble() < occurenceRate/(delta)) {
+                            Point2D.Double randomNoiseLocation = new Point2D.Double(random.nextInt(windowSize), random.nextInt(windowSize));
+                            for(Agent agent : worldMap.getAgents()) {
+                                if(randomNoiseLocation.distance(agent.getPosition())/SCALING_FACTOR < 5) {
+                                    Point2D tmpPoint = agent.getMove(1000, agent.getDirection());
+                                    double angleBetweenPoints = angleBetweenTwoPointsWithFixedPoint(tmpPoint.getX(), tmpPoint.getY(), agent.getPosition().getX(), agent.getPosition().getY(), randomNoiseLocation.getX(), randomNoiseLocation.getY());
+                                    angleBetweenPoints += new Random().nextGaussian()*SOUND_NOISE_STDEV;
+                                    agent.getAudioLogs().add(new AudioLog(System.nanoTime(), angleBetweenPoints, new Point2D.Double(agent.getPosition().getX(), agent.getPosition().getY())));
+                                    System.out.println("Agent heard sound");
+                                }
+                            }
+                        }
 
                         /**
                          * proper logic for game end needs to be implemented right now game is over when guards have seen intruder or when intruder reaches target
