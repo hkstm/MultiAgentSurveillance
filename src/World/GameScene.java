@@ -1,9 +1,6 @@
 package World;
 
 import javafx.animation.AnimationTimer;
-import javafx.application.Platform;
-import javafx.event.EventHandler;
-import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -19,7 +16,6 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import Agent.*;
-import javafx.stage.WindowEvent;
 
 /**
  * Main in game screen
@@ -55,6 +51,8 @@ public class GameScene extends BorderPane implements Runnable {
     private Group agentGroup = new Group();
 
     private boolean gameStarted = false; //used for start and stop button
+
+    public static final double SCALING_FACTOR = 1000/200; //ASSUMING WORLD IS ALWAYS 200 X 200 WHICH MEANS THAT IF WE HAVE A SMALLER MAP IN WORLDBUILDER THE INDIVIDUAL TILES ARE "BIGGER" AND THAT WINDOWSIZE IS 1000
 
     public GameScene(Stage primaryStage, Settings settings) {
         this.grid = new GridPane(); //main grid that shows the tiles
@@ -114,15 +112,41 @@ public class GameScene extends BorderPane implements Runnable {
             if(!gameStarted) {
                 gameStarted = true;
                 Agent.worldMap = worldMap;
-                worldMap.addAgent(new Intruder(new Point2D.Double(500, 500), 0));
-                worldMap.addAgent(new Intruder(new Point2D.Double(500, 500), 180));
-                System.out.println("startloop:" + worldMap.getAgents().get(0).getPosition().toString());
+                worldMap.addAgent(new Intruder(new Point2D.Double(50, 50), 270));
+                worldMap.addAgent(new Intruder(new Point2D.Double(500, 600), 180));
+                //System.out.println("startloop:" + worldMap.getAgents().get(0).getPosition().toString());
                 worldMap.startAgents();
                 System.out.println("Started agents");
                 new AnimationTimer() {
+                    long currentTimeCalc = System.nanoTime();
+                    long previousTime = currentTimeCalc;
                     @Override
                     public void handle(long currentTime) {
                         redrawBoard();
+
+                        /**
+                         * proper logic for game end needs to be implemented right now game is over when guards have seen intruder or when intruder reaches target
+                         */
+                        for(Agent agentGuard : worldMap.getAgents()) {
+                            if(agentGuard instanceof Guard) {
+                                for(Agent agentIntruder : worldMap.getAgents()) {
+                                    if(agentIntruder instanceof Intruder) {
+                                        if(agentGuard.getPosition().distance(agentIntruder.getPosition()) < (0.5 * SCALING_FACTOR)) {
+                                            gameStarted = false;
+                                            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                                            alert.setTitle("Game Finished");
+                                            alert.setHeaderText(null);
+                                            alert.setContentText("GUARDS have found INTRUDER");
+                                            alert.showAndWait();
+                                            goToMenuBut.fire();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+//                        boolean countDown = false;
+//                        boolean gameWon = false;
+//                        long currentTimeCountDown = System.nanoTime();
                         if(worldMap.intruderInTarget()) {
                             gameStarted = false;
                             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -131,7 +155,23 @@ public class GameScene extends BorderPane implements Runnable {
                             alert.setContentText("INTRUDER has reached TARGET");
                             alert.showAndWait();
                             goToMenuBut.fire();
+//                            countDown = true;
+//                            if(countDown) {
+//                                if((System.nanoTime() - currentTimeCountDown)/1e9 < 3) gameWon = true;
+//                            } else {
+//                                currentTimeCountDown = System.nanoTime();
+//                            }
+//                            if(gameWon) {
+//                                gameStarted = false;
+//                                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+//                                alert.setTitle("Game Finished");
+//                                alert.setHeaderText(null);
+//                                alert.setContentText("INTRUDER has reached TARGET");
+//                                alert.showAndWait();
+//                                goToMenuBut.fire();
+//                            }
                         }
+
                     }
                 }.start();
             } else {
