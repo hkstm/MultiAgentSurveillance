@@ -212,4 +212,12 @@ public class WorldMap implements Serializable {
         //System.out.println("Location in coordinatesToCell: " + location.toString());
         return getTileState(xIndex, yIndex);
     }
+
+    public void fillWorldArray(int topLeftX, int topLeftY, int botRightX, int botRightY, int tileStatus) {
+        for(int i = topLeftX; i < botRightX; i++) {
+            for(int j = topLeftY; j < botRightY; j++) {
+                worldGrid[i][j] = tileStatus;
+            }
+        }
+    }
 }

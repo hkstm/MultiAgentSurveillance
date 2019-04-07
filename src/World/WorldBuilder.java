@@ -1,7 +1,7 @@
 package World;
 
 import javafx.embed.swing.SwingFXUtils;
-import javafx.geometry.Pos;
+import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
@@ -9,6 +9,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
@@ -16,6 +20,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -49,6 +54,11 @@ public class WorldBuilder extends BorderPane {
     private ComboBox<String> tileTypeSelection;
     private int activeTile;
 
+    private HashMap<String, Boolean> currentlyActiveKeys = new HashMap<>();
+    int qPressedX;
+    int qPressedY;
+    private boolean selectingRegion;
+
     public WorldBuilder(Stage primaryStage, Settings settings) {
         this.grid = new GridPane();
         this.windowSize = 1000;
@@ -56,7 +66,6 @@ public class WorldBuilder extends BorderPane {
         this.primaryStage = primaryStage;
         this.worldMap = new WorldMap(settings.getWorldMap());
         this.tileSize = windowSize / worldMap.getSize();
-
         this.emptyTileImg = new Image(new File("src/Assets/emptyTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
         this.structureTileImg = new Image(new File("src/Assets/structureTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
         this.doorTileImg = new Image(new File("src/Assets/doorTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
@@ -148,6 +157,17 @@ public class WorldBuilder extends BorderPane {
         bPane.setRight(vBox);
         scene = new Scene(bPane);
 
+        scene.setOnKeyPressed(event -> {
+            String codeString = event.getCode().toString();
+            System.out.println("codeString: " + codeString);
+            if (!currentlyActiveKeys.containsKey(codeString)) {
+                currentlyActiveKeys.put(codeString, true);
+            }
+        });
+        scene.setOnKeyReleased(event ->
+                currentlyActiveKeys.remove(event.getCode().toString())
+        );
+
         initTiles();
         redrawBoard();
     }
@@ -166,15 +186,14 @@ public class WorldBuilder extends BorderPane {
      * Should not update all displayed tiles, only those whose state have been changed in selected WorldMap
      */
     public void createTiles(){
+        System.out.println("Create tiles");
         for (int r = 0; r < worldMap.getSize(); r++) {
             for (int c = 0; c < worldMap.getSize(); c++) {
                 if(toAdd.get(c + (r * worldMap.getSize())).getTileStatus() != worldMap.getTileState(r, c)) {
                     toAdd.set(c + (r * worldMap.getSize()), new TileButton(r, c, tileImgArray[worldMap.getTileState(r,c)], tileSize, worldMap.getTileState(r,c)));
                 }
                 toAdd.get(c + (r * worldMap.getSize())).setOnAction((event) -> {
-                    TileButton button = (TileButton)event.getSource();
-                    updateWorldMap(button.getX(), button.getY(), activeTile); // Actual communication with worldMap, says which button has been clicked and thus which worldMap cell needs to be checked
-                    System.out.println("update world map");
+                    makeAButtonInteractive(event);
                 });
                 //System.out.println("creating tiles");
                 GridPane.setConstraints(toAdd.get(c + (r * worldMap.getSize())), r, c);
@@ -182,17 +201,52 @@ public class WorldBuilder extends BorderPane {
         }
     }
 
+    public void makeAButtonInteractive(ActionEvent event) {
+        System.out.println("Making buttons interactive");
+        if (!currentlyActiveKeys.containsKey("Q") && !selectingRegion) {
+            TileButton button = (TileButton) event.getSource();
+            updateWorldMap(button.getX(), button.getY(), activeTile); // Actual communication with worldMap, says which button has been clicked and thus which worldMap cell needs to be checked
+            System.out.println("update world map");
+            selectingRegion = false;
+        } else if(selectingRegion) {
+            TileButton button = (TileButton) event.getSource();
+            worldMap.fillWorldArray(qPressedX, qPressedY, button.getX(), button.getY(), activeTile);
+            System.out.println("called fillWorldArray");
+            selectingRegion = false;
+            removeActiveKey("Q");
+            redrawBoard();
+        } else {
+            TileButton button = (TileButton)event.getSource();
+            qPressedX = button.getX();
+            qPressedY = button.getY();
+            selectingRegion = true;
+            System.out.println("selectingRegion set to true");
+        }
+    }
+
+    private boolean removeActiveKey(String codeString) {
+        Boolean isActive = currentlyActiveKeys.get(codeString);
+        if (isActive != null && isActive) {
+            currentlyActiveKeys.put(codeString, false);
+            System.out.println("Made :" + codeString + " inactive");
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
     /**
      * Creates initial tiles for display
      */
     public void initTiles(){
+        System.out.println("init tiles");
         toAdd.clear();
         for (int r = 0; r < worldMap.getSize(); r++) {
             for (int c = 0; c < worldMap.getSize(); c++) {
                 toAdd.add(new TileButton(r, c, tileImgArray[worldMap.getTileState(r,c)], tileSize, worldMap.getTileState(r,c)));
                 toAdd.get(c + (r * worldMap.getSize())).setOnAction((event) -> {
-                    TileButton button = (TileButton)event.getSource();
-                    updateWorldMap(button.getX(), button.getY(), activeTile); // Actual communication with worldMap, says which button has been clicked and thus which worldMap cell needs to be checked
+                    makeAButtonInteractive(event);
                 });
                 GridPane.setConstraints(toAdd.get(toAdd.size()-1), r, c);
             }
