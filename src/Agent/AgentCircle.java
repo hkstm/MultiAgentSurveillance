@@ -6,7 +6,7 @@ import java.awt.*;
 import java.awt.geom.Point2D;
 
 /**
- * Specific Circle class cause OOB yuh
+ * Specific Circle class cause OOB yuh, if you dont want the agents to clip in the walls this is where you gotta be
  * @author Kailhan Hokstam
  */
 
