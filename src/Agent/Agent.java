@@ -24,10 +24,11 @@ public class Agent implements Runnable{
     public static final double SOUNDRANGE_MEDIUMFAR = 5; //distance 5m
     public static final double SOUNDRANGE_FAR = 10;  //distance 10m
     public static final double SOUND_NOISE_STDEV = 10;  //stndard dev of normal distributed noise
+    private int counter = 0; //remove :)
 
     protected volatile Point2D.Double position;
     protected double direction;
-    protected int[][] knownTerrain;
+    protected int[][] knownTerrain = new int[worldMap.getSize()][worldMap.getSize()];
     protected List<AudioLog> audioLogs = new ArrayList<AudioLog>();
     protected volatile double xGoal;
     protected volatile double yGoal;
@@ -49,12 +50,33 @@ public class Agent implements Runnable{
          */
 
     public Agent(Point2D.Double position, double direction) {
+        System.out.println("agent constructor called");
             this.position = position;
             this.direction = direction;
             this.goalPosition = position;
+            for (int i = 0;i < knownTerrain.length;i++)
+            {
+                for (int j = 0;j < knownTerrain[0].length;j++)
+                {
+                    knownTerrain[i][j] = 0;
+                }
+            }
         }
 
     public void run() {
+        counter++;
+        if(counter == 1)
+        {
+            updateKnownTerrain(10, 45);
+            for (int i = 0;i < this.knownTerrain.length;i++)
+            {
+                for (int j = 0;j < this.knownTerrain[0].length;j++)
+                {
+                    //System.out.print(this.knownTerrain[i][j]+" ");
+                }
+                System.out.println();
+            }
+        }
         previousTime = System.nanoTime();
         previousPosition = new Point2D.Double(position.getX(), position.getY());
         /**
@@ -66,7 +88,7 @@ public class Agent implements Runnable{
             delta = currentTime - previousTime;
             delta /= 1e9; //makes it in seconds
             previousTime = currentTime;
-            currentSpeed = (position.distance(previousPosition)/SCALING_FACTOR)/delta;
+            currentSpeed = ((position.distance(previousPosition)/SCALING_FACTOR)/delta);
             //System.out.println("currentSpeed:" + currentSpeed);
             previousPosition.setLocation(position.getX(), position.getY());
             checkForAgentSound();
@@ -208,7 +230,6 @@ public class Agent implements Runnable{
     public void updateKnownTerrain(double radius, double angle)
     {
         //setting search bounds
-        int[][] tempTerrainKnowledge = knownTerrain;
         Point corner1 = new Point((int) position.getX(), (int) position.getY());
         Point2D.Double straight = getMove(radius, direction);
         Point corner2 = new Point((int) straight.getX(), (int) straight.getY());
@@ -228,31 +249,33 @@ public class Agent implements Runnable{
                 //top left corner
                 if (Math.sqrt(((position.getX()-j)*(position.getX()-j))+((position.getY()-i)*(position.getY()))-i) <= radius && Math.atan((Math.abs(position.getX()-j))/(Math.abs(position.getY()-i)))+(Math.abs(direction)) <= angle/2)
                 {
-                    tempTerrainKnowledge[i][j] = worldMap.getTileState(i, j);
+                    knownTerrain[i][j] = worldMap.getTileState(i, j);
                 }
                 //top right corner
                 else if (Math.sqrt(((position.getX()-(j+1))*(position.getX()-(j+1)))+((position.getY()-i)*(position.getY()))-i) <= radius && Math.atan((Math.abs(position.getX()-(j+1)))/(Math.abs(position.getY()-i)))+(Math.abs(direction)) <= angle/2)
                 {
-                    tempTerrainKnowledge[i][j] = worldMap.getTileState(i, j);
+                    knownTerrain[i][j] = worldMap.getTileState(i, j);
                 }
                 //bottom right corner
                 else if (Math.sqrt(((position.getX()-(j+1))*(position.getX()-(j+1)))+((position.getY()-(i+1))*(position.getY()))-(i+1)) <= radius && Math.atan((Math.abs(position.getX()-(j+1)))/(Math.abs(position.getY()-(i+1))))+(Math.abs(direction)) <= angle/2)
                 {
-                    tempTerrainKnowledge[i][j] = worldMap.getTileState(i, j);
+                    knownTerrain[i][j] = worldMap.getTileState(i, j);
                 }
                 //bottom left corner
                 else if (Math.sqrt(((position.getX()-j)*(position.getX()-j))+((position.getY()-(i+1))*(position.getY()))-(i+1)) <= radius && Math.atan((Math.abs(position.getX()-j))/(Math.abs(position.getY()-(i+1))))+(Math.abs(direction)) <= angle/2)
                 {
-                    tempTerrainKnowledge[i][j] = worldMap.getTileState(i, j);
+                    knownTerrain[i][j] = worldMap.getTileState(i, j);
                 }
             }
         }
+        int[][] actualTerrain = worldMap.getWorldGrid();
         //scan through and remove shaded areas
         for (int i = YMin;i <= YMax;i++)
         {
             for (int j = XMin;j <= XMax;j++)
             {
-                if (tempTerrainKnowledge[i][j] == 1 || tempTerrainKnowledge[i][j] == 2 || tempTerrainKnowledge[i][j] == 3 || tempTerrainKnowledge[i][j] == 5 || tempTerrainKnowledge[i][j] == 7)
+                //the condition below is never satisfied! fix this
+                if (actualTerrain[i][j] == 1 || actualTerrain[i][j] == 2 || actualTerrain[i][j] == 3 || actualTerrain[i][j] == 5 || actualTerrain[i][j] == 7)
                 {
                     for (int k = YMin;k <= YMax;k++)
                     {
@@ -262,19 +285,19 @@ public class Agent implements Runnable{
                             {
                                 if (direction > 0 && direction <= 90 && Math.atan((l-position.getX())/(k-position.getY())) >= Math.atan((j-position.getX())/(i-position.getY())) && Math.atan(((l+1)-position.getX())/((k-1)-position.getY())) <= Math.atan(((j+1)-position.getX())/((i-1)-position.getY())))
                                 {
-                                    tempTerrainKnowledge[k][l] = knownTerrain[k][l];
+                                    knownTerrain[k][l] = actualTerrain[k][l];
                                 }
                                 else if (direction > 90 && direction <= 180 && Math.atan((k-position.getY())/((l+1)-position.getX())) >= Math.atan((i-position.getY())/((j+1)-position.getX())) && Math.atan(((k-1)-position.getY())/(l-position.getX())) <= Math.atan(((i+1)-position.getY())/(j-position.getX())))
                                 {
-                                    tempTerrainKnowledge[k][l] = knownTerrain[k][l];
+                                    knownTerrain[k][l] = actualTerrain[k][l];
                                 }
                                 else if (direction <= 0 && direction > -90 && Math.atan(((l+1)-position.getX())/(k-position.getY())) <= Math.atan(((j+1)-position.getX())/(i-position.getY())) && Math.atan((l-position.getX())/((k-1)-position.getY())) >= Math.atan((j-position.getX())/((i-1)-position.getY())))
                                 {
-                                    tempTerrainKnowledge[k][l] = knownTerrain[k][l];
+                                    knownTerrain[k][l] = actualTerrain[k][l];
                                 }
                                 else if (direction <= -90 && direction > -180 && Math.atan((k-position.getY())/(l-position.getX())) <= Math.atan((i-position.getY())/(j-position.getX())) && Math.atan(((k-1)-position.getY())/((l+1)-position.getX())) >= Math.atan(((i-1)-position.getY())/((j+1)-position.getX())))
                                 {
-                                    tempTerrainKnowledge[k][l] = knownTerrain[k][l];
+                                    knownTerrain[k][l] = actualTerrain[k][l];
                                 }
                             }
                         }
@@ -282,7 +305,6 @@ public class Agent implements Runnable{
                 }
             }
         }
-        knownTerrain = tempTerrainKnowledge;
     }
 
     /**
