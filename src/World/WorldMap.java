@@ -197,19 +197,18 @@ public class WorldMap implements Serializable {
      * @return an integer describing the terrain type in the worldGrid corresponding to the input location
      */
 
-    public int coordinatesToCell(Point2D.Double location)
-    {
-//        int xIndex = ((int) location.getX())+(getSize()/2);
-//        int yIndex = ((int) location.getY())+(getSize()/2);
-        int windowSize = 1000;
-        int xIndex = (int) ((location.getX()/windowSize) *worldGrid.length);
-//        System.out.println("location.getX: " + location.getX());
-//        System.out.println("xIndex: " + xIndex);
-        int yIndex = (int) ((location.getY()/windowSize) * worldGrid[0].length);
-//        System.out.println("location.getY: " + location.getY());
-//        System.out.println("yIndex: " + yIndex);
-        //issue here jumps to -400 after passing 0(y axis)
-        //System.out.println("Location in coordinatesToCell: " + location.toString());
-        return getTileState(xIndex, yIndex);
+    public int coordinatesToCell(Point2D.Double location) {
+        int windowSize = StartWorldBuilder.WINDOW_SIZE;
+        int rowIndex = (int) ((location.getX()/windowSize) * worldGrid.length);
+        int columnIndex = (int) ((location.getY()/windowSize) * worldGrid[0].length);
+        return getTileState(rowIndex, columnIndex);
+    }
+
+    public void fillWorldArray(int topLeftRow, int topLeftCol, int botRightRow, int botRightCol, int tileStatus) {
+        for(int i = topLeftRow; i < botRightRow; i++) {
+            for(int j = topLeftCol; j < botRightCol; j++) {
+                worldGrid[i][j] = tileStatus;
+            }
+        }
     }
 }
