@@ -42,6 +42,10 @@ public class GameScene extends BorderPane implements Runnable {
     private int mode; //modes for different gameModes e.g. multiple intruders/guards and what the end game conditions are
     public static final double SCALING_FACTOR = 1000/200; //ASSUMING WORLD IS ALWAYS 200 X 200 WHICH MEANS THAT IF WE HAVE A SMALLER MAP IN WORLDBUILDER THE INDIVIDUAL TILES ARE "BIGGER" AND THAT WINDOWSIZE IS 1000
     public static Random random = new Random();
+    private long currentTimeCountDown;
+    private boolean countDown;
+    private boolean visitedTarget;
+    private long firstVisitTime;
 
     public GameScene(Stage primaryStage, Settings settings) {
         this.grid = new GridPane(); //main grid that shows the tiles
@@ -68,6 +72,7 @@ public class GameScene extends BorderPane implements Runnable {
 
         //Actual game "loop" in here
         startGameBut.setOnAction(e -> { //
+            currentTimeCountDown = System.nanoTime();
             if(!gameStarted) {
                 gameStarted = true;
                 worldMap.startAgents();
@@ -96,35 +101,39 @@ public class GameScene extends BorderPane implements Runnable {
         redrawBoard(); //redrawing board otherwise window that displays board and button is not properly sized
         initFullScreen();
     }
+//   he intruder wins if he is 3 seconds in any of the target areas or vists the target area twice with a time
+//   difference of at least 3 seconds. The guards win if the intruder is no more than 0.5 meter away and in sight.
+//   All intruders need to complete their objective or any of them.
+//   If an intruder flees through the entry point before making the target it is a draw
 
     public void haveIntrudersWon(int mode, long delta) {
-
-//        boolean countDown = false;
-//        boolean gameWon = false;
-//        long currentTimeCountDown = System.nanoTime();
+        boolean intrudersWon = false;
+        if(!countDown) {
+            currentTimeCountDown = System.nanoTime();
+        }
         if(worldMap.intruderInTarget()) {
+            if(!visitedTarget) {
+                firstVisitTime = System.nanoTime();
+                visitedTarget = true;
+            }
+            if((System.nanoTime() - currentTimeCountDown) < (3*1e9)) {
+                intrudersWon = true;
+            }
+            countDown = true;
+        } else {
+            countDown = false;
+        }
+        if(visitedTarget && (System.nanoTime() - firstVisitTime) > (3*1e9)) {
+            intrudersWon = true;
+        }
+        if(intrudersWon) {
             gameStarted = false;
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Game Finished");
             alert.setHeaderText(null);
-            alert.setContentText("INTRUDER has reached TARGET");
+            alert.setContentText("INTRUDER has reached TARGET (3 seconds)");
             alert.showAndWait();
             goToMenuBut.fire();
-//            countDown = true;
-//            if(countDown) {
-//                if((System.nanoTime() - currentTimeCountDown)/1e9 < 3) gameWon = true;
-//            } else {
-//                currentTimeCountDown = System.nanoTime();
-//            }
-//            if(gameWon) {
-//                gameStarted = false;
-//                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-//                alert.setTitle("Game Finished");
-//                alert.setHeaderText(null);
-//                alert.setContentText("INTRUDER has reached TARGET");
-//                alert.showAndWait();
-//                goToMenuBut.fire();
-//            }
         }
     }
 
