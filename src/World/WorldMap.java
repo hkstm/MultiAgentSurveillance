@@ -200,7 +200,7 @@ public class WorldMap implements Serializable {
     public int coordinatesToCell(Point2D.Double location) {
         int windowSize = StartWorldBuilder.WINDOW_SIZE;
         int rowIndex = (int) ((location.getX()/windowSize) * worldGrid.length);
-        int columnIndex = (int) ((location.getY()/windowSize) * worldGrid[0].length);
+        int columnIndex = (int) ((location.getY()/windowSize) * worldGrid.length);
         return getTileState(rowIndex, columnIndex);
     }
 

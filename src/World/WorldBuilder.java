@@ -81,7 +81,7 @@ public class WorldBuilder extends BorderPane {
      * Should not update all displayed tiles, only those whose state have been changed in selected WorldMap
      */
     public void createTiles(){
-        System.out.println("Create tiles");
+//        System.out.println("Create tiles");
         for (int r = 0; r < worldMap.getSize(); r++) {
             for (int c = 0; c < worldMap.getSize(); c++) {
                 if(toAdd.get(c + (r * worldMap.getSize())).getTileStatus() != worldMap.getTileState(r, c)) {
@@ -89,11 +89,29 @@ public class WorldBuilder extends BorderPane {
                 }
                 toAdd.get(c + (r * worldMap.getSize())).setOnAction((event) -> {
                     makeAButtonInteractive(event);
+                    System.out.println("Action Detected");
                 });
                 //System.out.println("creating tiles");
                 GridPane.setConstraints(toAdd.get(c + (r * worldMap.getSize())), r, c);
             }
         }
+    }
+
+
+    /**
+     * Makes the World Builder store which keys are pressed
+     */
+    public void initRegionSelection() {
+        scene.setOnKeyPressed(event -> {
+            String codeString = event.getCode().toString();
+
+            if (!currentlyActiveKeys.containsKey(codeString)) {
+                currentlyActiveKeys.put(codeString, true);
+            }
+        });
+        scene.setOnKeyReleased(event ->
+                currentlyActiveKeys.remove(event.getCode().toString())
+        );
     }
 
     /**
@@ -102,21 +120,19 @@ public class WorldBuilder extends BorderPane {
      */
     public void makeAButtonInteractive(ActionEvent event) {
         System.out.println("Making buttons interactive");
+        TileButton button = (TileButton) event.getSource();
         if (!currentlyActiveKeys.containsKey("Q") && !selectingRegion) {
-            TileButton button = (TileButton) event.getSource();
             worldMap.updateTile(button.getRow(), button.getColumn(), activeTile);
             redrawBoard();
             System.out.println("update world map");
             selectingRegion = false;
         } else if(selectingRegion) {
-            TileButton button = (TileButton) event.getSource();
             worldMap.fillWorldArray(qPressedRow, qPressedColumn, button.getRow(), button.getColumn(), activeTile);
             System.out.println("called fillWorldArray");
             selectingRegion = false;
             removeActiveKey("Q");
             redrawBoard();
         } else {
-            TileButton button = (TileButton)event.getSource();
             qPressedRow = button.getRow();
             qPressedColumn = button.getColumn();
             selectingRegion = true;
@@ -150,6 +166,7 @@ public class WorldBuilder extends BorderPane {
             for (int c = 0; c < worldMap.getSize(); c++) {
                 toAdd.add(new TileButton(r, c, tileImgArray[worldMap.getTileState(r,c)], tileSize, worldMap.getTileState(r,c)));
                 toAdd.get(c + (r * worldMap.getSize())).setOnAction((event) -> {
+//                    System.out.println("Action detected");
                     makeAButtonInteractive(event);
                 });
                 GridPane.setConstraints(toAdd.get(toAdd.size()-1), r, c);
@@ -275,22 +292,6 @@ public class WorldBuilder extends BorderPane {
         saveBoardBut.setMaxWidth(Double.MAX_VALUE);
         tileTypeSelection.setMaxWidth(Double.MAX_VALUE);
         buttonContainer.getChildren().addAll(goToMenuBut, restartGameBut, saveBoardBut,  tileTypeSelection);
-    }
-
-    /**
-     * Makes the World Builder store which keys are pressed
-     */
-    public void initRegionSelection() {
-        scene.setOnKeyPressed(event -> {
-            String codeString = event.getCode().toString();
-            System.out.println("codeString: " + codeString);
-            if (!currentlyActiveKeys.containsKey(codeString)) {
-                currentlyActiveKeys.put(codeString, true);
-            }
-        });
-        scene.setOnKeyReleased(event ->
-                currentlyActiveKeys.remove(event.getCode().toString())
-        );
     }
 
     /**
