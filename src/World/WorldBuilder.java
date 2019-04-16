@@ -91,6 +91,7 @@ public class WorldBuilder extends BorderPane {
                     makeAButtonInteractive(event);
                     System.out.println("Action Detected");
                 });
+                toAdd.get(c + (r * worldMap.getSize())).arm();
                 //System.out.println("creating tiles");
                 GridPane.setConstraints(toAdd.get(c + (r * worldMap.getSize())), r, c);
             }
@@ -169,6 +170,7 @@ public class WorldBuilder extends BorderPane {
 //                    System.out.println("Action detected");
                     makeAButtonInteractive(event);
                 });
+                toAdd.get(c + (r * worldMap.getSize())).arm();
                 GridPane.setConstraints(toAdd.get(toAdd.size()-1), r, c);
             }
         }
