@@ -64,19 +64,6 @@ public class Agent implements Runnable{
         }
 
     public void run() {
-        counter++;
-        if(counter == 1)
-        {
-            updateKnownTerrain(10, 45);
-            for (int i = 0;i < this.knownTerrain.length;i++)
-            {
-                for (int j = 0;j < this.knownTerrain[0].length;j++)
-                {
-                    //System.out.print(this.knownTerrain[i][j]+" ");
-                }
-                System.out.println();
-            }
-        }
         previousTime = System.nanoTime();
         previousPosition = new Point2D.Double(position.getX(), position.getY());
         /**
@@ -84,6 +71,15 @@ public class Agent implements Runnable{
          */
         goalPosition = new Point2D.Double(200, 200);
         while(!exitThread) {
+                updateKnownTerrain(10, 45);
+                for (int i = 0;i < this.knownTerrain.length;i++)
+                {
+                    for (int j = 0;j < this.knownTerrain[0].length;j++)
+                    {
+                        System.out.print(this.knownTerrain[i][j]+" ");
+                    }
+                    System.out.println();
+                }
             currentTime = System.nanoTime();
             delta = currentTime - previousTime;
             delta /= 1e9; //makes it in seconds
