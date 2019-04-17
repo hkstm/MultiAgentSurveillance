@@ -6,42 +6,30 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 
 public class TileButton extends Button {
-    private int x;
-    private int y;
+    private int r;
+    private int c;
     private int tileStatus;
 
-    public TileButton(int x, int y, Image image, int tileSize, int tileStatus) {
-        super(null);
+    public TileButton(int r, int c, Image image, int tileSize, int tileStatus) {
+        super();
         setMinSize(tileSize, tileSize);
         setMaxSize(tileSize, tileSize);
         BackgroundImage bImage = new BackgroundImage(image, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, new BackgroundSize(tileSize, tileSize, true, true, true, false));
         Background backGround = new Background(bImage);
         setBackground(backGround);
-        this.x = x;
-        this.y = y;
+        this.r = r;
+        this.c = c;
         this.tileStatus = tileStatus;
     }
-    public int getX() {
-        return x;
+    public int getRow() {
+        return r;
     }
 
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    public int getY() {
-        return y;
-    }
-
-    public void setY(int y) {
-        this.y = y;
+    public int getColumn() {
+        return c;
     }
 
     public int getTileStatus() {
         return tileStatus;
-    }
-
-    public void setTileStatus(int tileStatus) {
-        this.tileStatus = tileStatus;
     }
 }

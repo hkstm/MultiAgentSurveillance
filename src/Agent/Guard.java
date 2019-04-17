@@ -59,7 +59,7 @@ public class Guard extends Agent {
             {
                 public void run()
                 {
-                    //worldMap.updateTile((int)position.getX(), (int)position.getY(), SENTRY);
+                    //worldMap.updateTile((int)position.getRow(), (int)position.getColumn(), SENTRY);
                     knownTerrain[(int)position.getX()][(int)position.getY()] = SENTRY;
                 }
             }
