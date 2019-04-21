@@ -108,6 +108,7 @@ public class GameScene extends BorderPane implements Runnable {
 
     public void haveIntrudersWon(int mode, long delta) {
         boolean intrudersWon = false;
+        String winText = "";
         if(!countDown) {
             currentTimeCountDown = System.nanoTime();
         }
@@ -118,6 +119,7 @@ public class GameScene extends BorderPane implements Runnable {
             }
             if((System.nanoTime() - currentTimeCountDown) < (3*1e9)) {
                 intrudersWon = true;
+                winText = "INTRUDER has reached ";
             }
             countDown = true;
         } else {
@@ -131,7 +133,7 @@ public class GameScene extends BorderPane implements Runnable {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Game Finished");
             alert.setHeaderText(null);
-            alert.setContentText("INTRUDER has reached TARGET (3 seconds)");
+            alert.setContentText("INTRUDER has reached TARGET");
             alert.showAndWait();
             goToMenuBut.fire();
         }

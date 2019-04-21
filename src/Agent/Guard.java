@@ -21,13 +21,10 @@ public class Guard extends Agent {
     double viewingAngle;
 
 
-    public Guard(Point2D.Double position, double direction)
-    {
+    public Guard(Point2D.Double position, double direction) {
         super(position, direction);
         //this.knownTerrain = worldMap.getWorldGrid();
     }
-
-
 
     public boolean equals(Object obj) {
         boolean equals = false;
@@ -39,7 +36,7 @@ public class Guard extends Agent {
         return equals;
     }
     public int[] getVisualRange(){
-        if (worldMap.coordinatesToCell(position) == TARGET){ // i.e. guard in on a tower
+        if (worldMap.coordinatesToCell(position) == TARGET){ // i.e. guard in on a tower //shouldnt this be SENTRY then not TARGET?
            visualRange[0] = 2;
            visualRange[1] = 15;
            viewingAngle = 30;

@@ -51,32 +51,32 @@ public class Agent implements Runnable{
 
     public Agent(Point2D.Double position, double direction) {
         System.out.println("agent constructor called");
-            this.position = position;
-            this.direction = direction;
-            this.goalPosition = position;
-            for (int i = 0;i < knownTerrain.length;i++)
+        this.position = position;
+        this.direction = direction;
+        this.goalPosition = position;
+        for (int i = 0;i < knownTerrain.length;i++)
+        {
+            for (int j = 0;j < knownTerrain[0].length;j++)
             {
-                for (int j = 0;j < knownTerrain[0].length;j++)
-                {
-                    knownTerrain[i][j] = 0;
-                }
+                knownTerrain[i][j] = 0;
             }
         }
+    }
 
     public void run() {
-        counter++;
-        if(counter == 1)
-        {
-            updateKnownTerrain(10, 45);
-            for (int i = 0;i < this.knownTerrain.length;i++)
-            {
-                for (int j = 0;j < this.knownTerrain[0].length;j++)
-                {
-                    //System.out.print(this.knownTerrain[i][j]+" ");
-                }
-                System.out.println();
-            }
-        }
+//        counter++;
+//        if(counter == 1)
+//        {
+//            updateKnownTerrain(10, 45);
+//            for (int i = 0;i < this.knownTerrain.length;i++)
+//            {
+//                for (int j = 0;j < this.knownTerrain[0].length;j++)
+//                {
+//                    //System.out.print(this.knownTerrain[i][j]+" ");
+//                }
+//                System.out.println();
+//            }
+//        }
         previousTime = System.nanoTime();
         previousPosition = new Point2D.Double(position.getX(), position.getY());
         /**

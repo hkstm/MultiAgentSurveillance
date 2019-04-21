@@ -1,5 +1,4 @@
 package Agent;
-import Agent.Guard;
 import Agent.Agent;
 import World.WorldMap;
 
