@@ -67,8 +67,8 @@ public class GameScene extends BorderPane implements Runnable {
 
         this.startGameBut = new Button("Start/Stop Game"); //should stop and start game, not properly working atm
         Agent.worldMap = worldMap;
-        worldMap.addAgent(new Intruder(new Point2D.Double(50, 50), 270));
-        worldMap.addAgent(new Intruder(new Point2D.Double(500, 600), 180));
+        //worldMap.addAgent(new Intruder(new Point2D.Double(100, 100), 270));
+        worldMap.addAgent(new Intruder(new Point2D.Double(300, 500), 0));
 
         //Actual game "loop" in here
         startGameBut.setOnAction(e -> { //
@@ -271,6 +271,7 @@ public class GameScene extends BorderPane implements Runnable {
             this.primaryStage.setTitle("Multi-Agent Surveillance Settings");
             this.primaryStage.setScene(settingsScene.getSettingsScene());
             this.primaryStage.show();
+            worldMap.removeAllAgents();
         });
         this.goToMenuBut.setWrapText(true);
     }
