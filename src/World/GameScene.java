@@ -68,7 +68,7 @@ public class GameScene extends BorderPane implements Runnable {
         this.startGameBut = new Button("Start/Stop Game"); //should stop and start game, not properly working atm
         Agent.worldMap = worldMap;
         //worldMap.addAgent(new Intruder(new Point2D.Double(100, 100), 270));
-        worldMap.addAgent(new Intruder(new Point2D.Double(300, 500), 0));
+        worldMap.addAgent(new Intruder(new Point2D.Double(500, 500), 0));
 
         //Actual game "loop" in here
         startGameBut.setOnAction(e -> { //
@@ -195,8 +195,7 @@ public class GameScene extends BorderPane implements Runnable {
         for(Agent agent : worldMap.getAgents()) {
             if(agent instanceof Guard) {
                 Guard guard = (Guard) agent;
-                AgentCircle circle = new AgentCircle(guard.getPosition());
-                circle.setFill(Color.PEACHPUFF);
+                AgentCircle circle = new AgentCircle(guard);
 //                Pane tmpPane = new Pane();
 //                tmpPane.getChildren().addAll(circle);
 //                agentGroup.getChildren().add(tmpPane);
@@ -204,8 +203,7 @@ public class GameScene extends BorderPane implements Runnable {
             }
             if(agent instanceof Intruder) {
                 Intruder intruder = (Intruder) agent;
-                AgentCircle circle = new AgentCircle(intruder.getPosition());
-                circle.setFill(Color.DARKRED);
+                AgentCircle circle = new AgentCircle(intruder);
 //                Pane tmpPane = new Pane();
 //                tmpPane.getChildren().addAll(circle);
 //                agentGroup.getChildren().add(tmpPane);
@@ -301,7 +299,13 @@ public class GameScene extends BorderPane implements Runnable {
         grid.getChildren().clear();
         createTiles();
         createAgents();
+        drawCones();
         agentGroup.toFront();
+    }
+
+    public void drawCones() {
+        worldMap.createCones();
+        agentGroup.getChildren().addAll(worldMap.getAgentsCones());
     }
 
     public void createTiles() {

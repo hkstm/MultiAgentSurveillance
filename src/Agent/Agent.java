@@ -1,5 +1,7 @@
 package Agent;
 import World.WorldMap;
+import javafx.scene.paint.Color;
+
 import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -34,6 +36,10 @@ public class Agent implements Runnable{
     protected volatile double yGoal;
     protected double convertedDistance;
     protected double currentSpeed;
+    protected Color color;
+
+    protected double viewingAngle;
+    protected double[] visualRange;
 
     public static WorldMap worldMap;
     protected double currentTime;
@@ -54,10 +60,9 @@ public class Agent implements Runnable{
         this.position = position;
         this.direction = direction;
         this.goalPosition = position;
-        for (int i = 0;i < knownTerrain.length;i++)
-        {
-            for (int j = 0;j < knownTerrain[0].length;j++)
-            {
+        this.visualRange = new double[2];
+        for (int i = 0;i < knownTerrain.length;i++) {
+            for (int j = 0;j < knownTerrain[0].length;j++) {
                 knownTerrain[i][j] = 8;
             }
         }
@@ -75,13 +80,11 @@ public class Agent implements Runnable{
             {
                 for (int i = 0; i < knownTerrain.length; i++) {
                     for (int j = 0; j < knownTerrain[0].length; j++) {
-                        //System.out.print(knownTerrain[i][j] + " ");
+                        //System.out.print(knownTerrain[i][j] + " knownterrain");
                     }
-                    //System.out.println();
                 }
             }
-            System.out.println();
-            System.out.println();
+            //DONT PRINT EMPTY STRINGS THANKS
             currentTime = System.nanoTime();
             delta = currentTime - previousTime;
             delta /= 1e9; //makes it in seconds
@@ -461,6 +464,30 @@ public class Agent implements Runnable{
 
     public void setDirection(double direction) {
         this.direction = direction;
+    }
+
+    public double getViewingAngle() {
+        return viewingAngle;
+    }
+
+    public void setViewingAngle(double viewingAngle) {
+        this.viewingAngle = viewingAngle;
+    }
+
+    public double[] getVisualRange() {
+        return visualRange;
+    }
+
+    public void setVisualRange(double[] visualRange) {
+        this.visualRange = visualRange;
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
     }
 }
 
