@@ -1,5 +1,6 @@
 package Agent;
 import World.WorldMap;
+import javafx.scene.paint.Color;
 
 import java.awt.geom.Point2D;
 import java.util.Random;
@@ -10,7 +11,7 @@ import static World.WorldMap.*;
 
 /**
  * A subclass of Agent for the Intruders
- * @author Benjamin
+ * @author Benjamin, Kailhan
  */
 
 public class Intruder extends Agent{
@@ -22,9 +23,12 @@ public class Intruder extends Agent{
      * @param direction is the angle which the agent is facing, this spans from -180 to 180 degrees
      */
 
-    public Intruder(Point2D.Double position, double direction)
-    {
+    public Intruder(Point2D.Double position, double direction) {
         super(position, direction);
+        this.viewingAngle = 45;
+        this.visualRange[0] = 0;
+        this.visualRange[1] = 7.5;
+        this.color = Color.LIGHTGOLDENRODYELLOW;
         //this.knownTerrain = worldMap.getWorldGrid();
         this.tired = false;
         for(int i = 1;i < 200;i++) {

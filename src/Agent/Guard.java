@@ -1,5 +1,6 @@
 package Agent;
 import World.WorldMap;
+import javafx.scene.paint.Color;
 
 import java.awt.geom.Point2D;
 import java.util.Timer;
@@ -16,18 +17,14 @@ public class Guard extends Agent {
      * @author Benjamin, Thibaut
      */
 
-    double speed = 1.4;
-    int[] visualRange = new int[2];
-    double viewingAngle;
-
-
-    public Guard(Point2D.Double position, double direction)
-    {
+    public Guard(Point2D.Double position, double direction) {
         super(position, direction);
+        this.viewingAngle = 45;
+        this.visualRange[0] = 0;
+        this.visualRange[1] = 6;
+        this.color = Color.AZURE;
         //this.knownTerrain = worldMap.getWorldGrid();
     }
-
-
 
     public boolean equals(Object obj) {
         boolean equals = false;
@@ -38,21 +35,19 @@ public class Guard extends Agent {
         if((o.direction == this.direction) && (o.position.equals(this.position))) equals = true;
         return equals;
     }
-    public int[] getVisualRange(){
-        if (worldMap.coordinatesToCell(position) == TARGET){ // i.e. guard in on a tower
-           visualRange[0] = 2;
-           visualRange[1] = 15;
-           viewingAngle = 30;
+    public void updateVisualRange(){
+        if (worldMap.coordinatesToCell(position) == SENTRY) { // i.e. guard in on a tower //shouldnt this be SENTRY then not TARGET?
+           this.visualRange[0] = 2;
+           this.visualRange[1] = 15;
+           this.viewingAngle = 30;
+        } else {
+            this.visualRange[0] = 0;
+            this.visualRange[1] = 6;
+            this.viewingAngle = 45;
         }
-        else {
-            visualRange[0] = 0;
-            visualRange[1] = 6;
-            viewingAngle = 45;
-        }
-        return visualRange;
     }
-    public void openTower()
-    {
+
+    public void openTower() {
         if (worldMap.coordinatesToCell(position) == SENTRY)
         {
             class OpenTower extends TimerTask

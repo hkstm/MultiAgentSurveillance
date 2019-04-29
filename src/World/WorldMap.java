@@ -1,10 +1,15 @@
 package World;
 import Agent.*;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Shape;
 
 import java.awt.geom.Point2D;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+
+import static World.GameScene.SCALING_FACTOR;
 
 /**
  * WorldMap data structure
@@ -34,6 +39,7 @@ public class WorldMap implements Serializable {
     public static final int MARKER_4 = 44;
     public static final int MARKER_5 = 45;
     private List<Agent> agents = new ArrayList<Agent>();
+    private List<Shape> agentsCones = new ArrayList<Shape>();
     private List<Thread> agentThreads = new ArrayList<Thread>();
 
     private int size;
@@ -210,5 +216,69 @@ public class WorldMap implements Serializable {
                 worldGrid[i][j] = tileStatus;
             }
         }
+    }
+
+    public boolean isNotEnterableTile(int toCheck) {
+        if((toCheck == STRUCTURE) || (toCheck == WALL)) return true;
+        else return false;
+    }
+
+    public boolean isVisionObscuring(int toCheck) {
+        if ((toCheck == STRUCTURE) || (toCheck == WALL) || (toCheck == DOOR) ||
+                (toCheck == WINDOW)) {
+            return true;
+        }
+        else return false;
+    }
+
+    public void createCones() {
+        agentsCones.clear();
+        for(Agent agent : agents) {
+            double x = agent.getPosition().getX();
+            double y = agent.getPosition().getY();
+            double visualRangeMin = agent.getVisualRange()[0] * SCALING_FACTOR; //max visionRange
+            double visualRangeMax = agent.getVisualRange()[1] * SCALING_FACTOR; //max visionRange
+            double direction = agent.getDirection();
+            double viewingAngle = agent.getViewingAngle();
+            double xRightTop = x + (visualRangeMax * Math.cos(Math.toRadians(direction + viewingAngle/2)));
+            double yRightTop = y + (visualRangeMax * Math.sin(Math.toRadians(direction + viewingAngle/2)));
+            double xLeftTop = x + (visualRangeMax * Math.cos(Math.toRadians(direction - viewingAngle/2)));
+            double yLeftTop = y + (visualRangeMax * Math.sin(Math.toRadians(direction - viewingAngle/2)));
+            double xRightBot = x + (visualRangeMin * Math.cos(Math.toRadians(direction + viewingAngle/2)));
+            double yRightBot = y + (visualRangeMin * Math.sin(Math.toRadians(direction + viewingAngle/2)));
+            double xLeftBot = x + (visualRangeMin * Math.cos(Math.toRadians(direction - viewingAngle/2)));
+            double yLeftBot = y + (visualRangeMin * Math.sin(Math.toRadians(direction - viewingAngle/2)));
+            Circle circle = new Circle(x, y, visualRangeMax);
+            double[] points = new double[]{
+                    xLeftBot, yLeftBot,
+                    xRightBot, yRightBot,
+                    xRightTop, yRightTop,
+                    xLeftTop, yLeftTop,
+            };
+            Polygon truncatedTriangle = new Polygon(points);
+            Shape cone = Shape.intersect(circle, truncatedTriangle);
+
+
+            for(int r = 0; r < worldGrid.length; r++) {
+                for(int c = 0; c < worldGrid[0].length; c++) {
+                    if(isVisionObscuring(worldGrid[r][c])) {
+//                       double xBot = SCALING_FACTOR * worldGrid.length;
+//                       Polygon polygon = new Polygon();
+//                       cone = Shape.subtract(cone, polygon);
+                    }
+                }
+            }
+            cone.setSmooth(true);
+            cone.setFill(agent.getColor());
+            agentsCones.add(cone);
+        }
+    }
+
+    public List<Shape> getAgentsCones() {
+        return agentsCones;
+    }
+
+    public void setAgentsCones(List<Shape> agentsCones) {
+        this.agentsCones = agentsCones;
     }
 }
