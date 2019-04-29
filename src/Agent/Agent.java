@@ -76,15 +76,18 @@ public class Agent implements Runnable{
          */
         goalPosition = new Point2D.Double(200, 200);
         while(!exitThread) {
-            updateKnownTerrain(10, 45);
+            updateKnownTerrain(10*SCALING_FACTOR, 90);
             {
                 for (int i = 0; i < knownTerrain.length; i++) {
                     for (int j = 0; j < knownTerrain[0].length; j++) {
-                        //System.out.print(knownTerrain[i][j] + " knownterrain");
+                        System.out.print(knownTerrain[i][j]);
                     }
+                    System.out.println();
                 }
             }
-            //DONT PRINT EMPTY STRINGS THANKS
+            System.out.println();
+            System.out.println();
+            //THE EMPTY STRINGS ARE NECESSARY PLEASE LEAVE THEM :)
             currentTime = System.nanoTime();
             delta = currentTime - previousTime;
             delta /= 1e9; //makes it in seconds
@@ -253,6 +256,7 @@ public class Agent implements Runnable{
         Point corner3 = new Point((int) left.getX(), (int) left.getY());
         Point2D.Double right = getMove(radius, direction+(angle/2));
         Point corner4 = new Point((int) right.getX(), (int) right.getY());
+        //possible to go < -180 and > 180 here, fix this in the future
         int XMax = (Math.max((int) Math.max(corner1.getX(), corner2.getX()), (int) Math.max(corner3.getX(), corner4.getX()))/10);
         int XMin = (Math.min((int) Math.min(corner1.getX(), corner2.getX()), (int) Math.min(corner3.getX(), corner4.getX()))/10);
         int YMax = (Math.max((int) Math.max(corner1.getY(), corner2.getY()), (int) Math.max(corner3.getY(), corner4.getY()))/10);
@@ -273,13 +277,12 @@ public class Agent implements Runnable{
         {
             YMin = 0;
         }
-        //System.out.println("XMax: "+XMax+" XMin: "+XMin+" YMax "+YMax+" YMin "+YMin);
         //checking if the points (each corner of each square in the bounds) is within the circle of search
         for (int i = YMin;i <= YMax;i++)
         {
             for (int j = XMin;j <= XMax;j++)
             {
-                if (Math.abs(direction) < 90)
+                if (Math.abs(direction) < 90) //this seems like a wierd condition
                 {
                     //top left corner
                     //System.out.println                                                                                                                               (Math.abs(Math.abs(Math.abs(direction)-(180-Math.abs(Math.atan((Math.abs(position.getX()/10-j))/(Math.abs(position.getY()/10-i))))))));
