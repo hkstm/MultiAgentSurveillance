@@ -77,16 +77,16 @@ public class Agent implements Runnable{
         goalPosition = new Point2D.Double(200, 200);
         while(!exitThread) {
             updateKnownTerrain(10*SCALING_FACTOR, 90);
-            {
-                for (int i = 0; i < knownTerrain.length; i++) {
-                    for (int j = 0; j < knownTerrain[0].length; j++) {
-                        System.out.print(knownTerrain[i][j]);
-                    }
-                    System.out.println();
-                }
-            }
-            System.out.println();
-            System.out.println();
+            //{
+            //    for (int i = 0; i < knownTerrain.length; i++) {
+            //        for (int j = 0; j < knownTerrain[0].length; j++) {
+            //            System.out.print(knownTerrain[i][j]);
+            //        }
+            //        System.out.println();
+            //    }
+            //}
+            //System.out.println();
+            //System.out.println();
             //THE EMPTY STRINGS ARE NECESSARY PLEASE LEAVE THEM :)
             currentTime = System.nanoTime();
             delta = currentTime - previousTime;
