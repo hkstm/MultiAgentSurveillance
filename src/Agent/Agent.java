@@ -300,7 +300,7 @@ public class Agent implements Runnable{
                     //bottom left corner
                     else if (Math.sqrt(((position.getX()/10-j) * (position.getX()/10-j))+((position.getY()/10-(i+1))*(position.getY()/10-(i+1)))) <= radius && Math.abs(Math.abs(direction)-(Math.abs(Math.toDegrees(Math.atan((Math.abs(position.getX()/10-j)) / (Math.abs(position.getY()/10-(i+1)))))))) <= angle/2)
                     {
-                        /System.out.println("4");
+                        //System.out.println("4");
                         knownTerrain[i][j] = worldMap.getTileState(i, j);
                     }
                 }
