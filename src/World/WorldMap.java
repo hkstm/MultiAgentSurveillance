@@ -61,7 +61,6 @@ public class WorldMap implements Serializable {
             worldGrid[i][0] = WALL;
             worldGrid[size-1][i] = WALL;
             worldGrid[i][size-1] = WALL;
-            worldGrid[i][45] = WALL;
         }
     }
 

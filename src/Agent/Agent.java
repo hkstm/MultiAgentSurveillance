@@ -476,12 +476,8 @@ public class Agent implements Runnable{
         collisionPoints[collisionPoints.length-1] = y + (visualRangeMax * Math.sin(Math.toRadians(direction - viewingAngle/2)));
         collisionPoints[collisionPoints.length-4] = x + (visualRangeMax * Math.cos(Math.toRadians(direction + viewingAngle/2)));
         collisionPoints[collisionPoints.length-3] = y + (visualRangeMax * Math.sin(Math.toRadians(direction + viewingAngle/2)));
-        for(int i = 0; i < collisionPoints.length;i++) {
-            if(collisionPoints[i] == 0) System.out.println("something is 0 in collision, not good");
-        }
         Polygon cutout = new Polygon(collisionPoints);
         cone = Shape.subtract(cone, Shape.intersect(cone, cutout));
-//        cone = cutout;
         cone.setSmooth(true);
         cone.setFill(color);
         viewingCone = cone;
@@ -492,7 +488,8 @@ public class Agent implements Runnable{
     }
 
     public static int locationToWorldgrid(double toBeConverted) {
-        return (int)(toBeConverted * (1/((200/worldMap.getWorldGrid().length)*SCALING_FACTOR)));
+        int supposedWorldSize = 200;
+        return (int)(toBeConverted * (1/((supposedWorldSize/worldMap.getWorldGrid().length)*SCALING_FACTOR)));
     }
 
     public static double angleBetweenTwoPointsWithFixedPoint(double point1X, double point1Y,
