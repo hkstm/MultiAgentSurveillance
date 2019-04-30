@@ -9,7 +9,12 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
 import javafx.stage.Stage;
+
+import java.awt.*;
 import java.awt.geom.Point2D;
 import java.io.*;
 import java.util.Random;
@@ -68,7 +73,7 @@ public class GameScene extends BorderPane implements Runnable {
         this.startGameBut = new Button("Start/Stop Game"); //should stop and start game, not properly working atm
         Agent.worldMap = worldMap;
         //worldMap.addAgent(new Intruder(new Point2D.Double(100, 100), 270));
-        worldMap.addAgent(new Intruder(new Point2D.Double(500, 500), 0));
+        worldMap.addAgent(new Intruder(new Point2D.Double(500, 500), 92));
 
         //Actual game "loop" in here
         startGameBut.setOnAction(e -> { //
@@ -300,6 +305,7 @@ public class GameScene extends BorderPane implements Runnable {
         createTiles();
         createAgents();
         drawCones();
+//        drawTileShapes();
         agentGroup.toFront();
     }
 
@@ -308,13 +314,18 @@ public class GameScene extends BorderPane implements Runnable {
         agentGroup.getChildren().addAll(worldMap.getAgentsCones());
     }
 
+    public void drawTileShapes() {
+        worldMap.createWorldGridShapes();
+        agentGroup.getChildren().addAll(worldMap.getWorldGridShapes());
+    }
+
     public void createTiles() {
         for (int r = 0; r < worldMap.getSize(); r++) {
             for (int c = 0; c < worldMap.getSize(); c++) {
                 //System.out.println("r" + r + "c" + c);
                 ImageView tmpImage = new ImageView(tileImgArray[worldMap.getTileState(r, c)]);
                 tmpImage.setSmooth(false);
-                grid.add((tmpImage), r, c);
+                grid.add((tmpImage), c, r);
             }
         }
     }
