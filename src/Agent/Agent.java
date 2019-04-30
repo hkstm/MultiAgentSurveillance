@@ -76,7 +76,7 @@ public class Agent implements Runnable{
          */
         goalPosition = new Point2D.Double(200, 200);
         while(!exitThread) {
-            updateKnownTerrain(10*SCALING_FACTOR, 90);
+            //updateKnownTerrain(10*SCALING_FACTOR, 45);
             //{
             //    for (int i = 0; i < knownTerrain.length; i++) {
             //        for (int j = 0; j < knownTerrain[0].length; j++) {
@@ -89,21 +89,11 @@ public class Agent implements Runnable{
             //System.out.println();
             //THE EMPTY STRINGS ARE NECESSARY PLEASE LEAVE THEM :)
             currentTime = System.nanoTime();
-            delta = currentTime - previousTime;
-            delta /= 1e9; //makes it in seconds
+            delta = (currentTime - previousTime)/1e9; //puts it in seconds?
             previousTime = currentTime;
             currentSpeed = ((position.distance(previousPosition)/SCALING_FACTOR)/delta);
             //System.out.println("currentSpeed:" + currentSpeed);
-            previousPosition.setLocation(position.getX(), position.getY());
             checkForAgentSound();
-            double walkingDistance = (1.4 * SCALING_FACTOR) * (delta);
-            if(legalMoveCheck(walkingDistance)) {
-                move(walkingDistance);
-            } else {
-                double turningAngle = Math.random()*90-45;
-                turn(turningAngle);
-            }
-
             updateGoalPosition();
             xGoal = getGoalPosition().getX();
             yGoal = getGoalPosition().getY();
