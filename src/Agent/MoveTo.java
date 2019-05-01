@@ -27,7 +27,7 @@ public class MoveTo extends Routine {
     }
     @Override
     public void act(Agent agent, WorldMap worldMap) {
-        if(isRunning()){
+        if(isWalking()){
             if(!isAtDestination(agent)){
                 Move(agent);
             }
@@ -49,18 +49,5 @@ public class MoveTo extends Routine {
         }
         routine.act(agent, worldMap);
     }
-    public void start() {
-        System.out.println(">>> Starting routine: " + this.getClass().getSimpleName());
-        this.state = RoutineState.Running;
-    }
 
-    protected void succeed() {
-        System.out.println(">>> Routine: " + this.getClass().getSimpleName() + " SUCCEEDED");
-        this.state = RoutineState.Success;
-    }
-
-    protected void fail() {
-        System.out.println(">>> Routine: " + this.getClass().getSimpleName() + " FAILED");
-        this.state = RoutineState.Failure;
-    }
 }

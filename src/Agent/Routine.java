@@ -10,7 +10,7 @@ public abstract class Routine {
     public enum RoutineState {
         Success,
         Failure,
-        Running
+        walking
     }
 
     protected RoutineState state;
@@ -18,18 +18,22 @@ public abstract class Routine {
     protected Routine() { }
 
     public void start() {
-        this.state = RoutineState.Running;
+        System.out.println(">>> Starting routine: " + this.getClass().getSimpleName());
+        this.state = RoutineState.walking;
     }
 
     public abstract void reset();
 
     public abstract void act(Agent agent, WorldMap worldMap);
 
+
     protected void succeed() {
+        System.out.println(">>> Routine: " + this.getClass().getSimpleName() + " SUCCEEDED");
         this.state = RoutineState.Success;
     }
 
     protected void fail() {
+        System.out.println(">>> Routine: " + this.getClass().getSimpleName() + " FAILED");
         this.state = RoutineState.Failure;
     }
 
@@ -41,8 +45,8 @@ public abstract class Routine {
         return state.equals(RoutineState.Failure);
     }
 
-    public boolean isRunning() {
-        return state.equals(RoutineState.Running);
+    public boolean isWalking() {
+        return state.equals(RoutineState.walking);
     }
 
     public RoutineState getState() {
