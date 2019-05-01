@@ -8,6 +8,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import static World.WorldMap.*;
+import static World.GameScene.SCALING_FACTOR;
 
 /**
  * A subclass of Agent for the Intruders
@@ -16,6 +17,9 @@ import static World.WorldMap.*;
 
 public class Intruder extends Agent{
     private boolean tired;
+    private int visionRadius = 10;
+    private int visionAngle = 45;
+    private double walkingSpeed = 1.4; //m/s
 
     /**
      * An Intruder constructor with an empty internal map
@@ -100,5 +104,36 @@ public class Intruder extends Agent{
             TimerTask openWindow = new OpenWindow();
             timer.schedule(openWindow, 3000);
         }
+    }
+    public Point2D.Double gameTreeIntruder(double timeStep)
+    {
+        previousPosition.setLocation(position.getX(), position.getY());
+        updateKnownTerrain(visionRadius*SCALING_FACTOR, viewingAngle);
+        Point2D goal = getGoalPosition();
+        double walkingDistance = (walkingSpeed*SCALING_FACTOR*timeStep);
+        double xDifference = Math.abs(goal.getX()-position.getX());
+        double yDifference = Math.abs(goal.getY()-position.getY());
+        double angleToGoal = Math.atan(xDifference/yDifference);
+        if(goal.getX() >= position.getX() && goal.getY() >= position.getY())
+        {
+            turn(180-angleToGoal);
+        }
+        else if(goal.getX() >= position.getX() && goal.getY() <= position.getY())
+        {
+            turn(angleToGoal);
+        }
+        else if(goal.getX() <= position.getX() && goal.getY() >= position.getY())
+        {
+            turn(-(180-angleToGoal));
+        }
+        else if(goal.getX() <= position.getX() && goal.getY() <= position.getY())
+        {
+            turn(-angleToGoal);
+        }
+        if(legalMoveCheck(walkingDistance))
+        {
+            move(walkingDistance);
+        }
+        return position;
     }
 }

@@ -45,7 +45,7 @@ public class GameScene extends BorderPane implements Runnable {
 
     private boolean gameStarted = false; //used for start and stop button
     private int mode; //modes for different gameModes e.g. multiple intruders/guards and what the end game conditions are
-    public static final double SCALING_FACTOR = 1000/200; //ASSUMING WORLD IS ALWAYS 200 X 200 WHICH MEANS THAT IF WE HAVE A SMALLER MAP IN WORLDBUILDER THE INDIVIDUAL TILES ARE "BIGGER" AND THAT WINDOWSIZE IS 1000
+    public static final double SCALING_FACTOR = 1000/100; //ASSUMING WORLD IS ALWAYS 100 X 100 WHICH MEANS THAT IF WE HAVE A SMALLER MAP IN WORLDBUILDER THE INDIVIDUAL TILES ARE "BIGGER" AND THAT WINDOWSIZE IS 1000
     public static Random random = new Random();
     private long currentTimeCountDown;
     private boolean countDown;
