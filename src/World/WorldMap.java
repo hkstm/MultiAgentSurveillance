@@ -1,8 +1,7 @@
 package World;
 import Agent.*;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Polygon;
-import javafx.scene.shape.Shape;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.*;
 
 import java.awt.geom.Point2D;
 import java.io.Serializable;
@@ -38,9 +37,10 @@ public class WorldMap implements Serializable {
     public static final int MARKER_3 = 43;
     public static final int MARKER_4 = 44;
     public static final int MARKER_5 = 45;
-    private List<Agent> agents = new ArrayList<Agent>();
-    private List<Shape> agentsCones = new ArrayList<Shape>();
-    private List<Thread> agentThreads = new ArrayList<Thread>();
+    private List<Agent> agents = new ArrayList<>();
+    private List<Thread> agentThreads = new ArrayList<>();
+    private List<Shape> agentsCones = new ArrayList<>();
+    private List<Shape> worldGridShapes = new ArrayList<>();
 
     private int size;
 
@@ -205,8 +205,8 @@ public class WorldMap implements Serializable {
 
     public int coordinatesToCell(Point2D.Double location) {
         int windowSize = StartWorldBuilder.WINDOW_SIZE;
-        int rowIndex = (int) ((location.getX()/windowSize) * worldGrid.length);
-        int columnIndex = (int) ((location.getY()/windowSize) * worldGrid.length);
+        int rowIndex = (int) ((location.getY()/windowSize) * worldGrid.length);
+        int columnIndex = (int) ((location.getX()/windowSize) * worldGrid.length);
         return getTileState(rowIndex, columnIndex);
     }
 
@@ -234,44 +234,34 @@ public class WorldMap implements Serializable {
     public void createCones() {
         agentsCones.clear();
         for(Agent agent : agents) {
-            double x = agent.getPosition().getX();
-            double y = agent.getPosition().getY();
-            double visualRangeMin = agent.getVisualRange()[0] * SCALING_FACTOR; //max visionRange
-            double visualRangeMax = agent.getVisualRange()[1] * SCALING_FACTOR; //max visionRange
-            double direction = agent.getDirection();
-            double viewingAngle = agent.getViewingAngle();
-            double xRightTop = x + (visualRangeMax * Math.cos(Math.toRadians(direction + viewingAngle/2)));
-            double yRightTop = y + (visualRangeMax * Math.sin(Math.toRadians(direction + viewingAngle/2)));
-            double xLeftTop = x + (visualRangeMax * Math.cos(Math.toRadians(direction - viewingAngle/2)));
-            double yLeftTop = y + (visualRangeMax * Math.sin(Math.toRadians(direction - viewingAngle/2)));
-            double xRightBot = x + (visualRangeMin * Math.cos(Math.toRadians(direction + viewingAngle/2)));
-            double yRightBot = y + (visualRangeMin * Math.sin(Math.toRadians(direction + viewingAngle/2)));
-            double xLeftBot = x + (visualRangeMin * Math.cos(Math.toRadians(direction - viewingAngle/2)));
-            double yLeftBot = y + (visualRangeMin * Math.sin(Math.toRadians(direction - viewingAngle/2)));
-            Circle circle = new Circle(x, y, visualRangeMax);
-            double[] points = new double[]{
-                    xLeftBot, yLeftBot,
-                    xRightBot, yRightBot,
-                    xRightTop, yRightTop,
-                    xLeftTop, yLeftTop,
-            };
-            Polygon truncatedTriangle = new Polygon(points);
-            Shape cone = Shape.intersect(circle, truncatedTriangle);
+            agent.createCone();
+            agentsCones.add(agent.getCone());
+        }
+    }
 
-
-            for(int r = 0; r < worldGrid.length; r++) {
-                for(int c = 0; c < worldGrid[0].length; c++) {
-                    if(isVisionObscuring(worldGrid[r][c])) {
-//                       double xBot = SCALING_FACTOR * worldGrid.length;
-//                       Polygon polygon = new Polygon();
-//                       cone = Shape.subtract(cone, polygon);
-                    }
+    public void createWorldGridShapes() {
+        worldGridShapes.clear();
+        for(int r = 0; r < worldGrid.length; r++) {
+            for( int c = 0; c < worldGrid[0].length; c++) {
+                if(isVisionObscuring(worldGrid[r][c])) {
+                    Rectangle tile = new Rectangle();
+                    tile.setX(c*(200/worldGrid.length)*SCALING_FACTOR);
+                    tile.setY(r*(200/worldGrid.length)*SCALING_FACTOR);
+                    tile.setWidth((200/worldGrid.length)*SCALING_FACTOR);
+                    tile.setHeight((200/worldGrid.length)*SCALING_FACTOR);
+                    tile.setFill(Color.BLACK);
+                    worldGridShapes.add(tile);
                 }
             }
-            cone.setSmooth(true);
-            cone.setFill(agent.getColor());
-            agentsCones.add(cone);
         }
+    }
+
+    public List<Shape> getWorldGridShapes() {
+        return worldGridShapes;
+    }
+
+    public void setWorldGridShapes(List<Shape> worldGridShapes) {
+        this.worldGridShapes = worldGridShapes;
     }
 
     public List<Shape> getAgentsCones() {

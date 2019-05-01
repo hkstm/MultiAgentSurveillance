@@ -1,6 +1,7 @@
 package Agent;
 import World.WorldMap;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.*;
 
 import java.awt.Point;
 import java.awt.geom.Point2D;
@@ -25,7 +26,9 @@ public class Agent implements Runnable{
     public static final double SOUNDRANGE_MEDIUM = 3; //distance 3m
     public static final double SOUNDRANGE_MEDIUMFAR = 5; //distance 5m
     public static final double SOUNDRANGE_FAR = 10;  //distance 10m
-    public static final double SOUND_NOISE_STDEV = 10;  //stndard dev of normal distributed noise
+    public static final double SOUND_NOISE_STDEV =  10;  //stndard dev of normal distributed noise
+    public static final int AMOUNT_OF_VISION_TENTACLES = 100;
+    public static final int TENTACLE_INCREMENTS = 1000;
     private int counter = 0; //remove :)
 
     protected volatile Point2D.Double position;
@@ -38,6 +41,7 @@ public class Agent implements Runnable{
     protected double currentSpeed;
     protected Color color;
 
+    protected Shape viewingCone;
     protected double viewingAngle;
     protected double[] visualRange;
 
@@ -76,6 +80,7 @@ public class Agent implements Runnable{
          */
         goalPosition = new Point2D.Double(200, 200);
         while(!exitThread) {
+
             //updateKnownTerrain(10*SCALING_FACTOR, 45);
             //{
             //    for (int i = 0; i < knownTerrain.length; i++) {
@@ -144,47 +149,50 @@ public class Agent implements Runnable{
      */
 
     public Point2D.Double getMove(double distance, double facingDirection) {
-        if (facingDirection > 0 && facingDirection <= 90)
-        {
-            //System.out.println("1");
-            double angle = Math.toRadians(facingDirection);
-            double newXCoordinate = position.getX()+(distance*Math.sin(angle));
-            double newYCoordinate = position.getY()-(distance*Math.cos(angle));
-            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
-            return newLocation;
-        }
-        else if (facingDirection > 90 && facingDirection <= 180)
-        {
-            //System.out.println("2");
-            double angle = Math.toRadians(180-facingDirection);
-            double newXCoordinate = position.getX()+distance*Math.sin(angle);
-            double newYCoordinate = position.getY()+distance*Math.cos(angle);
-            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
-            return newLocation;
-        }
-        else if (facingDirection <= 0 && facingDirection > -90)
-        {
-            //System.out.println("3");
-            double angle = Math.toRadians(-facingDirection);
-            double newXCoordinate = position.getX()-distance*Math.sin(angle);
-            double newYCoordinate = position.getY()-distance*Math.cos(angle);
-            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
-            return newLocation;
-        }
-        else if (facingDirection <= -90 || facingDirection > -180)
-        {
-            //System.out.println("4");
-            double angle = Math.toRadians(180.0+facingDirection);
-            double newXCoordinate = position.getX()-distance*Math.sin(angle);
-            double newYCoordinate = position.getY()+distance*Math.cos(angle);
-            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
-            return newLocation;
-        }
-        else
-        {
-            System.out.println("illegal angle error");
-            return position;
-        }
+        double xEnd = position.x + (distance * Math.cos(Math.toRadians(facingDirection)));
+        double yEnd = position.y + (distance * Math.sin(Math.toRadians(facingDirection)));
+        return new Point2D.Double(xEnd, yEnd);
+//        if (facingDirection > 0 && facingDirection <= 90)
+//        {
+//            //System.out.println("1");
+//            double angle = Math.toRadians(facingDirection);
+//            double newXCoordinate = position.getX()+(distance*Math.sin(angle));
+//            double newYCoordinate = position.getY()-(distance*Math.cos(angle));
+//            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
+//            return newLocation;
+//        }
+//        else if (facingDirection > 90 && facingDirection <= 180)
+//        {
+//            //System.out.println("2");
+//            double angle = Math.toRadians(180-facingDirection);
+//            double newXCoordinate = position.getX()+distance*Math.sin(angle);
+//            double newYCoordinate = position.getY()+distance*Math.cos(angle);
+//            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
+//            return newLocation;
+//        }
+//        else if (facingDirection <= 0 && facingDirection > -90)
+//        {
+//            //System.out.println("3");
+//            double angle = Math.toRadians(-facingDirection);
+//            double newXCoordinate = position.getX()-distance*Math.sin(angle);
+//            double newYCoordinate = position.getY()-distance*Math.cos(angle);
+//            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
+//            return newLocation;
+//        }
+//        else if (facingDirection <= -90 || facingDirection > -180)
+//        {
+//            //System.out.println("4");
+//            double angle = Math.toRadians(180.0+facingDirection);
+//            double newXCoordinate = position.getX()-distance*Math.sin(angle);
+//            double newYCoordinate = position.getY()+distance*Math.cos(angle);
+//            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
+//            return newLocation;
+//        }
+//        else
+//        {
+//            System.out.println("illegal angle error");
+//            return position;
+//        }
     }
 
     /**
@@ -404,6 +412,78 @@ public class Agent implements Runnable{
             }
 
         }
+    }
+
+    public boolean sees(int r, int c) {
+        return viewingCone.contains((c*(200/worldMap.getSize())*SCALING_FACTOR), (r*(200/worldMap.getSize())*SCALING_FACTOR));
+    }
+
+    public void createCone() {
+        double x = position.x;
+        double y = position.y;
+        double visualRangeMin = visualRange[0] * SCALING_FACTOR; //max visionRange
+        double visualRangeMax = visualRange[1] * SCALING_FACTOR; //max visionRange
+        double xRightTop = x + (visualRangeMax * Math.cos(Math.toRadians(direction + viewingAngle/2)));
+        double yRightTop = y + (visualRangeMax * Math.sin(Math.toRadians(direction + viewingAngle/2)));
+        double xLeftTop = x + (visualRangeMax * Math.cos(Math.toRadians(direction - viewingAngle/2)));
+        double yLeftTop = y + (visualRangeMax * Math.sin(Math.toRadians(direction - viewingAngle/2)));
+        double xRightBot = (visualRangeMin != 0) ? (x + (visualRangeMin * Math.cos(Math.toRadians(direction + viewingAngle/2)))) : x;
+        double yRightBot = (visualRangeMin != 0) ? (y + (visualRangeMin * Math.sin(Math.toRadians(direction + viewingAngle/2)))) : y;
+        double xLeftBot = (visualRangeMin != 0) ? (x + (visualRangeMin * Math.cos(Math.toRadians(direction - viewingAngle/2)))) : x;
+        double yLeftBot = (visualRangeMin != 0) ? (y + (visualRangeMin * Math.sin(Math.toRadians(direction - viewingAngle/2)))) : y;
+        Circle circle = new Circle(x, y, visualRangeMax);
+        double[] points = new double[]{
+                xLeftBot, yLeftBot,
+                xRightBot, yRightBot,
+                xRightTop, yRightTop,
+                xLeftTop, yLeftTop,
+        };
+        Polygon truncatedTriangle = new Polygon(points);
+        Shape cone = Shape.intersect(circle, truncatedTriangle);
+
+        double[] collisionPoints = new double[(AMOUNT_OF_VISION_TENTACLES + 2) * 2];
+        for(int i = 0; i < AMOUNT_OF_VISION_TENTACLES; i++) {
+            tentacleincrementloop:
+            for(int j = 0; j < TENTACLE_INCREMENTS; j++) {
+                Line tentacle = new Line();
+                double xLeftTopLine = x + (visualRangeMax * (double)j/(TENTACLE_INCREMENTS-1) * Math.cos(Math.toRadians((direction - viewingAngle/2) + (viewingAngle/(AMOUNT_OF_VISION_TENTACLES-1))*i)));
+                double yLeftTopLine = y + (visualRangeMax * (double)j/(TENTACLE_INCREMENTS-1) * Math.sin(Math.toRadians((direction - viewingAngle/2) + (viewingAngle/(AMOUNT_OF_VISION_TENTACLES-1))*i)));
+                if(visualRangeMin != 0) {
+                    double xLeftBotLine = x + (visualRangeMin * Math.cos(Math.toRadians((direction - viewingAngle/2) + (viewingAngle/AMOUNT_OF_VISION_TENTACLES)*i)));
+                    double yLeftBotLine = y + (visualRangeMin * Math.sin(Math.toRadians((direction - viewingAngle/2) + (viewingAngle/AMOUNT_OF_VISION_TENTACLES)*i)));
+                    tentacle.setStartX(xLeftBotLine);
+                    tentacle.setStartY(yLeftBotLine);
+                } else {
+                    tentacle.setStartX(x);
+                    tentacle.setStartY(y);
+                }
+                tentacle.setEndX(xLeftTopLine);
+                tentacle.setEndY(yLeftTopLine);
+                if(worldMap.isVisionObscuring(worldMap.getWorldGrid()[locationToWorldgrid(yLeftTopLine)][locationToWorldgrid(xLeftTopLine)]) || j == TENTACLE_INCREMENTS-1) {
+                    collisionPoints[(i*2)+0] = xLeftTopLine;
+                    collisionPoints[(i*2)+1] = yLeftTopLine;
+                    break tentacleincrementloop;
+                }
+            }
+        }
+        collisionPoints[collisionPoints.length-2] = x + (visualRangeMax * Math.cos(Math.toRadians(direction - viewingAngle/2)));
+        collisionPoints[collisionPoints.length-1] = y + (visualRangeMax * Math.sin(Math.toRadians(direction - viewingAngle/2)));
+        collisionPoints[collisionPoints.length-4] = x + (visualRangeMax * Math.cos(Math.toRadians(direction + viewingAngle/2)));
+        collisionPoints[collisionPoints.length-3] = y + (visualRangeMax * Math.sin(Math.toRadians(direction + viewingAngle/2)));
+        Polygon cutout = new Polygon(collisionPoints);
+        cone = Shape.subtract(cone, Shape.intersect(cone, cutout));
+        cone.setSmooth(true);
+        cone.setFill(color);
+        viewingCone = cone;
+    }
+
+    public Shape getCone() {
+       return viewingCone;
+    }
+
+    public static int locationToWorldgrid(double toBeConverted) {
+        int supposedWorldSize = 200;
+        return (int)(toBeConverted * (1/((supposedWorldSize/worldMap.getWorldGrid().length)*SCALING_FACTOR)));
     }
 
     public static double angleBetweenTwoPointsWithFixedPoint(double point1X, double point1Y,
