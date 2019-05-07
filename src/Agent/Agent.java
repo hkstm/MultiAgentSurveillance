@@ -53,11 +53,11 @@ public class Agent implements Runnable{
     protected Point2D.Double previousPosition;
     protected volatile Point2D.Double goalPosition;
 
-        /**
-         * Constructor for Agent
-         * @param position is a point containing the coordinates of an Agent
-         * @param direction is the angle which the agent is facing, this spans from -180 to 180 degrees
-         */
+    /**
+     * Constructor for Agent
+     * @param position is a point containing the coordinates of an Agent
+     * @param direction is the angle which the agent is facing, this spans from -180 to 180 degrees
+     */
 
     public Agent(Point2D.Double position, double direction) {
         System.out.println("agent constructor called");
@@ -94,7 +94,7 @@ public class Agent implements Runnable{
             //System.out.println();
             //THE EMPTY STRINGS ARE NECESSARY PLEASE LEAVE THEM :)
             currentTime = System.nanoTime();
-            delta = (currentTime - previousTime)/1e9; //puts it in seconds?
+            delta = (currentTime - previousTime)/1e9; //puts it in seconds
             previousTime = currentTime;
             currentSpeed = ((position.distance(previousPosition)/SCALING_FACTOR)/delta);
             //System.out.println("currentSpeed:" + currentSpeed);
@@ -478,7 +478,7 @@ public class Agent implements Runnable{
     }
 
     public Shape getCone() {
-       return viewingCone;
+        return viewingCone;
     }
 
     public static int locationToWorldgrid(double toBeConverted) {
@@ -563,4 +563,3 @@ public class Agent implements Runnable{
         this.color = color;
     }
 }
-

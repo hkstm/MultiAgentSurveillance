@@ -17,9 +17,12 @@ import static World.GameScene.SCALING_FACTOR;
 
 public class Intruder extends Agent{
     private boolean tired;
+    private final double RESTING_TIME = 5*1e9;
     private int visionRadius = 10;
     private int visionAngle = 45;
     private double walkingSpeed = 1.4; //m/s
+    private double sprintSpeed = 3.0; //m/s
+    private double startTime= System.nanoTime();
 
     /**
      * An Intruder constructor with an empty internal map
@@ -107,10 +110,15 @@ public class Intruder extends Agent{
     }
     public Point2D.Double gameTreeIntruder(double timeStep)
     {
+        if(startTime+RESTING_TIME > currentTime)
+        {
+            tired = true;
+        }
         previousPosition.setLocation(position.getX(), position.getY());
         updateKnownTerrain(visionRadius*SCALING_FACTOR, viewingAngle);
         Point2D goal = getGoalPosition();
         double walkingDistance = (walkingSpeed*SCALING_FACTOR*timeStep);
+        double sprintingDistance = (sprintSpeed*SCALING_FACTOR*timeStep);
         double xDifference = Math.abs(goal.getX()-position.getX());
         double yDifference = Math.abs(goal.getY()-position.getY());
         double angleToGoal = Math.atan(xDifference/yDifference);
@@ -130,7 +138,14 @@ public class Intruder extends Agent{
         {
             turn(-angleToGoal);
         }
-        if(legalMoveCheck(walkingDistance))
+        if(!tired)
+        {
+            if(legalMoveCheck(sprintingDistance))
+            {
+                move(sprintingDistance);
+            }
+        }
+        else if(legalMoveCheck(walkingDistance))
         {
             move(walkingDistance);
         }
