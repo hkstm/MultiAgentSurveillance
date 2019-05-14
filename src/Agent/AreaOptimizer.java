@@ -9,6 +9,8 @@ public class AreaOptimizer extends Guard {
 
     public double[][] worldAreaReward;
     public final int REWARD_FACTOR = 1;
+    double xgoal;
+    double ygoal;
 
     public AreaOptimizer(Point2D.Double position, double direction) {
         super(position, direction);
@@ -19,7 +21,9 @@ public class AreaOptimizer extends Guard {
     public void run() {
         previousTime = System.nanoTime();
         previousPosition = new Point2D.Double(position.getX(), position.getY());
-        goalPosition = new Point2D.Double(200, 200);
+        xgoal = MoveTo.destX;
+        ygoal = MoveTo.destY;
+        goalPosition = new Point2D.Double(xgoal, ygoal);
         while(!exitThread) {
             currentTime = System.nanoTime();
             delta = (currentTime - previousTime)/1e9; //makes it in seconds

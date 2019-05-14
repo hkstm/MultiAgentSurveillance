@@ -9,24 +9,24 @@ public class Wander extends Routine {
     WorldMap worldMap;
     private MoveTo moveTo;
     private Routine routine;
-    private Agent agent;
+    private Guard guard;
 
     public void reset() {
-        //  this.moveTo = new MoveTo(random.nextInt(worldMap.width, worldmap.height) IDK how to get them
+        this.moveTo = new MoveTo((Math.random() * 199) +1,(Math.random() * 199) +1);
     }
 
     public Wander(WorldMap worldMap) {
         super();
         this.worldMap = worldMap;
-        //  this.moveTo = new MoveTo(random.nextInt(worldMap.width, worldmap.height) IDK how to get them
+         this.moveTo = new MoveTo((Math.random() * 199) +1,(Math.random() * 199) +1);
     }
 
     @Override
-    public void act(Agent agent, WorldMap worldMap) {
+    public void act(Guard guard, WorldMap worldMap) {
         if (!moveTo.isWalking()) {
             return;
         }
-        this.moveTo.act(agent, worldMap);
+        this.moveTo.act(guard, worldMap);
         if (this.moveTo.isSuccess()) {
             succeed();
         } else if (this.moveTo.isFailure()) {
@@ -38,6 +38,6 @@ public class Wander extends Routine {
             // hasn't started yet so we start it
             routine.start();
         }
-        routine.act(agent, worldMap);
+        routine.act(guard, worldMap);
     }
 }

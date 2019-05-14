@@ -24,7 +24,7 @@ public abstract class Routine {
 
     public abstract void reset();
 
-    public abstract void act(Agent agent, WorldMap worldMap);
+    public abstract void act(Guard guard, WorldMap worldMap);
 
 
     protected void succeed() {

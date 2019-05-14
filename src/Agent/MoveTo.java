@@ -10,13 +10,12 @@ import static World.GameScene.SCALING_FACTOR;
  * @author Thibaut Donis
  */
 public class MoveTo extends Routine {
-    final protected int destX;
-    final protected int destY;
+     static double destX;
+     static double destY;
     Routine routine;
     WorldMap worldMap;
-    Agent agent;
-
-    public MoveTo(int destX, int destY) {
+    Guard guard;
+    public MoveTo(double destX, double destY) {
         super();
         this.destX = destX;
         this.destY = destY;
@@ -26,28 +25,28 @@ public class MoveTo extends Routine {
         start();
     }
     @Override
-    public void act(Agent agent, WorldMap worldMap) {
+    public void act(Guard guard, WorldMap worldMap) {
         if(isWalking()){
-            if(!isAtDestination(agent)){
-                Move(agent);
+            if(!isAtDestination(guard)){
+                Move(guard);
             }
         }
     }
-    private void Move(Agent agent) {
-        //logic for the moves
-        if (isAtDestination(agent)) {
+    private void Move(Guard guard) {
+        guard.run();
+        if (isAtDestination(guard)) {
             succeed();
         }
     }
-    private boolean isAtDestination(Agent agent){
-        return destX == agent.getPosition().getX() && destY == agent.getPosition().getY();
+    private boolean isAtDestination(Guard guard){
+        return destX == guard.getPosition().getX() && destY == guard.getPosition().getY();
     }
     public void update() {
         if (routine.getState() == null) {
             // hasn't started yet so we start it
             routine.start();
         }
-        routine.act(agent, worldMap);
+        routine.act(guard, worldMap);
     }
 
 }

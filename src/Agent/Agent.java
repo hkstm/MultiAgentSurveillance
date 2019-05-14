@@ -68,7 +68,7 @@ public class Agent implements Runnable{
         }
     }
 
-    public void run() {
+    public void run(){
         previousTime = System.nanoTime();
         previousPosition = new Point2D.Double(position.getX(), position.getY());
         /**

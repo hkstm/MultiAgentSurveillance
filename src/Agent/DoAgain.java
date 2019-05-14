@@ -34,7 +34,7 @@ public class DoAgain extends Routine {
         this.times = resetTimes;
     }
     @Override
-    public void act(Agent agent, WorldMap worldMap) {
+    public void act(Guard guard, WorldMap worldMap) {
         if(routine.isFailure()){
             fail();
         }
@@ -50,7 +50,7 @@ public class DoAgain extends Routine {
             }
         }
         if(routine.isWalking()){
-            routine.act(agent, worldMap);
+            routine.act(guard, worldMap);
         }
     }
 
