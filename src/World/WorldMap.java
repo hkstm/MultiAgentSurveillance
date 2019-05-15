@@ -3,7 +3,7 @@ import Agent.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
 
-import java.awt.geom.Point2D;
+import javafx.geometry.Point2D;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -203,7 +203,7 @@ public class WorldMap implements Serializable {
      * @return an integer describing the terrain type in the worldGrid corresponding to the input location
      */
 
-    public int coordinatesToCell(Point2D.Double location) {
+    public int coordinatesToCell(Point2D location) {
         int windowSize = StartWorldBuilder.WINDOW_SIZE;
         int rowIndex = (int) ((location.getY()/windowSize) * worldGrid.length);
         int columnIndex = (int) ((location.getX()/windowSize) * worldGrid.length);
@@ -245,8 +245,8 @@ public class WorldMap implements Serializable {
             for( int c = 0; c < worldGrid[0].length; c++) {
                 if(isVisionObscuring(worldGrid[r][c])) {
                     Rectangle tile = new Rectangle();
-                    tile.setX(c*(200/worldGrid.length)*SCALING_FACTOR);
-                    tile.setY(r*(200/worldGrid.length)*SCALING_FACTOR);
+                    tile.setX(convertArrayToWorld(c));
+                    tile.setY(convertArrayToWorld(r));
                     tile.setWidth((200/worldGrid.length)*SCALING_FACTOR);
                     tile.setHeight((200/worldGrid.length)*SCALING_FACTOR);
                     tile.setFill(Color.BLACK);
@@ -254,6 +254,10 @@ public class WorldMap implements Serializable {
                 }
             }
         }
+    }
+
+    public double convertArrayToWorld(int arrayIndex) {
+        return arrayIndex*(200/worldGrid.length)*SCALING_FACTOR;
     }
 
     public List<Shape> getWorldGridShapes() {

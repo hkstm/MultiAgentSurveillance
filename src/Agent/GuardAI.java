@@ -2,7 +2,7 @@ package Agent;
 import Agent.Agent;
 import World.WorldMap;
 
-import java.awt.geom.Point2D;
+import javafx.geometry.Point2D;
 
 public class GuardAI {
     int minDegree = 0;

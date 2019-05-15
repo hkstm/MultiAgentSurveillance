@@ -2,7 +2,7 @@ package Agent;
 import World.WorldMap;
 import javafx.scene.paint.Color;
 
-import java.awt.geom.Point2D;
+import javafx.geometry.Point2D;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -27,7 +27,7 @@ public class Intruder extends Agent{
      * @param direction is the angle which the agent is facing, this spans from -180 to 180 degrees
      */
 
-    public Intruder(Point2D.Double position, double direction) {
+    public Intruder(Point2D position, double direction) {
         super(position, direction);
         this.viewingAngle = 45;
         this.visualRange[0] = 0;
@@ -105,9 +105,9 @@ public class Intruder extends Agent{
             timer.schedule(openWindow, 3000);
         }
     }
-    public Point2D.Double gameTreeIntruder(double timeStep)
+    public Point2D gameTreeIntruder(double timeStep)
     {
-        previousPosition.setLocation(position.getX(), position.getY());
+        previousPosition= new Point2D(position.getX(), position.getY());
         updateKnownTerrain(visionRadius*SCALING_FACTOR, viewingAngle);
         Point2D goal = getGoalPosition();
         double walkingDistance = (walkingSpeed*SCALING_FACTOR*timeStep);

@@ -1,55 +1,81 @@
 package Agent;
 
 import java.awt.*;
-import java.awt.geom.Point2D;
+import javafx.geometry.Point2D;
 
 import static World.GameScene.SCALING_FACTOR;
 
 public class AreaOptimizer extends Guard {
 
-    public double[][] worldAreaReward;
-    public final int REWARD_FACTOR = 1;
+    private Point2DReward[][] worldAreaReward;
+    private double score;
+    public final double REWARD_FACTOR = 1;
 
-    public AreaOptimizer(Point2D.Double position, double direction) {
+
+    public AreaOptimizer(Point2D position, double direction) {
         super(position, direction);
-        this.worldAreaReward = new double[worldMap.getSize()][worldMap.getSize()];
+        this.worldAreaReward = new Point2DReward[worldMap.getSize()][worldMap.getSize()];
+        for(int r = 0; r < worldMap.getSize(); r++) {
+            for(int c = 0; c < worldMap.getSize(); c++) {
+                worldAreaReward[r][c] = new Point2DReward(c, r, 10);
+            }
+        }
         //this.knownTerrain = worldMap.getWorldGrid();
     }
 
     public void run() {
         previousTime = System.nanoTime();
-        previousPosition = new Point2D.Double(position.getX(), position.getY());
-        goalPosition = new Point2D.Double(200, 200);
+        previousPosition = new Point2D(position.getX(), position.getY());
+        goalPosition = new Point2D(200, 200);
         while(!exitThread) {
             currentTime = System.nanoTime();
             delta = (currentTime - previousTime)/1e9; //makes it in seconds
             previousTime = currentTime;
+            createCone();
+            updateWorldAreaReward(delta);
+            direction = getMoveAngle();
+            System.out.println(direction);
             currentSpeed = ((position.distance(previousPosition)/SCALING_FACTOR)/delta);
-            previousPosition.setLocation(position.getX(), position.getY());
+            previousPosition= new Point2D(position.getX(), position.getY());
             checkForAgentSound();
-
-            updateGoalPosition();
-            xGoal = getGoalPosition().getX();
-            yGoal = getGoalPosition().getY();
         }
     }
 
-    /**
-     * updates the internal map of an Agent based on their field of vision based on sounds of sightings of other agents
-     * or in the case of intruders, sighting of new terrain
-     * @param radius is the distance an Agent can see in front of them
-     * @param angle is the width of view of an Agent
-     */
-    public void updateWorldAreaReward(double radius, double angle, double delta) {
-        double[][] tmpWorldAreaCopy = new double[worldAreaReward.length][worldAreaReward[0].length];
+    public void updateWorldAreaReward(double delta) {
         for(int r = 0; r < worldAreaReward.length; r++) {
             for(int c = 0; c < worldAreaReward[0].length; c++) {
-//                if(worldMap.notEnterableTile(worldMap.getTileState(r,c)))
-                worldAreaReward[r][c] += (REWARD_FACTOR * delta);
-                tmpWorldAreaCopy[r][c] = worldAreaReward[r][c];
+                //check if middle of tile is in cone
+                if(viewingCone.contains(worldMap.convertArrayToWorld(c) + 0.5 * worldMap.convertArrayToWorld(1),
+                        worldMap.convertArrayToWorld(r) + 0.5 * worldMap.convertArrayToWorld(1))) {
+                    score += worldAreaReward[r][c].consumeReward();
+                    worldAreaReward[r][c].resetReward();
+//                    System.out.println("reward reset for r: " + r + " c: " + c);
+                } else {
+                    worldAreaReward[r][c].updateReward (REWARD_FACTOR * delta);
+                }
             }
         }
 
+    }
+
+    public double getMoveAngle() {
+        double x = 0;
+        double y = 0;
+        double totalReward = 0;
+        for(int r = 0; r < worldAreaReward.length; r++) {
+            for(int c = 0; c < worldAreaReward[0].length; c++) {
+                totalReward += worldAreaReward[r][c].getReward();
+                x += (worldMap.convertArrayToWorld(c)) * worldAreaReward[r][c].getReward();
+                y += (worldMap.convertArrayToWorld(r)) * worldAreaReward[r][c].getReward();
+            }
+        }
+        x /= totalReward;
+        y /= totalReward;
+        x += SCALING_FACTOR;
+        y += SCALING_FACTOR;
+        System.out.println("x: " + x + " y: " + y);
+//        printWorldAreaReward();
+        return Math.toDegrees(Math.atan2((y - position.getY()), (x - position.getX())));
     }
 
     public void updateGoalPosition() {
@@ -63,6 +89,15 @@ public class AreaOptimizer extends Guard {
         }
         double xGoal = xCurr;
         double yGoal = yCurr;
-        goalPosition.setLocation(xGoal, yGoal);
+        goalPosition = new Point2D(xGoal, yGoal);
+    }
+
+    public void printWorldAreaReward() {
+        for(int r = 0; r < worldAreaReward.length; r++) {
+            for(int c = 0; c < worldAreaReward.length; c++) {
+                System.out.printf("%f", worldAreaReward[r][c].getReward());
+            }
+            System.out.println();
+        }
     }
 }

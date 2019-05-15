@@ -15,7 +15,7 @@ import javafx.scene.shape.Shape;
 import javafx.stage.Stage;
 
 import java.awt.*;
-import java.awt.geom.Point2D;
+import javafx.geometry.Point2D;
 import java.io.*;
 import java.util.Random;
 import Agent.*;
@@ -43,9 +43,9 @@ public class GameScene extends BorderPane implements Runnable {
     private Button startGameBut;
     private Group agentGroup = new Group();
 
-    private boolean gameStarted = false; //used for start and stop button
+    private boolean gameStarted; //used for start and stop button
     private int mode; //modes for different gameModes e.g. multiple intruders/guards and what the end game conditions are
-    public static final double SCALING_FACTOR = 1000/100; //ASSUMING WORLD IS ALWAYS 100 X 100 WHICH MEANS THAT IF WE HAVE A SMALLER MAP IN WORLDBUILDER THE INDIVIDUAL TILES ARE "BIGGER" AND THAT WINDOWSIZE IS 1000
+    public static final double SCALING_FACTOR = 1000/200; //ASSUMING WORLD IS ALWAYS 200 X 200 WHICH MEANS THAT IF WE HAVE A SMALLER MAP IN WORLDBUILDER THE INDIVIDUAL TILES ARE "BIGGER" AND THAT WINDOWSIZE IS 1000
     public static Random random = new Random();
     private long currentTimeCountDown;
     private boolean countDown;
@@ -65,6 +65,7 @@ public class GameScene extends BorderPane implements Runnable {
         });
         this.worldMap = new WorldMap(settings.getWorldMap()); //create world data structure
         this.tileSize = windowSize / worldMap.getSize();
+        this.gameStarted = false;
 
         initTileImgArray();
         initGoToMenuButton();
@@ -72,8 +73,8 @@ public class GameScene extends BorderPane implements Runnable {
 
         this.startGameBut = new Button("Start/Stop Game"); //should stop and start game, not properly working atm
         Agent.worldMap = worldMap;
-        //worldMap.addAgent(new Intruder(new Point2D.Double(100, 100), 270));
-        worldMap.addAgent(new Intruder(new Point2D.Double(500, 500), 92));
+        //worldMap.addAgent(new Intruder(new Point2D(100, 100), 270));
+        worldMap.addAgent(new AreaOptimizer(new Point2D(500, 500), 0));
 
         //Actual game "loop" in here
         startGameBut.setOnAction(e -> { //
@@ -175,13 +176,13 @@ public class GameScene extends BorderPane implements Runnable {
         double occurenceRate = 0.1/1e9; //because delta is in nano seconds
         occurenceRate *= 8; //map is 200 so 8 times as big as 25
         if(random.nextDouble() < occurenceRate/(delta)) {
-            Point2D.Double randomNoiseLocation = new Point2D.Double(random.nextInt(windowSize), random.nextInt(windowSize));
+            Point2D randomNoiseLocation = new Point2D(random.nextInt(windowSize), random.nextInt(windowSize));
             for(Agent agent : worldMap.getAgents()) {
                 if(randomNoiseLocation.distance(agent.getPosition())/SCALING_FACTOR < 5) {
                     Point2D tmpPoint = agent.getMove(1000, agent.getDirection());
                     double angleBetweenPoints = angleBetweenTwoPointsWithFixedPoint(tmpPoint.getX(), tmpPoint.getY(), agent.getPosition().getX(), agent.getPosition().getY(), randomNoiseLocation.getX(), randomNoiseLocation.getY());
                     angleBetweenPoints += new Random().nextGaussian()*SOUND_NOISE_STDEV;
-                    agent.getAudioLogs().add(new AudioLog(System.nanoTime(), angleBetweenPoints, new Point2D.Double(agent.getPosition().getX(), agent.getPosition().getY())));
+                    agent.getAudioLogs().add(new AudioLog(System.nanoTime(), angleBetweenPoints, new Point2D(agent.getPosition().getX(), agent.getPosition().getY())));
                     System.out.println("Agent heard sound");
                 }
             }
@@ -193,7 +194,7 @@ public class GameScene extends BorderPane implements Runnable {
      */
     public void createAgents() {
         agentGroup.getChildren().clear();
-//        AgentCircle circleTmp = new AgentCircle(new Point2D.Double(1000, 1000));
+//        AgentCircle circleTmp = new AgentCircle(new Point2D(1000, 1000));
 //        circleTmp.setFill(Color.CORNFLOWERBLUE);
 //        agentGroup.getChildren().add(circleTmp);
 //        agentGroup.toFront();
