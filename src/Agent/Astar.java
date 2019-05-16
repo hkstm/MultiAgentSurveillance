@@ -13,7 +13,7 @@ public class Astar {
     private int si, sj;
     private int ei, ej;
 
-    public Astar(int width, int height, int si, int sj, int ei, int ej, int[][]blocks){
+    public Astar(int width, int height, int si, int sj, int ei, int ej, int[][] blocks){
         this.si = si;
         this.sj = sj;
         this.ei = ei;

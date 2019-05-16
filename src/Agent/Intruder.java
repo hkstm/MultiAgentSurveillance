@@ -6,6 +6,8 @@ import java.awt.geom.Point2D;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.ArrayList;
+import java.util.List;
 
 import static World.WorldMap.*;
 import static World.GameScene.SCALING_FACTOR;
@@ -110,6 +112,14 @@ public class Intruder extends Agent{
     }
     public Point2D.Double gameTreeIntruder(double timeStep)
     {
+        int[][] blocks = aStarTerrain(knownTerrain);
+        Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)getGoalPosition().getX(), (int)getGoalPosition().getY(), blocks)
+        List<Node> path = new ArrayList<Node>();
+        path = pathFinder.findPath();
+        // here insert the code for actuall following the path (by furthest node in a straight line
+        // remove the current way of moving
+        // make sure to open windows and doors
+        // weights
         if(startTime+RESTING_TIME > currentTime)
         {
             tired = true;

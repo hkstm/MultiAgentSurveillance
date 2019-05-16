@@ -125,8 +125,6 @@ public class Agent implements Runnable{
         //} else if(direction < 180) {
         //    direction = (direction+180)+180;
         //}
-        // your code got stuck in a loop thing the above should be fine?
-        // this should be working now lemme know if there are any more issues with it :)
         while (direction > 180 || direction < -180)
         {
             if (direction > 180)
@@ -565,21 +563,24 @@ public class Agent implements Runnable{
 
     public int[][] aStarTerrain(int[][] terrain)
     {
-        int[][] maze = new int[terrain.length][terrain[0].length];
+        List<Point> walls = new ArrayList<Point>();
         for(int i = 0; i < terrain.length; i++)
         {
             for(int j = 0; j < terrain[0].length; j++)
             {
                 if(terrain[i][j] == 1 || terrain[i][j] == 5 || terrain[i][j] == 7)
                 {
-                    maze[i][j] = 1; //WALL
-                }
-                else
-                {
-                    maze[i][j] = 0; //NOT A WALL
+                    Point wall = new Point(i, j);
+                    walls.add(wall); //WALL
                 }
             }
         }
-        return maze;
+        int[][] blocks = new int[walls.size()][2];
+        for(int i = 0; i < walls.size(); i++)
+        {
+            blocks[i][0] = (int)walls.get(i).getX();
+            blocks[i][1] = (int)walls.get(i).getY();
+        }
+        return blocks;
     }
 }
