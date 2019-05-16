@@ -562,4 +562,24 @@ public class Agent implements Runnable{
     public void setColor(Color color) {
         this.color = color;
     }
+
+    public int[][] aStarTerrain(int[][] terrain)
+    {
+        int[][] maze = new int[terrain.length][terrain[0].length];
+        for(int i = 0; i < terrain.length; i++)
+        {
+            for(int j = 0; j < terrain[0].length; j++)
+            {
+                if(terrain[i][j] == 1 || terrain[i][j] == 5 || terrain[i][j] == 7)
+                {
+                    maze[i][j] = 1; //WALL
+                }
+                else
+                {
+                    maze[i][j] = 0; //NOT A WALL
+                }
+            }
+        }
+        return maze;
+    }
 }

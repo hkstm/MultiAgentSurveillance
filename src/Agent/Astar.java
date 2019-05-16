@@ -7,7 +7,7 @@ public class Astar {
 
     public static final int diaCost = 14;
     public static final int vhCost = 10;
-    private Node[][]grid;
+    private Node[][] grid;
     private PriorityQueue<Node>openCell;
     private boolean[][]closeCell;
     private int si, sj;
