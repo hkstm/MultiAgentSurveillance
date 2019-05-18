@@ -3,6 +3,7 @@ import World.WorldMap;
 import javafx.scene.paint.Color;
 
 import java.awt.geom.Point2D;
+import java.awt.geom.RoundRectangle2D;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -17,12 +18,14 @@ public class Guard extends Agent {
      * @author Benjamin, Thibaut
      */
 
+    Routine routine;
     public Guard(Point2D.Double position, double direction) {
         super(position, direction);
         this.viewingAngle = 45;
         this.visualRange[0] = 0;
         this.visualRange[1] = 6;
         this.color = Color.AZURE;
+
         //this.knownTerrain = worldMap.getWorldGrid();
     }
 
@@ -65,4 +68,12 @@ public class Guard extends Agent {
             timer.cancel();
         }
     }
+    public Routine getRoutine() {
+        return routine;
+    }
+
+    public void setRoutine(Routine routine) {
+        this.routine = routine;
+    }
+
 }

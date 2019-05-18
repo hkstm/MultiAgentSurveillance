@@ -36,8 +36,8 @@ public class Routines {
         return new Wander(worldMap);
     }
 
-  /*  public static Routine chase() {
+    public static Routine chase() {
         return new Chase();
-    }*/
+    }
 
 }

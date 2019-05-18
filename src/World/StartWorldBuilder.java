@@ -1,11 +1,13 @@
 package World;
 
+import Agent.Guard;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-
+import Agent.Routine;
+import Agent.Routines;
 /**
  * Starter class, creates the javafx main thread
  * @author Kailhan Hokstam
@@ -27,6 +29,7 @@ public class StartWorldBuilder extends Application {
         primaryStage.setScene(settingsScene.getSettingsScene());
         primaryStage.show();
         primaryStage.getScene();
+
     }
 
 }

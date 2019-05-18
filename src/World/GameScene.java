@@ -14,6 +14,8 @@ import java.awt.geom.Point2D;
 import java.io.*;
 import java.util.Random;
 import Agent.*;
+import Agent.Routine;
+
 
 import static Agent.Agent.SOUND_NOISE_STDEV;
 import static Agent.Agent.angleBetweenTwoPointsWithFixedPoint;
@@ -46,6 +48,7 @@ public class GameScene extends BorderPane implements Runnable {
     private boolean countDown;
     private boolean visitedTarget;
     private long firstVisitTime;
+    Routine routine;
 
     public GameScene(Stage primaryStage, Settings settings) {
         this.grid = new GridPane(); //main grid that shows the tiles
@@ -200,6 +203,12 @@ public class GameScene extends BorderPane implements Runnable {
 //                tmpPane.getChildren().addAll(circle);
 //                agentGroup.getChildren().add(tmpPane);
                 agentGroup.getChildren().add(circle);
+                Routine guard1 = Routines.sequence(
+                        Routines.moveTo(50, 100),
+                        Routines.moveTo(150, 120),
+                        Routines.chase()
+                );
+                guard.setRoutine(guard1);
             }
             if(agent instanceof Intruder) {
                 Intruder intruder = (Intruder) agent;
@@ -212,8 +221,12 @@ public class GameScene extends BorderPane implements Runnable {
             }
             agentGroup.toFront();
             //System.out.println("proceeding after while loop, agent on seperate thread");
+
         }
+
     }
+
+
 
     /**
      * Sets (size) and creates all containers and combines them
