@@ -93,7 +93,7 @@ public class WorldBuilder extends BorderPane {
                 });
                 toAdd.get(c + (r * worldMap.getSize())).arm();
                 //System.out.println("creating tiles");
-                GridPane.setConstraints(toAdd.get(c + (r * worldMap.getSize())), r, c);
+                GridPane.setConstraints(toAdd.get(c + (r * worldMap.getSize())), c, r);
             }
         }
     }
@@ -171,7 +171,7 @@ public class WorldBuilder extends BorderPane {
                     makeAButtonInteractive(event);
                 });
                 toAdd.get(c + (r * worldMap.getSize())).arm();
-                GridPane.setConstraints(toAdd.get(toAdd.size()-1), r, c);
+                GridPane.setConstraints(toAdd.get(toAdd.size()-1), c, r);
             }
         }
     }

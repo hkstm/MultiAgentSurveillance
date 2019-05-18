@@ -1,6 +1,7 @@
 package Agent;
 import World.WorldMap;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.*;
 
 import java.awt.Point;
 import java.awt.geom.Point2D;
@@ -25,7 +26,9 @@ public class Agent implements Runnable{
     public static final double SOUNDRANGE_MEDIUM = 3; //distance 3m
     public static final double SOUNDRANGE_MEDIUMFAR = 5; //distance 5m
     public static final double SOUNDRANGE_FAR = 10;  //distance 10m
-    public static final double SOUND_NOISE_STDEV = 10;  //stndard dev of normal distributed noise
+    public static final double SOUND_NOISE_STDEV =  10;  //stndard dev of normal distributed noise
+    public static final int AMOUNT_OF_VISION_TENTACLES = 100;
+    public static final int TENTACLE_INCREMENTS = 1000;
     private int counter = 0; //remove :)
 
     protected volatile Point2D.Double position;
@@ -38,6 +41,7 @@ public class Agent implements Runnable{
     protected double currentSpeed;
     protected Color color;
 
+    protected Shape viewingCone;
     protected double viewingAngle;
     protected double[] visualRange;
 
@@ -49,11 +53,11 @@ public class Agent implements Runnable{
     protected Point2D.Double previousPosition;
     protected volatile Point2D.Double goalPosition;
 
-        /**
-         * Constructor for Agent
-         * @param position is a point containing the coordinates of an Agent
-         * @param direction is the angle which the agent is facing, this spans from -180 to 180 degrees
-         */
+    /**
+     * Constructor for Agent
+     * @param position is a point containing the coordinates of an Agent
+     * @param direction is the angle which the agent is facing, this spans from -180 to 180 degrees
+     */
 
     public Agent(Point2D.Double position, double direction) {
         System.out.println("agent constructor called");
@@ -76,31 +80,25 @@ public class Agent implements Runnable{
          */
         goalPosition = new Point2D.Double(200, 200);
         while(!exitThread) {
-            updateKnownTerrain(10, 45);
-            {
-                for (int i = 0; i < knownTerrain.length; i++) {
-                    for (int j = 0; j < knownTerrain[0].length; j++) {
-                        //System.out.print(knownTerrain[i][j] + " knownterrain");
-                    }
-                }
-            }
-            //DONT PRINT EMPTY STRINGS THANKS
+
+            //updateKnownTerrain(10*SCALING_FACTOR, 45);
+            //{
+            //    for (int i = 0; i < knownTerrain.length; i++) {
+            //        for (int j = 0; j < knownTerrain[0].length; j++) {
+            //            System.out.print(knownTerrain[i][j]);
+            //        }
+            //        System.out.println();
+            //    }
+            //}
+            //System.out.println();
+            //System.out.println();
+            //THE EMPTY STRINGS ARE NECESSARY PLEASE LEAVE THEM :)
             currentTime = System.nanoTime();
-            delta = currentTime - previousTime;
-            delta /= 1e9; //makes it in seconds
+            delta = (currentTime - previousTime)/1e9; //puts it in seconds
             previousTime = currentTime;
             currentSpeed = ((position.distance(previousPosition)/SCALING_FACTOR)/delta);
             //System.out.println("currentSpeed:" + currentSpeed);
-            previousPosition.setLocation(position.getX(), position.getY());
             checkForAgentSound();
-            double walkingDistance = (1.4 * SCALING_FACTOR) * (delta);
-            if(legalMoveCheck(walkingDistance)) {
-                move(walkingDistance);
-            } else {
-                double turningAngle = Math.random()*90-45;
-                turn(turningAngle);
-            }
-
             updateGoalPosition();
             xGoal = getGoalPosition().getX();
             yGoal = getGoalPosition().getY();
@@ -127,8 +125,6 @@ public class Agent implements Runnable{
         //} else if(direction < 180) {
         //    direction = (direction+180)+180;
         //}
-        // your code got stuck in a loop thing the above should be fine?
-        // this should be working now lemme know if there are any more issues with it :)
         while (direction > 180 || direction < -180)
         {
             if (direction > 180)
@@ -151,47 +147,50 @@ public class Agent implements Runnable{
      */
 
     public Point2D.Double getMove(double distance, double facingDirection) {
-        if (facingDirection > 0 && facingDirection <= 90)
-        {
-            //System.out.println("1");
-            double angle = Math.toRadians(facingDirection);
-            double newXCoordinate = position.getX()+(distance*Math.sin(angle));
-            double newYCoordinate = position.getY()-(distance*Math.cos(angle));
-            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
-            return newLocation;
-        }
-        else if (facingDirection > 90 && facingDirection <= 180)
-        {
-            //System.out.println("2");
-            double angle = Math.toRadians(180-facingDirection);
-            double newXCoordinate = position.getX()+distance*Math.sin(angle);
-            double newYCoordinate = position.getY()+distance*Math.cos(angle);
-            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
-            return newLocation;
-        }
-        else if (facingDirection <= 0 && facingDirection > -90)
-        {
-            //System.out.println("3");
-            double angle = Math.toRadians(-facingDirection);
-            double newXCoordinate = position.getX()-distance*Math.sin(angle);
-            double newYCoordinate = position.getY()-distance*Math.cos(angle);
-            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
-            return newLocation;
-        }
-        else if (facingDirection <= -90 || facingDirection > -180)
-        {
-            //System.out.println("4");
-            double angle = Math.toRadians(180.0+facingDirection);
-            double newXCoordinate = position.getX()-distance*Math.sin(angle);
-            double newYCoordinate = position.getY()+distance*Math.cos(angle);
-            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
-            return newLocation;
-        }
-        else
-        {
-            System.out.println("illegal angle error");
-            return position;
-        }
+        double xEnd = position.x + (distance * Math.cos(Math.toRadians(facingDirection)));
+        double yEnd = position.y + (distance * Math.sin(Math.toRadians(facingDirection)));
+        return new Point2D.Double(xEnd, yEnd);
+//        if (facingDirection > 0 && facingDirection <= 90)
+//        {
+//            //System.out.println("1");
+//            double angle = Math.toRadians(facingDirection);
+//            double newXCoordinate = position.getX()+(distance*Math.sin(angle));
+//            double newYCoordinate = position.getY()-(distance*Math.cos(angle));
+//            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
+//            return newLocation;
+//        }
+//        else if (facingDirection > 90 && facingDirection <= 180)
+//        {
+//            //System.out.println("2");
+//            double angle = Math.toRadians(180-facingDirection);
+//            double newXCoordinate = position.getX()+distance*Math.sin(angle);
+//            double newYCoordinate = position.getY()+distance*Math.cos(angle);
+//            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
+//            return newLocation;
+//        }
+//        else if (facingDirection <= 0 && facingDirection > -90)
+//        {
+//            //System.out.println("3");
+//            double angle = Math.toRadians(-facingDirection);
+//            double newXCoordinate = position.getX()-distance*Math.sin(angle);
+//            double newYCoordinate = position.getY()-distance*Math.cos(angle);
+//            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
+//            return newLocation;
+//        }
+//        else if (facingDirection <= -90 || facingDirection > -180)
+//        {
+//            //System.out.println("4");
+//            double angle = Math.toRadians(180.0+facingDirection);
+//            double newXCoordinate = position.getX()-distance*Math.sin(angle);
+//            double newYCoordinate = position.getY()+distance*Math.cos(angle);
+//            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
+//            return newLocation;
+//        }
+//        else
+//        {
+//            System.out.println("illegal angle error");
+//            return position;
+//        }
     }
 
     /**
@@ -253,6 +252,7 @@ public class Agent implements Runnable{
         Point corner3 = new Point((int) left.getX(), (int) left.getY());
         Point2D.Double right = getMove(radius, direction+(angle/2));
         Point corner4 = new Point((int) right.getX(), (int) right.getY());
+        //possible to go < -180 and > 180 here, fix this in the future
         int XMax = (Math.max((int) Math.max(corner1.getX(), corner2.getX()), (int) Math.max(corner3.getX(), corner4.getX()))/10);
         int XMin = (Math.min((int) Math.min(corner1.getX(), corner2.getX()), (int) Math.min(corner3.getX(), corner4.getX()))/10);
         int YMax = (Math.max((int) Math.max(corner1.getY(), corner2.getY()), (int) Math.max(corner3.getY(), corner4.getY()))/10);
@@ -273,13 +273,12 @@ public class Agent implements Runnable{
         {
             YMin = 0;
         }
-        //System.out.println("XMax: "+XMax+" XMin: "+XMin+" YMax "+YMax+" YMin "+YMin);
         //checking if the points (each corner of each square in the bounds) is within the circle of search
         for (int i = YMin;i <= YMax;i++)
         {
             for (int j = XMin;j <= XMax;j++)
             {
-                if (Math.abs(direction) < 90)
+                if (Math.abs(direction) < 90) //this seems like a wierd condition
                 {
                     //top left corner
                     //System.out.println                                                                                                                               (Math.abs(Math.abs(Math.abs(direction)-(180-Math.abs(Math.atan((Math.abs(position.getX()/10-j))/(Math.abs(position.getY()/10-i))))))));
@@ -413,6 +412,78 @@ public class Agent implements Runnable{
         }
     }
 
+    public boolean sees(int r, int c) {
+        return viewingCone.contains((c*(200/worldMap.getSize())*SCALING_FACTOR), (r*(200/worldMap.getSize())*SCALING_FACTOR));
+    }
+
+    public void createCone() {
+        double x = position.x;
+        double y = position.y;
+        double visualRangeMin = visualRange[0] * SCALING_FACTOR; //max visionRange
+        double visualRangeMax = visualRange[1] * SCALING_FACTOR; //max visionRange
+        double xRightTop = x + (visualRangeMax * Math.cos(Math.toRadians(direction + viewingAngle/2)));
+        double yRightTop = y + (visualRangeMax * Math.sin(Math.toRadians(direction + viewingAngle/2)));
+        double xLeftTop = x + (visualRangeMax * Math.cos(Math.toRadians(direction - viewingAngle/2)));
+        double yLeftTop = y + (visualRangeMax * Math.sin(Math.toRadians(direction - viewingAngle/2)));
+        double xRightBot = (visualRangeMin != 0) ? (x + (visualRangeMin * Math.cos(Math.toRadians(direction + viewingAngle/2)))) : x;
+        double yRightBot = (visualRangeMin != 0) ? (y + (visualRangeMin * Math.sin(Math.toRadians(direction + viewingAngle/2)))) : y;
+        double xLeftBot = (visualRangeMin != 0) ? (x + (visualRangeMin * Math.cos(Math.toRadians(direction - viewingAngle/2)))) : x;
+        double yLeftBot = (visualRangeMin != 0) ? (y + (visualRangeMin * Math.sin(Math.toRadians(direction - viewingAngle/2)))) : y;
+        Circle circle = new Circle(x, y, visualRangeMax);
+        double[] points = new double[]{
+                xLeftBot, yLeftBot,
+                xRightBot, yRightBot,
+                xRightTop, yRightTop,
+                xLeftTop, yLeftTop,
+        };
+        Polygon truncatedTriangle = new Polygon(points);
+        Shape cone = Shape.intersect(circle, truncatedTriangle);
+
+        double[] collisionPoints = new double[(AMOUNT_OF_VISION_TENTACLES + 2) * 2];
+        for(int i = 0; i < AMOUNT_OF_VISION_TENTACLES; i++) {
+            tentacleincrementloop:
+            for(int j = 0; j < TENTACLE_INCREMENTS; j++) {
+                Line tentacle = new Line();
+                double xLeftTopLine = x + (visualRangeMax * (double)j/(TENTACLE_INCREMENTS-1) * Math.cos(Math.toRadians((direction - viewingAngle/2) + (viewingAngle/(AMOUNT_OF_VISION_TENTACLES-1))*i)));
+                double yLeftTopLine = y + (visualRangeMax * (double)j/(TENTACLE_INCREMENTS-1) * Math.sin(Math.toRadians((direction - viewingAngle/2) + (viewingAngle/(AMOUNT_OF_VISION_TENTACLES-1))*i)));
+                if(visualRangeMin != 0) {
+                    double xLeftBotLine = x + (visualRangeMin * Math.cos(Math.toRadians((direction - viewingAngle/2) + (viewingAngle/AMOUNT_OF_VISION_TENTACLES)*i)));
+                    double yLeftBotLine = y + (visualRangeMin * Math.sin(Math.toRadians((direction - viewingAngle/2) + (viewingAngle/AMOUNT_OF_VISION_TENTACLES)*i)));
+                    tentacle.setStartX(xLeftBotLine);
+                    tentacle.setStartY(yLeftBotLine);
+                } else {
+                    tentacle.setStartX(x);
+                    tentacle.setStartY(y);
+                }
+                tentacle.setEndX(xLeftTopLine);
+                tentacle.setEndY(yLeftTopLine);
+                if(worldMap.isVisionObscuring(worldMap.getWorldGrid()[locationToWorldgrid(yLeftTopLine)][locationToWorldgrid(xLeftTopLine)]) || j == TENTACLE_INCREMENTS-1) {
+                    collisionPoints[(i*2)+0] = xLeftTopLine;
+                    collisionPoints[(i*2)+1] = yLeftTopLine;
+                    break tentacleincrementloop;
+                }
+            }
+        }
+        collisionPoints[collisionPoints.length-2] = x + (visualRangeMax * Math.cos(Math.toRadians(direction - viewingAngle/2)));
+        collisionPoints[collisionPoints.length-1] = y + (visualRangeMax * Math.sin(Math.toRadians(direction - viewingAngle/2)));
+        collisionPoints[collisionPoints.length-4] = x + (visualRangeMax * Math.cos(Math.toRadians(direction + viewingAngle/2)));
+        collisionPoints[collisionPoints.length-3] = y + (visualRangeMax * Math.sin(Math.toRadians(direction + viewingAngle/2)));
+        Polygon cutout = new Polygon(collisionPoints);
+        cone = Shape.subtract(cone, Shape.intersect(cone, cutout));
+        cone.setSmooth(true);
+        cone.setFill(color);
+        viewingCone = cone;
+    }
+
+    public Shape getCone() {
+        return viewingCone;
+    }
+
+    public static int locationToWorldgrid(double toBeConverted) {
+        int supposedWorldSize = 200;
+        return (int)(toBeConverted * (1/((supposedWorldSize/worldMap.getWorldGrid().length)*SCALING_FACTOR)));
+    }
+
     public static double angleBetweenTwoPointsWithFixedPoint(double point1X, double point1Y,
                                                              double point2X, double point2Y,
                                                              double fixedX, double fixedY) {
@@ -489,5 +560,27 @@ public class Agent implements Runnable{
     public void setColor(Color color) {
         this.color = color;
     }
-}
 
+    public int[][] aStarTerrain(int[][] terrain)
+    {
+        List<Point> walls = new ArrayList<Point>();
+        for(int i = 0; i < terrain.length; i++)
+        {
+            for(int j = 0; j < terrain[0].length; j++)
+            {
+                if(terrain[i][j] == 1 || terrain[i][j] == 5 || terrain[i][j] == 7)
+                {
+                    Point wall = new Point(i, j);
+                    walls.add(wall); //WALL
+                }
+            }
+        }
+        int[][] blocks = new int[walls.size()][2];
+        for(int i = 0; i < walls.size(); i++)
+        {
+            blocks[i][0] = (int)walls.get(i).getX();
+            blocks[i][1] = (int)walls.get(i).getY();
+        }
+        return blocks;
+    }
+}
