@@ -80,7 +80,6 @@ public class Agent implements Runnable{
          */
         goalPosition = new Point2D.Double(200, 200);
         while(!exitThread) {
-
             //updateKnownTerrain(10*SCALING_FACTOR, 45);
             //{
             //    for (int i = 0; i < knownTerrain.length; i++) {
@@ -97,6 +96,8 @@ public class Agent implements Runnable{
             delta = (currentTime - previousTime)/1e9; //puts it in seconds
             previousTime = currentTime;
             currentSpeed = ((position.distance(previousPosition)/SCALING_FACTOR)/delta);
+            Intruder intruder = new Intruder(position, direction);
+            intruder.gameTreeIntruder(delta);
             //System.out.println("currentSpeed:" + currentSpeed);
             checkForAgentSound();
             updateGoalPosition();
@@ -141,56 +142,55 @@ public class Agent implements Runnable{
     /**
      * find out where an Agent will end up after a potential move
      * @param distance is the distance to be moved by the agent
-     *                 depending on the time-step, speeds will need to be divided before being used as parameters
-     * @param facingDirection is the angle which the Agent is turned (i.e. it's direction) for the potential move
+     *                 depending on the time-step, speeds will need to be divided before being used as parameter
      * @return a point at which the Agent would end up if this move were made
      */
 
     public Point2D.Double getMove(double distance, double facingDirection) {
-        double xEnd = position.x + (distance * Math.cos(Math.toRadians(facingDirection)));
-        double yEnd = position.y + (distance * Math.sin(Math.toRadians(facingDirection)));
-        return new Point2D.Double(xEnd, yEnd);
-//        if (facingDirection > 0 && facingDirection <= 90)
-//        {
-//            //System.out.println("1");
-//            double angle = Math.toRadians(facingDirection);
-//            double newXCoordinate = position.getX()+(distance*Math.sin(angle));
-//            double newYCoordinate = position.getY()-(distance*Math.cos(angle));
-//            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
-//            return newLocation;
-//        }
-//        else if (facingDirection > 90 && facingDirection <= 180)
-//        {
-//            //System.out.println("2");
-//            double angle = Math.toRadians(180-facingDirection);
-//            double newXCoordinate = position.getX()+distance*Math.sin(angle);
-//            double newYCoordinate = position.getY()+distance*Math.cos(angle);
-//            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
-//            return newLocation;
-//        }
-//        else if (facingDirection <= 0 && facingDirection > -90)
-//        {
-//            //System.out.println("3");
-//            double angle = Math.toRadians(-facingDirection);
-//            double newXCoordinate = position.getX()-distance*Math.sin(angle);
-//            double newYCoordinate = position.getY()-distance*Math.cos(angle);
-//            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
-//            return newLocation;
-//        }
-//        else if (facingDirection <= -90 || facingDirection > -180)
-//        {
-//            //System.out.println("4");
-//            double angle = Math.toRadians(180.0+facingDirection);
-//            double newXCoordinate = position.getX()-distance*Math.sin(angle);
-//            double newYCoordinate = position.getY()+distance*Math.cos(angle);
-//            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
-//            return newLocation;
-//        }
-//        else
-//        {
-//            System.out.println("illegal angle error");
-//            return position;
-//        }
+        //double xEnd = position.x + (distance * Math.cos(Math.toRadians(facingDirection)));
+        //double yEnd = position.y + (distance * Math.sin(Math.toRadians(facingDirection)));
+        //return new Point2D.Double(xEnd, yEnd);
+        if (facingDirection >= 0 && facingDirection <= 90)
+        {
+            //System.out.println("1");
+            double angle = Math.toRadians(direction);
+            double newXCoordinate = position.getX()+(distance*Math.sin(angle));
+            double newYCoordinate = position.getY()-(distance*Math.cos(angle));
+            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
+            return newLocation;
+        }
+        else if (facingDirection >= 90 && facingDirection <= 180)
+        {
+            //System.out.println("2");
+            double angle = Math.toRadians(180-direction);
+            double newXCoordinate = position.getX()+distance*Math.sin(angle);
+            double newYCoordinate = position.getY()+distance*Math.cos(angle);
+            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
+            return newLocation;
+        }
+        else if (facingDirection >=180 && facingDirection <= 270)
+        {
+            //System.out.println("3");
+            double angle = Math.toRadians(facingDirection-180);
+            double newXCoordinate = position.getX()-distance*Math.sin(angle);
+            double newYCoordinate = position.getY()-distance*Math.cos(angle);
+            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
+            return newLocation;
+        }
+        else if (facingDirection >= 270 || facingDirection <= 360)
+        {
+            //System.out.println("4");
+            double angle = Math.toRadians(360-facingDirection);
+            double newXCoordinate = position.getX()-distance*Math.sin(angle);
+            double newYCoordinate = position.getY()+distance*Math.cos(angle);
+            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
+            return newLocation;
+        }
+        else
+        {
+            System.out.println("illegal angle error");
+            return position;
+        }
     }
 
     /**
