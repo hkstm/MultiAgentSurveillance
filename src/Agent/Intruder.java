@@ -2,6 +2,7 @@ package Agent;
 import World.WorldMap;
 import javafx.scene.paint.Color;
 
+import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.util.Random;
 import java.util.Timer;
@@ -25,6 +26,7 @@ public class Intruder extends Agent{
     private double walkingSpeed = 1.4; //m/s
     private double sprintSpeed = 3.0; //m/s
     private double startTime= System.nanoTime();
+    private Point tempGoal;
 
     /**
      * An Intruder constructor with an empty internal map
@@ -112,11 +114,25 @@ public class Intruder extends Agent{
     }
     public Point2D.Double gameTreeIntruder(double timeStep)
     {
+        double distance;
         int[][] blocks = aStarTerrain(knownTerrain);
-        Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)getGoalPosition().getX(), (int)getGoalPosition().getY(), blocks)
+        Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)getGoalPosition().getX(), (int)getGoalPosition().getY(), blocks);
         List<Node> path = new ArrayList<Node>();
         path = pathFinder.findPath();
-        // here insert the code for actuall following the path (by furthest node in a straight line
+        for(int i = 1; i < path.size(); i++)
+        {
+            if(i == path.size()-1)
+            {
+                //turntoface goal, also check if move is still correct bc i think it may be buggy if you dont do it the old way
+                break;
+            }
+            if(path.get(i-1).i != path.get(i).i && path.get(i).i == path.get(i+1).i || path.get(i-1).j != path.get(i).j && path.get(i).j == path.get(i+1).j)
+            {
+                tempGoal = new Point(path.get(i).i, path.get(i).j);
+                //turntoface corner (the moving is done later)
+                break;
+            }
+        }
         // remove the current way of moving
         // make sure to open windows and doors
         // weights

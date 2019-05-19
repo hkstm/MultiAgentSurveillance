@@ -125,12 +125,12 @@ public class Agent implements Runnable{
         //} else if(direction < 180) {
         //    direction = (direction+180)+180;
         //}
-        while (direction > 180 || direction < -180)
+        while (direction > 360 || direction < 0)
         {
-            if (direction > 180)
+            if (direction > 360)
             {
                 direction = direction-360;
-            } else if (direction < 180)
+            } else if (direction < 0)
             {
                 direction = direction+360;
             }
@@ -582,5 +582,10 @@ public class Agent implements Runnable{
             blocks[i][1] = (int)walls.get(i).getY();
         }
         return blocks;
+    }
+
+    public void turnToFace(double angle)
+    {
+        direction = angle;
     }
 }
