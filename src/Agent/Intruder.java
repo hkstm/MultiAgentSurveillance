@@ -118,11 +118,11 @@ public class Intruder extends Agent{
         Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)(getGoalPosition().getX()/SCALING_FACTOR), (int)(getGoalPosition().getY()/SCALING_FACTOR), blocks);
         List<Node> path = new ArrayList<Node>();
         path = pathFinder.findPath();
-        double turnAngle = Math.atan(Math.abs(tempGoal.x-position.x)/Math.abs(tempGoal.x-position.x));
         for(int i = 1; i < path.size()-1; i++) //might have to start from the end :)
         {
             if(i == path.size()-1) //if one away from the goal
             {
+                double turnAngle = Math.atan(Math.abs(goalPosition.x-position.x)/Math.abs(goalPosition.x-position.x));
                 if(goalPosition.x >= position.x && goalPosition.y <= position.y)
                 {
                     turnToFace(turnAngle); //angles might be wonky
@@ -141,9 +141,11 @@ public class Intruder extends Agent{
                 }
                 break;
             }
-            if(path.get(i-1).i != path.get(i).i && path.get(i).i == path.get(i+1).i || path.get(i-1).j != path.get(i).j && path.get(i).j == path.get(i+1).j)
+            else if(path.get(i-1).i != path.get(i).i && path.get(i).i == path.get(i+1).i || path.get(i-1).j != path.get(i).j && path.get(i).j == path.get(i+1).j)
             {
+                double turnAngle = Math.atan(Math.abs(goalPosition.x-position.x)/Math.abs(goalPosition.x-position.x));
                 tempGoal = new Point(path.get(i).i, path.get(i).j); //will go to the corner not the center change this is time permits
+                double turnAngle2 = Math.atan(Math.abs(tempGoal.x-position.x)/Math.abs(tempGoal.x-position.x));
                 if(tempGoal.x >= position.x && tempGoal.y <= position.y)
                 {
                     turnToFace(turnAngle); //angles might be wonky
@@ -171,7 +173,6 @@ public class Intruder extends Agent{
         {
             tired = true;
         }
-        previousPosition.setLocation(position.getX(), position.getY());
         updateKnownTerrain(visionRadius*SCALING_FACTOR, viewingAngle);
         Point2D goal = getGoalPosition();
         double walkingDistance = (walkingSpeed*SCALING_FACTOR*timeStep);

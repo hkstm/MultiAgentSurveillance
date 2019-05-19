@@ -94,8 +94,7 @@ public class Agent implements Runnable{
             //THE EMPTY STRINGS ARE NECESSARY PLEASE LEAVE THEM :)
             currentTime = System.nanoTime();
             delta = (currentTime - previousTime)/1e9; //puts it in seconds
-            previousTime = currentTime;
-            currentSpeed = ((position.distance(previousPosition)/SCALING_FACTOR)/delta);
+            //currentSpeed = ((position.distance(previousPosition)/SCALING_FACTOR)/delta);
             Intruder intruder = new Intruder(position, direction);
             intruder.gameTreeIntruder(delta);
             //System.out.println("currentSpeed:" + currentSpeed);
@@ -103,6 +102,7 @@ public class Agent implements Runnable{
             updateGoalPosition();
             xGoal = getGoalPosition().getX();
             yGoal = getGoalPosition().getY();
+            previousTime = currentTime;
         }
     }
 
