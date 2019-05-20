@@ -2,6 +2,7 @@ package Agent;
 import World.WorldMap;
 import javafx.scene.paint.Color;
 
+import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.util.Random;
 import java.util.Timer;
@@ -25,6 +26,7 @@ public class Intruder extends Agent{
     private double walkingSpeed = 1.4; //m/s
     private double sprintSpeed = 3.0; //m/s
     private double startTime= System.nanoTime();
+    private Point tempGoal;
 
     /**
      * An Intruder constructor with an empty internal map
@@ -110,13 +112,60 @@ public class Intruder extends Agent{
             timer.schedule(openWindow, 3000);
         }
     }
-    public Point2D.Double gameTreeIntruder(double timeStep)
+    public void gameTreeIntruder(double timeStep)
     {
         int[][] blocks = aStarTerrain(knownTerrain);
-        Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)getGoalPosition().getX(), (int)getGoalPosition().getY(), blocks)
+        Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)(getGoalPosition().getX()/SCALING_FACTOR), (int)(getGoalPosition().getY()/SCALING_FACTOR), blocks);
         List<Node> path = new ArrayList<Node>();
         path = pathFinder.findPath();
-        // here insert the code for actuall following the path (by furthest node in a straight line
+        for(int i = 1; i < path.size()-1; i++) //might have to start from the end :)
+        {
+            if(i == path.size()-1) //if one away from the goal
+            {
+                double turnAngle = Math.atan(Math.abs(goalPosition.x-position.x)/Math.abs(goalPosition.x-position.x));
+                if(goalPosition.x >= position.x && goalPosition.y <= position.y)
+                {
+                    turnToFace(turnAngle); //angles might be wonky
+                }
+                else if(goalPosition.x >= position.x && goalPosition.y >= position.y)
+                {
+                    turnToFace(180-turnAngle);
+                }
+                else if(goalPosition.x <= position.x && goalPosition.y >= position.y)
+                {
+                    turnToFace(180+turnAngle);
+                }
+                else if(goalPosition.x <= position.x && goalPosition.y <= position.y)
+                {
+                    turnToFace(360-turnAngle);
+                }
+                break;
+            }
+            else if(path.get(i-1).i != path.get(i).i && path.get(i).i == path.get(i+1).i || path.get(i-1).j != path.get(i).j && path.get(i).j == path.get(i+1).j)
+            {
+                double turnAngle = Math.atan(Math.abs(goalPosition.x-position.x)/Math.abs(goalPosition.x-position.x));
+                tempGoal = new Point(path.get(i).i, path.get(i).j); //will go to the corner not the center change this is time permits
+                double turnAngle2 = Math.atan(Math.abs(tempGoal.x-position.x)/Math.abs(tempGoal.x-position.x));
+                if(tempGoal.x >= position.x && tempGoal.y <= position.y)
+                {
+                    turnToFace(turnAngle); //angles might be wonky
+                }
+                else if(tempGoal.x >= position.x && tempGoal.y >= position.y)
+                {
+                    turnToFace(180-turnAngle);
+                }
+                else if(tempGoal.x <= position.x && tempGoal.y >= position.y)
+                {
+                    turnToFace(180+turnAngle);
+                }
+                else if(tempGoal.x <= position.x && tempGoal.y <= position.y)
+                {
+                    turnToFace(360-turnAngle);
+                }
+                break;
+            }
+            //add check for diagonal path bc this way will be inefficient otherwise
+        }
         // remove the current way of moving
         // make sure to open windows and doors
         // weights
@@ -124,11 +173,11 @@ public class Intruder extends Agent{
         {
             tired = true;
         }
-        previousPosition.setLocation(position.getX(), position.getY());
         updateKnownTerrain(visionRadius*SCALING_FACTOR, viewingAngle);
         Point2D goal = getGoalPosition();
         double walkingDistance = (walkingSpeed*SCALING_FACTOR*timeStep);
         double sprintingDistance = (sprintSpeed*SCALING_FACTOR*timeStep);
+        /*
         double xDifference = Math.abs(goal.getX()-position.getX());
         double yDifference = Math.abs(goal.getY()-position.getY());
         double angleToGoal = Math.atan(xDifference/yDifference);
@@ -148,6 +197,7 @@ public class Intruder extends Agent{
         {
             turn(-angleToGoal);
         }
+        */
         if(!tired)
         {
             if(legalMoveCheck(sprintingDistance))
@@ -159,6 +209,5 @@ public class Intruder extends Agent{
         {
             move(walkingDistance);
         }
-        return position;
     }
 }
