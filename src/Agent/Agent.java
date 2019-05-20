@@ -51,7 +51,7 @@ public class Agent implements Runnable{
     protected boolean exitThread;
     protected double previousTime;
     protected Point2D.Double previousPosition;
-    protected volatile Point2D.Double goalPosition;
+    protected volatile Point2D.Double goalPosition = new Point2D.Double(100, 500);
 
     /**
      * Constructor for Agent
@@ -63,7 +63,7 @@ public class Agent implements Runnable{
         System.out.println("agent constructor called");
         this.position = position;
         this.direction = direction;
-        this.goalPosition = position;
+        //this.goalPosition = position;
         this.visualRange = new double[2];
         for (int i = 0;i < knownTerrain.length;i++) {
             for (int j = 0;j < knownTerrain[0].length;j++) {
@@ -78,7 +78,8 @@ public class Agent implements Runnable{
         /**
          * DONT REMOVE THIS GOALPOSITION THING IT IS NECESSARY FOR SOME REASON
          */
-        goalPosition = new Point2D.Double(200, 200);
+        //goalPosition = new Point2D.Double(200, 200);
+        Intruder intruder = new Intruder(position, direction);
         while(!exitThread) {
             //updateKnownTerrain(10*SCALING_FACTOR, 45);
             //{
@@ -95,23 +96,22 @@ public class Agent implements Runnable{
             currentTime = System.nanoTime();
             delta = (currentTime - previousTime)/1e9; //puts it in seconds
             //currentSpeed = ((position.distance(previousPosition)/SCALING_FACTOR)/delta);
-            Intruder intruder = new Intruder(position, direction);
             intruder.gameTreeIntruder(delta);
             //System.out.println("currentSpeed:" + currentSpeed);
             checkForAgentSound();
-            updateGoalPosition();
-            xGoal = getGoalPosition().getX();
-            yGoal = getGoalPosition().getY();
+            //updateGoalPosition();
+            //xGoal = getGoalPosition().getX();
+            //yGoal = getGoalPosition().getY();
             previousTime = currentTime;
         }
     }
 
-    public void updateGoalPosition() {
-        //some logic with the worldMap and whatever algorithms we are using
-        double x = 200;
-        double y = 200;
-        goalPosition.setLocation(x, y);
-    }
+    //public void updateGoalPosition() {
+    //    //some logic with the worldMap and whatever algorithms we are using
+    //    double x = 200;
+    //    double y = 200;
+    //    goalPosition.setLocation(x, y);
+    //}
 
     /**
      * to update the direction which an agent is facing
@@ -173,7 +173,7 @@ public class Agent implements Runnable{
             //System.out.println("3");
             double angle = Math.toRadians(facingDirection-180);
             double newXCoordinate = position.getX()-distance*Math.sin(angle);
-            double newYCoordinate = position.getY()-distance*Math.cos(angle);
+            double newYCoordinate = position.getY()+distance*Math.cos(angle);
             Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
             return newLocation;
         }
@@ -182,13 +182,12 @@ public class Agent implements Runnable{
             //System.out.println("4");
             double angle = Math.toRadians(360-facingDirection);
             double newXCoordinate = position.getX()-distance*Math.sin(angle);
-            double newYCoordinate = position.getY()+distance*Math.cos(angle);
+            double newYCoordinate = position.getY()-distance*Math.cos(angle);
             Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
             return newLocation;
         }
         else
         {
-            System.out.println("illegal angle error");
             return position;
         }
     }
@@ -561,7 +560,7 @@ public class Agent implements Runnable{
         this.color = color;
     }
 
-    public int[][] aStarTerrain(int[][] terrain)
+    public int[][] aStarTerrain(int[][] terrain) //might be an issue when there are no walls? add a conditional for this
     {
         List<Point> walls = new ArrayList<Point>();
         for(int i = 0; i < terrain.length; i++)
@@ -581,6 +580,13 @@ public class Agent implements Runnable{
             blocks[i][0] = (int)walls.get(i).getX();
             blocks[i][1] = (int)walls.get(i).getY();
         }
+        //for(int i = 0; i < blocks[0].length; i++)
+        //{
+        //    for(int j = 0; j < blocks.length;j++)
+        //    {
+        //        System.out.println(blocks[i][j]);
+        //    }
+        //}
         return blocks;
     }
 
