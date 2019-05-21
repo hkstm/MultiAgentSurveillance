@@ -114,90 +114,35 @@ public class Intruder extends Agent{
     }
     public void gameTreeIntruder(double timeStep)
     {
+        updateKnownTerrain(visionRadius*SCALING_FACTOR, viewingAngle);
         int[][] blocks = aStarTerrain(knownTerrain);
         Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)(getGoalPosition().getX()/SCALING_FACTOR), (int)(getGoalPosition().getY()/SCALING_FACTOR), blocks);
         List<Node> path = new ArrayList<Node>();
         path = pathFinder.findPath();
-        for(int i = 1; i < path.size()-1; i++) //might have to start from the end :)
+        tempGoal = new Point(path.get(path.size()-1).i, path.get(path.size()-1).j);
+        double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.y-(int)(position.y/SCALING_FACTOR))/Math.abs(tempGoal.x-(int)(position.x/SCALING_FACTOR))));
+        double walkingDistance = (walkingSpeed*SCALING_FACTOR*timeStep);
+        double sprintingDistance = (sprintSpeed*SCALING_FACTOR*timeStep);
+        if(tempGoal.x >= (int)(position.x/SCALING_FACTOR) && tempGoal.y <= (int)(position.y/SCALING_FACTOR))
         {
-            if(i == path.size()-1) //if one away from the goal
-            {
-                double turnAngle = Math.atan(Math.abs(goalPosition.x-position.x)/Math.abs(goalPosition.x-position.x));
-                if(goalPosition.x >= position.x && goalPosition.y <= position.y)
-                {
-                    turnToFace(turnAngle); //angles might be wonky
-                }
-                else if(goalPosition.x >= position.x && goalPosition.y >= position.y)
-                {
-                    turnToFace(180-turnAngle);
-                }
-                else if(goalPosition.x <= position.x && goalPosition.y >= position.y)
-                {
-                    turnToFace(180+turnAngle);
-                }
-                else if(goalPosition.x <= position.x && goalPosition.y <= position.y)
-                {
-                    turnToFace(360-turnAngle);
-                }
-                break;
-            }
-            else if(path.get(i-1).i != path.get(i).i && path.get(i).i == path.get(i+1).i || path.get(i-1).j != path.get(i).j && path.get(i).j == path.get(i+1).j)
-            {
-                double turnAngle = Math.atan(Math.abs(goalPosition.x-position.x)/Math.abs(goalPosition.x-position.x));
-                tempGoal = new Point(path.get(i).i, path.get(i).j); //will go to the corner not the center change this is time permits
-                double turnAngle2 = Math.atan(Math.abs(tempGoal.x-position.x)/Math.abs(tempGoal.x-position.x));
-                if(tempGoal.x >= position.x && tempGoal.y <= position.y)
-                {
-                    turnToFace(turnAngle); //angles might be wonky
-                }
-                else if(tempGoal.x >= position.x && tempGoal.y >= position.y)
-                {
-                    turnToFace(180-turnAngle);
-                }
-                else if(tempGoal.x <= position.x && tempGoal.y >= position.y)
-                {
-                    turnToFace(180+turnAngle);
-                }
-                else if(tempGoal.x <= position.x && tempGoal.y <= position.y)
-                {
-                    turnToFace(360-turnAngle);
-                }
-                break;
-            }
-            //add check for diagonal path bc this way will be inefficient otherwise
+            turnToFace(turnAngle);
         }
-        // remove the current way of moving
-        // make sure to open windows and doors
-        // weights
+        else if(tempGoal.x >= (int)(position.x/SCALING_FACTOR) && tempGoal.y >= (int)(position.y/SCALING_FACTOR))
+        {
+            turnToFace(90+turnAngle);
+        }
+        else if(tempGoal.x <= (int)(position.x/SCALING_FACTOR) && tempGoal.y >= (int)(position.y/SCALING_FACTOR))
+        {
+            turnToFace(270-turnAngle);
+        }
+        else if(tempGoal.x <= (int)(position.x/SCALING_FACTOR) && tempGoal.y <= (int)(position.y/SCALING_FACTOR))
+        {
+            turnToFace(270+turnAngle);
+        }
         if(startTime+RESTING_TIME > currentTime)
         {
             tired = true;
         }
-        updateKnownTerrain(visionRadius*SCALING_FACTOR, viewingAngle);
-        Point2D goal = getGoalPosition();
-        double walkingDistance = (walkingSpeed*SCALING_FACTOR*timeStep);
-        double sprintingDistance = (sprintSpeed*SCALING_FACTOR*timeStep);
-        /*
-        double xDifference = Math.abs(goal.getX()-position.getX());
-        double yDifference = Math.abs(goal.getY()-position.getY());
-        double angleToGoal = Math.atan(xDifference/yDifference);
-        if(goal.getX() >= position.getX() && goal.getY() >= position.getY())
-        {
-            turn(180-angleToGoal);
-        }
-        else if(goal.getX() >= position.getX() && goal.getY() <= position.getY())
-        {
-            turn(angleToGoal);
-        }
-        else if(goal.getX() <= position.getX() && goal.getY() >= position.getY())
-        {
-            turn(-(180-angleToGoal));
-        }
-        else if(goal.getX() <= position.getX() && goal.getY() <= position.getY())
-        {
-            turn(-angleToGoal);
-        }
-        */
         if(!tired)
         {
             if(legalMoveCheck(sprintingDistance))

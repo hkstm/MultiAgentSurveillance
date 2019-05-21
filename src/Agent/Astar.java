@@ -124,18 +124,18 @@ public class Astar {
         updateNeighbour();
         ArrayList<Node> path = new ArrayList<Node>();
         if (closeCell[ei][ej]) {
-            System.out.println("path");
+            //System.out.println("path");
             Node current = grid[ei][ej];
-            System.out.println(current);
+            //System.out.println(current);
             grid[current.i][current.j].solution = true;
 
             while (current.parent != null) {
-                path.add(current.parent);
-                System.out.println("->" + current.parent);
+                path.add(current);
+                //System.out.println("->" + current.parent);
                 grid[current.parent.i][current.parent.j].solution = true;
                 current = current.parent;
 
-                System.out.println(path);
+                //System.out.println(path);
                 //System.out.println("\n");
 
                 /*for (int i = 0; i < grid.length; i++) {
