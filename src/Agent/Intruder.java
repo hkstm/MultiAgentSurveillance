@@ -5,6 +5,8 @@ import javafx.geometry.Point2D;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.ArrayList;
+import java.util.List;
 
 import static World.WorldMap.*;
 import static World.GameScene.SCALING_FACTOR;
@@ -16,9 +18,13 @@ import static World.GameScene.SCALING_FACTOR;
 
 public class Intruder extends Agent{
     private boolean tired;
+    private final double RESTING_TIME = 5*1e9;
     private int visionRadius = 10;
     private int visionAngle = 45;
     private double walkingSpeed = 1.4; //m/s
+    private double sprintSpeed = 3.0; //m/s
+    private double startTime= System.nanoTime();
+    private Point tempGoal;
 
     /**
      * An Intruder constructor with an empty internal map
@@ -106,35 +112,49 @@ public class Intruder extends Agent{
             timer.schedule(openWindow, 3000);
         }
     }
-    public Point2D gameTreeIntruder(double timeStep)
+
+    public void gameTreeIntruder(double timeStep)
     {
-        previousPosition= new Point2D(position.getX(), position.getY());
-        updateKnownTerrain();
-        Point2D goal = getGoalPosition();
+        updateKnownTerrain(visionRadius*SCALING_FACTOR, viewingAngle);
+        int[][] blocks = aStarTerrain(knownTerrain);
+        Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)(getGoalPosition().getX()/SCALING_FACTOR), (int)(getGoalPosition().getY()/SCALING_FACTOR), blocks);
+        List<Node> path = new ArrayList<Node>();
+        path = pathFinder.findPath();
+        tempGoal = new Point(path.get(path.size()-1).i, path.get(path.size()-1).j);
+        double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.y-(int)(position.y/SCALING_FACTOR))/Math.abs(tempGoal.x-(int)(position.x/SCALING_FACTOR))));
+
         double walkingDistance = (walkingSpeed*SCALING_FACTOR*timeStep);
-        double xDifference = Math.abs(goal.getX()-position.getX());
-        double yDifference = Math.abs(goal.getY()-position.getY());
-        double angleToGoal = Math.atan(xDifference/yDifference);
-        if(goal.getX() >= position.getX() && goal.getY() >= position.getY())
+        double sprintingDistance = (sprintSpeed*SCALING_FACTOR*timeStep);
+        if(tempGoal.x >= (int)(position.x/SCALING_FACTOR) && tempGoal.y <= (int)(position.y/SCALING_FACTOR))
         {
-            turn(180-angleToGoal);
+            updateDirection(turnAngle);
         }
-        else if(goal.getX() >= position.getX() && goal.getY() <= position.getY())
+        else if(tempGoal.x >= (int)(position.x/SCALING_FACTOR) && tempGoal.y >= (int)(position.y/SCALING_FACTOR))
         {
-            turn(angleToGoal);
+            updateDirection(90+turnAngle);
         }
-        else if(goal.getX() <= position.getX() && goal.getY() >= position.getY())
+        else if(tempGoal.x <= (int)(position.x/SCALING_FACTOR) && tempGoal.y >= (int)(position.y/SCALING_FACTOR))
         {
-            turn(-(180-angleToGoal));
+            updateDirection(270-turnAngle);
         }
-        else if(goal.getX() <= position.getX() && goal.getY() <= position.getY())
+        else if(tempGoal.x <= (int)(position.x/SCALING_FACTOR) && tempGoal.y <= (int)(position.y/SCALING_FACTOR))
         {
-            turn(-angleToGoal);
+            updateDirection(270+turnAngle);
         }
-        if(legalMoveCheck(walkingDistance))
+        if(startTime+RESTING_TIME > currentTime)
+        {
+            tired = true;
+        }
+        if(!tired)
+        {
+            if(legalMoveCheck(sprintingDistance))
+            {
+                move(sprintingDistance);
+            }
+        }
+        else if(legalMoveCheck(walkingDistance))
         {
             move(walkingDistance);
         }
-        return position;
     }
 }

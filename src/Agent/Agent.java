@@ -50,6 +50,7 @@ public class Agent implements Runnable {
     protected double delta;
     protected boolean exitThread;
     protected double previousTime;
+
     protected Point2D previousPosition;
     protected volatile Point2D goalPosition;
 
@@ -59,18 +60,22 @@ public class Agent implements Runnable {
     protected boolean sprinting;
     protected double startingAngle;
     protected double endAngle;
+  
+    protected Intruder intruder;
 
-        /**
-         * Constructor for Agent
-         * @param position is a point containing the coordinates of an Agent
-         * @param direction is the angle which the agent is facing, this spans from -180 to 180 degrees
-         */
+
+    /**
+     * Constructor for Agent
+     * @param position is a point containing the coordinates of an Agent
+     * @param direction is the angle which the agent is facing, this spans from -180 to 180 degrees
+     */
 
     public Agent(Point2D position, double direction) {
         System.out.println("agent constructor called");
         this.position = position;
         this.direction = direction;
-        this.goalPosition = position;
+        this.intruder = new Intruder(position, direction);
+        //this.goalPosition = position;
         this.visualRange = new double[2];
         this.firstRun = true;
         for (int i = 0;i < knownTerrain.length;i++) {
@@ -86,6 +91,7 @@ public class Agent implements Runnable {
         /**
          * DONT REMOVE THIS GOALPOSITION THING IT IS NECESSARY FOR SOME REASON
          */
+
         goalPosition = new Point2D(200, 200);
         while(!exitThread) { {
                 for (int i = 0; i < knownTerrain.length; i++) {
@@ -117,6 +123,7 @@ public class Agent implements Runnable {
         currentSpeed = ((position.distance(previousPosition) / SCALING_FACTOR) / delta);
         //System.out.println("currentSpeed:" + currentSpeed);
         previousPosition = new Point2D(position.getX(), position.getY());
+        intruder.gameTreeIntruder(delta);      
         checkForAgentSound();
         double walkingDistance = (1.4 * SCALING_FACTOR) * (delta);
         if (legalMoveCheck(walkingDistance)) {
@@ -137,6 +144,7 @@ public class Agent implements Runnable {
         goalPosition = new Point2D(x, y);
     }
 
+
     /**
      * to update the direction which an agent is facing
      * @param turningAngle is the turningAngle which the agent will turn, positive for turning to the right, negative for turning to the left
@@ -149,14 +157,12 @@ public class Agent implements Runnable {
         //} else if(direction < 180) {
         //    direction = (direction+180)+180;
         //}
-        // your code got stuck in a loop thing the above should be fine?
-        // this should be working now lemme know if there are any more issues with it :)
-        while (direction > 180 || direction < -180)
+        while (direction > 360 || direction < 0)
         {
-            if (direction > 180)
+            if (direction > 360)
             {
                 direction = direction-360;
-            } else if (direction < 180)
+            } else if (direction < 0)
             {
                 direction = direction+360;
             }
@@ -183,56 +189,55 @@ public class Agent implements Runnable {
     /**
      * find out where an Agent will end up after a potential move
      * @param distance is the distance to be moved by the agent
-     *                 depending on the time-step, speeds will need to be divided before being used as parameters
-     * @param facingDirection is the angle which the Agent is turned (i.e. it's direction) for the potential move
+     *                 depending on the time-step, speeds will need to be divided before being used as parameter
      * @return a point at which the Agent would end up if this move were made
      */
 
     public Point2D getMove(double distance, double facingDirection) {
-        double xEnd = position.getX() + (distance * Math.cos(Math.toRadians(facingDirection)));
-        double yEnd = position.getY() + (distance * Math.sin(Math.toRadians(facingDirection)));
-        return new Point2D(xEnd, yEnd);
-//        if (facingDirection > 0 && facingDirection <= 90)
-//        {
-//            //System.out.println("1");
-//            double angle = Math.toRadians(facingDirection);
-//            double newXCoordinate = position.getX()+(distance*Math.sin(angle));
-//            double newYCoordinate = position.getY()-(distance*Math.cos(angle));
-//            Point2D newLocation = new Point2D(newXCoordinate, newYCoordinate);
-//            return newLocation;
-//        }
-//        else if (facingDirection > 90 && facingDirection <= 180)
-//        {
-//            //System.out.println("2");
-//            double angle = Math.toRadians(180-facingDirection);
-//            double newXCoordinate = position.getX()+distance*Math.sin(angle);
-//            double newYCoordinate = position.getY()+distance*Math.cos(angle);
-//            Point2D newLocation = new Point2D(newXCoordinate, newYCoordinate);
-//            return newLocation;
-//        }
-//        else if (facingDirection <= 0 && facingDirection > -90)
-//        {
-//            //System.out.println("3");
-//            double angle = Math.toRadians(-facingDirection);
-//            double newXCoordinate = position.getX()-distance*Math.sin(angle);
-//            double newYCoordinate = position.getY()-distance*Math.cos(angle);
-//            Point2D newLocation = new Point2D(newXCoordinate, newYCoordinate);
-//            return newLocation;
-//        }
-//        else if (facingDirection <= -90 || facingDirection > -180)
-//        {
-//            //System.out.println("4");
-//            double angle = Math.toRadians(180.0+facingDirection);
-//            double newXCoordinate = position.getX()-distance*Math.sin(angle);
-//            double newYCoordinate = position.getY()+distance*Math.cos(angle);
-//            Point2D newLocation = new Point2D(newXCoordinate, newYCoordinate);
-//            return newLocation;
-//        }
-//        else
-//        {
-//            System.out.println("illegal angle error");
-//            return position;
-//        }
+        //double xEnd = position.x + (distance * Math.cos(Math.toRadians(facingDirection)));
+        //double yEnd = position.y + (distance * Math.sin(Math.toRadians(facingDirection)));
+        //return new Point2D.Double(xEnd, yEnd);
+        if (facingDirection >= 0 && facingDirection <= 90)
+        {
+            //System.out.println("1");
+            double angle = Math.toRadians(direction);
+            double newXCoordinate = position.getX()+(distance*Math.sin(angle));
+            double newYCoordinate = position.getY()-(distance*Math.cos(angle));
+            Point2D newLocation = new Point2D(newXCoordinate, newYCoordinate);
+            return newLocation;
+        }
+        else if (facingDirection >= 90 && facingDirection <= 180)
+        {
+            //System.out.println("2");
+            double angle = Math.toRadians(180-direction);
+            double newXCoordinate = position.getX()+distance*Math.sin(angle);
+            double newYCoordinate = position.getY()+distance*Math.cos(angle);
+            Point2D newLocation = new Point2D(newXCoordinate, newYCoordinate);
+            return newLocation;
+        }
+        else if (facingDirection >=180 && facingDirection <= 270)
+        {
+            //System.out.println("3");
+            double angle = Math.toRadians(facingDirection-180);
+            double newXCoordinate = position.getX()-distance*Math.sin(angle);
+            double newYCoordinate = position.getY()+distance*Math.cos(angle);
+            Point2D newLocation = new Point2D(newXCoordinate, newYCoordinate);
+            return newLocation;
+        }
+        else if (facingDirection >= 270 || facingDirection <= 360)
+        {
+            //System.out.println("4");
+            double angle = Math.toRadians(360-facingDirection);
+            double newXCoordinate = position.getX()-distance*Math.sin(angle);
+            double newYCoordinate = position.getY()-distance*Math.cos(angle);
+            Point2D newLocation = new Point2D(newXCoordinate, newYCoordinate);
+            return newLocation;
+        }
+        else
+        {
+            return position;
+        }
+
     }
 
     /**
@@ -535,7 +540,7 @@ public class Agent implements Runnable {
     }
 
     public Shape getCone() {
-       return viewingCone;
+        return viewingCone;
     }
 
     public static int locationToWorldgrid(double toBeConverted) {
@@ -622,3 +627,33 @@ public class Agent implements Runnable {
 
 }
 
+    public int[][] aStarTerrain(int[][] terrain) //might be an issue when there are no walls? add a conditional for this
+    {
+        List<Point> walls = new ArrayList<Point>();
+        for(int i = 0; i < terrain.length; i++)
+        {
+            for(int j = 0; j < terrain[0].length; j++)
+            {
+                if(terrain[i][j] == 1 || terrain[i][j] == 5 || terrain[i][j] == 7)
+                {
+                    Point wall = new Point(i, j);
+                    walls.add(wall); //WALL
+                }
+            }
+        }
+        int[][] blocks = new int[walls.size()][2];
+        for(int i = 0; i < walls.size(); i++)
+        {
+            blocks[i][0] = (int)walls.get(i).getX();
+            blocks[i][1] = (int)walls.get(i).getY();
+        }
+        //for(int i = 0; i < blocks[0].length; i++)
+        //{
+        //    for(int j = 0; j < blocks.length;j++)
+        //    {
+        //        System.out.println(blocks[i][j]);
+        //    }
+        //}
+        return blocks;
+    }
+}
