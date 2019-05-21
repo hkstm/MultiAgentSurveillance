@@ -74,7 +74,7 @@ public class Agent implements Runnable {
         System.out.println("agent constructor called");
         this.position = position;
         this.direction = direction;
-        this.intruder = new Intruder(position, direction);
+
         //this.goalPosition = position;
         this.visualRange = new double[2];
         this.firstRun = true;
@@ -86,6 +86,7 @@ public class Agent implements Runnable {
     }
 
     public void run() {
+        this.intruder = new Intruder(position, direction);
         previousTime = System.nanoTime();
         previousPosition = new Point2D(position.getX(), position.getY());
         /**
@@ -123,6 +124,7 @@ public class Agent implements Runnable {
         currentSpeed = ((position.distance(previousPosition) / SCALING_FACTOR) / delta);
         //System.out.println("currentSpeed:" + currentSpeed);
         previousPosition = new Point2D(position.getX(), position.getY());
+        updateKnownTerrain();
         intruder.gameTreeIntruder(delta);      
         checkForAgentSound();
         double walkingDistance = (1.4 * SCALING_FACTOR) * (delta);
@@ -625,18 +627,15 @@ public class Agent implements Runnable {
         this.color = color;
     }
 
-}
-
     public int[][] aStarTerrain(int[][] terrain) //might be an issue when there are no walls? add a conditional for this
     {
-        List<Point> walls = new ArrayList<Point>();
+        ArrayList<Point2D> walls = new ArrayList<Point2D>();
         for(int i = 0; i < terrain.length; i++)
         {
             for(int j = 0; j < terrain[0].length; j++)
             {
-                if(terrain[i][j] == 1 || terrain[i][j] == 5 || terrain[i][j] == 7)
-                {
-                    Point wall = new Point(i, j);
+                if(terrain[i][j] == STRUCTURE || terrain[i][j] == SENTRY || terrain[i][j] == WALL) {
+                    Point2D wall = new Point2D(i, j);
                     walls.add(wall); //WALL
                 }
             }
@@ -654,6 +653,7 @@ public class Agent implements Runnable {
         //        System.out.println(blocks[i][j]);
         //    }
         //}
+
         return blocks;
     }
 }

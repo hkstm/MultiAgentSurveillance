@@ -79,22 +79,22 @@ public class GameScene extends BorderPane implements Runnable {
         this.startGameBut = new Button("Start/Stop Game"); //should stop and start game, not properly working atm
         Agent.worldMap = worldMap;
 
-        //worldMap.addAgent(new Intruder(new Point2D(100, 100), 270));
-        worldMap.addOnlyAgent(new Intruder(new Point2D(500, 500), 0));
+        worldMap.addAgent(new Intruder(new Point2D(100, 100), 270));
+//        worldMap.addOnlyAgent(new Intruder(new Point2D(500, 500), 0));
 
         //Actual game "loop" in here
         startGameBut.setOnAction(e -> { //
             currentTimeCountDown = System.nanoTime();
             if(!gameStarted) {
                 gameStarted = true;
-//                worldMap.startAgents();
+                worldMap.startAgents();
                 System.out.println("Started agents");
                 new AnimationTimer() {
                     long currentTimeCalc = System.nanoTime();
                     long previousTime = currentTimeCalc;
                     @Override
                     public void handle(long currentTime) {
-                        worldMap.forceUpdateAgents();
+//                        worldMap.forceUpdateAgents();
                         redrawBoard();
                         long delta = (currentTime - previousTime);
                         previousTime = currentTime;

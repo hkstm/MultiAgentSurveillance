@@ -24,7 +24,7 @@ public class Intruder extends Agent{
     private double walkingSpeed = 1.4; //m/s
     private double sprintSpeed = 3.0; //m/s
     private double startTime= System.nanoTime();
-    private Point tempGoal;
+    private Point2D tempGoal;
 
     /**
      * An Intruder constructor with an empty internal map
@@ -34,6 +34,7 @@ public class Intruder extends Agent{
 
     public Intruder(Point2D position, double direction) {
         super(position, direction);
+        tempGoal = new Point2D(500,500);
         this.viewingAngle = 45;
 //        this.viewingAngle = 60;
         this.visualRange[0] = 0;
@@ -113,31 +114,30 @@ public class Intruder extends Agent{
         }
     }
 
-    public void gameTreeIntruder(double timeStep)
-    {
-        updateKnownTerrain(visionRadius*SCALING_FACTOR, viewingAngle);
+    public void gameTreeIntruder(double timeStep) {
         int[][] blocks = aStarTerrain(knownTerrain);
+
         Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)(getGoalPosition().getX()/SCALING_FACTOR), (int)(getGoalPosition().getY()/SCALING_FACTOR), blocks);
         List<Node> path = new ArrayList<Node>();
         path = pathFinder.findPath();
-        tempGoal = new Point(path.get(path.size()-1).i, path.get(path.size()-1).j);
-        double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.y-(int)(position.y/SCALING_FACTOR))/Math.abs(tempGoal.x-(int)(position.x/SCALING_FACTOR))));
+        tempGoal = new Point2D(path.get(path.size()-1).i, path.get(path.size()-1).j);
+        double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.getY()-(int)(position.getY()/SCALING_FACTOR))/Math.abs(tempGoal.getX()-(int)(position.getX()/SCALING_FACTOR))));
 
         double walkingDistance = (walkingSpeed*SCALING_FACTOR*timeStep);
         double sprintingDistance = (sprintSpeed*SCALING_FACTOR*timeStep);
-        if(tempGoal.x >= (int)(position.x/SCALING_FACTOR) && tempGoal.y <= (int)(position.y/SCALING_FACTOR))
+        if(tempGoal.getX() >= (int)(position.getX()/SCALING_FACTOR) && tempGoal.getY() <= (int)(position.getY()/SCALING_FACTOR))
         {
             updateDirection(turnAngle);
         }
-        else if(tempGoal.x >= (int)(position.x/SCALING_FACTOR) && tempGoal.y >= (int)(position.y/SCALING_FACTOR))
+        else if(tempGoal.getX() >= (int)(position.getX()/SCALING_FACTOR) && tempGoal.getY() >= (int)(position.getY()/SCALING_FACTOR))
         {
             updateDirection(90+turnAngle);
         }
-        else if(tempGoal.x <= (int)(position.x/SCALING_FACTOR) && tempGoal.y >= (int)(position.y/SCALING_FACTOR))
+        else if(tempGoal.getX() <= (int)(position.getX()/SCALING_FACTOR) && tempGoal.getY() >= (int)(position.getY()/SCALING_FACTOR))
         {
             updateDirection(270-turnAngle);
         }
-        else if(tempGoal.x <= (int)(position.x/SCALING_FACTOR) && tempGoal.y <= (int)(position.y/SCALING_FACTOR))
+        else if(tempGoal.getX() <= (int)(position.getX()/SCALING_FACTOR) && tempGoal.getY() <= (int)(position.getY()/SCALING_FACTOR))
         {
             updateDirection(270+turnAngle);
         }
