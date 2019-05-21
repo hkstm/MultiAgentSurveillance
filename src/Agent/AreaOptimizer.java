@@ -1,6 +1,5 @@
 package Agent;
 
-import java.awt.*;
 import javafx.geometry.Point2D;
 
 import static World.GameScene.SCALING_FACTOR;
@@ -10,7 +9,6 @@ public class AreaOptimizer extends Guard {
     private Point2DReward[][] worldAreaReward;
     private double score;
     public final double REWARD_FACTOR = 1;
-
 
     public AreaOptimizer(Point2D position, double direction) {
         super(position, direction);
@@ -28,16 +26,33 @@ public class AreaOptimizer extends Guard {
         previousPosition = new Point2D(position.getX(), position.getY());
         goalPosition = new Point2D(200, 200);
         while(!exitThread) {
-            currentTime = System.nanoTime();
-            delta = (currentTime - previousTime)/1e9; //makes it in seconds
-            previousTime = currentTime;
-            createCone();
-            updateWorldAreaReward(delta);
-            direction = getMoveAngle();
-            System.out.println(direction);
-            currentSpeed = ((position.distance(previousPosition)/SCALING_FACTOR)/delta);
-            previousPosition= new Point2D(position.getX(), position.getY());
-            checkForAgentSound();
+            executeAgentLogic();
+        }
+    }
+
+    public void forceUpdate() {
+        if(firstRun) {
+            previousTime = System.nanoTime();
+            previousPosition = new Point2D(position.getX(), position.getY());
+            firstRun = false;
+        }
+        executeAgentLogic();
+    }
+
+    public void executeAgentLogic() {
+        currentTime = System.nanoTime();
+        delta = (currentTime - previousTime)/1e9; //makes it in seconds
+        previousTime = currentTime;
+        createCone();
+        updateWorldAreaReward(delta);
+        updateDirection(getMoveDirection());
+        System.out.println(direction);
+        currentSpeed = ((position.distance(previousPosition)/SCALING_FACTOR)/delta);
+        previousPosition= new Point2D(position.getX(), position.getY());
+        checkForAgentSound();
+        double walkingDistance = (1.4 * SCALING_FACTOR) * (delta);
+        if (legalMoveCheck(walkingDistance)) {
+            move(walkingDistance);
         }
     }
 
@@ -58,7 +73,7 @@ public class AreaOptimizer extends Guard {
 
     }
 
-    public double getMoveAngle() {
+    public double getMoveDirection() {
         double x = 0;
         double y = 0;
         double totalReward = 0;

@@ -17,11 +17,13 @@ import javafx.stage.Stage;
 import java.awt.*;
 import javafx.geometry.Point2D;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Random;
 import Agent.*;
 
 import static Agent.Agent.SOUND_NOISE_STDEV;
 import static Agent.Agent.angleBetweenTwoPointsWithFixedPoint;
+import static World.StartWorldBuilder.WINDOW_SIZE;
 
 /**
  * Main in game screen
@@ -42,10 +44,12 @@ public class GameScene extends BorderPane implements Runnable {
     private Button restartGameBut;
     private Button startGameBut;
     private Group agentGroup = new Group();
+    private ArrayList<TileView> tileViews = new ArrayList<>();
 
     private boolean gameStarted; //used for start and stop button
     private int mode; //modes for different gameModes e.g. multiple intruders/guards and what the end game conditions are
-    public static final double SCALING_FACTOR = 1000/200; //ASSUMING WORLD IS ALWAYS 200 X 200 WHICH MEANS THAT IF WE HAVE A SMALLER MAP IN WORLDBUILDER THE INDIVIDUAL TILES ARE "BIGGER" AND THAT WINDOWSIZE IS 1000
+    public static final int ASSUMED_WORLDSIZE = 200;
+    public static final double SCALING_FACTOR = WINDOW_SIZE/ASSUMED_WORLDSIZE; //ASSUMING WORLD IS ALWAYS 200 X 200 WHICH MEANS THAT IF WE HAVE A SMALLER MAP IN WORLDBUILDER THE INDIVIDUAL TILES ARE "BIGGER" AND THAT WINDOWSIZE IS 1000
     public static Random random = new Random();
     private long currentTimeCountDown;
     private boolean countDown;
@@ -54,7 +58,7 @@ public class GameScene extends BorderPane implements Runnable {
 
     public GameScene(Stage primaryStage, Settings settings) {
         this.grid = new GridPane(); //main grid that shows the tiles
-        this.windowSize = StartWorldBuilder.WINDOW_SIZE;
+        this.windowSize = WINDOW_SIZE;
         this.mode = 0;
         this.settings = settings;
         this.primaryStage = primaryStage;
@@ -69,25 +73,27 @@ public class GameScene extends BorderPane implements Runnable {
 
         initTileImgArray();
         initGoToMenuButton();
+        initTiles();
 //        initRestartButton();
 
         this.startGameBut = new Button("Start/Stop Game"); //should stop and start game, not properly working atm
         Agent.worldMap = worldMap;
         //worldMap.addAgent(new Intruder(new Point2D(100, 100), 270));
-        worldMap.addAgent(new AreaOptimizer(new Point2D(500, 500), 0));
+        worldMap.addOnlyAgent(new AreaOptimizer(new Point2D(500, 500), 300));
 
         //Actual game "loop" in here
         startGameBut.setOnAction(e -> { //
             currentTimeCountDown = System.nanoTime();
             if(!gameStarted) {
                 gameStarted = true;
-                worldMap.startAgents();
+//                worldMap.startAgents();
                 System.out.println("Started agents");
                 new AnimationTimer() {
                     long currentTimeCalc = System.nanoTime();
                     long previousTime = currentTimeCalc;
                     @Override
                     public void handle(long currentTime) {
+                        worldMap.forceUpdateAgents();
                         redrawBoard();
                         long delta = (currentTime - previousTime);
                         previousTime = currentTime;
@@ -320,13 +326,22 @@ public class GameScene extends BorderPane implements Runnable {
         agentGroup.getChildren().addAll(worldMap.getWorldGridShapes());
     }
 
+    public void initTiles() {
+        for (int r = 0; r < worldMap.getSize(); r++) {
+            for (int c = 0; c < worldMap.getSize(); c++) {
+                tileViews.add(c + (r * worldMap.getSize()),  new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c)));
+                grid.add(tileViews.get(c + (r * worldMap.getSize())), c, r);
+            }
+        }
+    }
+
     public void createTiles() {
         for (int r = 0; r < worldMap.getSize(); r++) {
             for (int c = 0; c < worldMap.getSize(); c++) {
-                //System.out.println("r" + r + "c" + c);
-                ImageView tmpImage = new ImageView(tileImgArray[worldMap.getTileState(r, c)]);
-                tmpImage.setSmooth(false);
-                grid.add((tmpImage), c, r);
+                if(tileViews.get(c + (r * worldMap.getSize())).getState() != worldMap.getTileState(r, c)) {
+                    tileViews.set(c + (r * worldMap.getSize()),  new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c)));
+                }
+                grid.add(tileViews.get(c + (r * worldMap.getSize())), c, r);
             }
         }
     }

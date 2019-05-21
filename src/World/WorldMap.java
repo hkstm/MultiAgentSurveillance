@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import static World.GameScene.ASSUMED_WORLDSIZE;
 import static World.GameScene.SCALING_FACTOR;
 
 /**
@@ -156,7 +157,14 @@ public class WorldMap implements Serializable {
      */
     public void addAgent(Agent toBeAdded) {
         this.agents.add(toBeAdded);
-        this.agentThreads.add(new Thread(toBeAdded));
+        Thread threadToBeAdded = new Thread(toBeAdded);
+        threadToBeAdded.setPriority(1);
+        this.agentThreads.add(threadToBeAdded);
+        //startAgents();
+    }
+
+    public void addOnlyAgent(Agent toBeAdded) {
+        this.agents.add(toBeAdded);
         //startAgents();
     }
 
@@ -179,6 +187,12 @@ public class WorldMap implements Serializable {
         agents.clear();
         agentThreads.clear();
         System.out.println("Removed all agents");
+    }
+
+    public void forceUpdateAgents() {
+        for(Agent agent : agents) {
+            agent.forceUpdate();
+        }
     }
 
     /**
@@ -207,7 +221,7 @@ public class WorldMap implements Serializable {
         int windowSize = StartWorldBuilder.WINDOW_SIZE;
         int rowIndex = (int) ((location.getY()/windowSize) * worldGrid.length);
         int columnIndex = (int) ((location.getX()/windowSize) * worldGrid.length);
-        return getTileState(rowIndex, columnIndex);
+        return worldGrid[rowIndex][columnIndex];
     }
 
     public void fillWorldArray(int topLeftRow, int topLeftCol, int botRightRow, int botRightCol, int tileStatus) {
@@ -247,8 +261,8 @@ public class WorldMap implements Serializable {
                     Rectangle tile = new Rectangle();
                     tile.setX(convertArrayToWorld(c));
                     tile.setY(convertArrayToWorld(r));
-                    tile.setWidth((200/worldGrid.length)*SCALING_FACTOR);
-                    tile.setHeight((200/worldGrid.length)*SCALING_FACTOR);
+                    tile.setWidth((ASSUMED_WORLDSIZE/worldGrid.length)*SCALING_FACTOR);
+                    tile.setHeight((ASSUMED_WORLDSIZE/worldGrid.length)*SCALING_FACTOR);
                     tile.setFill(Color.BLACK);
                     worldGridShapes.add(tile);
                 }

@@ -1,5 +1,4 @@
 package Agent;
-import World.WorldMap;
 import javafx.scene.paint.Color;
 
 import javafx.geometry.Point2D;
@@ -30,13 +29,15 @@ public class Intruder extends Agent{
     public Intruder(Point2D position, double direction) {
         super(position, direction);
         this.viewingAngle = 45;
+//        this.viewingAngle = 60;
         this.visualRange[0] = 0;
         this.visualRange[1] = 7.5;
+//        this.visualRange[1] = 20;
         this.color = Color.LIGHTGOLDENRODYELLOW;
         //this.knownTerrain = worldMap.getWorldGrid();
         this.tired = false;
-        for(int i = 1;i < 200;i++) {
-            for(int j = 1;j<200;j++) {
+        for(int i = 1;i < worldMap.getSize();i++) {
+            for(int j = 1;j<worldMap.getSize();j++) {
                 //knownTerrain[i][j] = 8;
             }
         }
@@ -108,7 +109,7 @@ public class Intruder extends Agent{
     public Point2D gameTreeIntruder(double timeStep)
     {
         previousPosition= new Point2D(position.getX(), position.getY());
-        updateKnownTerrain(visionRadius*SCALING_FACTOR, viewingAngle);
+        updateKnownTerrain();
         Point2D goal = getGoalPosition();
         double walkingDistance = (walkingSpeed*SCALING_FACTOR*timeStep);
         double xDifference = Math.abs(goal.getX()-position.getX());

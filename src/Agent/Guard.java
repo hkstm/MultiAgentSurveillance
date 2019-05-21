@@ -19,9 +19,11 @@ public class Guard extends Agent {
 
     public Guard(Point2D position, double direction) {
         super(position, direction);
-        this.viewingAngle = 60;
+        this.viewingAngle = 45;
+//        this.viewingAngle = 60;
         this.visualRange[0] = 0;
-        this.visualRange[1] = 20;
+        this.visualRange[1] = 6;
+//        this.visualRange[1] = 20;
         this.color = Color.AZURE;
         //this.knownTerrain = worldMap.getWorldGrid();
     }
