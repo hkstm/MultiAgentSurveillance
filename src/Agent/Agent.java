@@ -86,17 +86,8 @@ public class Agent implements Runnable {
         }
     }
 
-    public void run() {
-        this.intruder = new Intruder(position, direction);
-        previousTime = System.nanoTime();
-        previousPosition = new Point2D(position.getX(), position.getY());
-        /**
-         * DONT REMOVE THIS GOALPOSITION THING IT IS NECESSARY FOR SOME REASON
-         */
-        //goalPosition = new Point2D(200, 200);
-        while(!exitThread) {
-            executeAgentLogic();
-        }
+    public void run()
+    {
     }
 
     public void forceUpdate() {
@@ -108,29 +99,9 @@ public class Agent implements Runnable {
         executeAgentLogic();
     }
 
-    public void executeAgentLogic() {
-        //goalPosition = new Point2D(200, 200);
-        currentTime = System.nanoTime();
-        delta = currentTime - previousTime;
-        delta /= 1e9; //makes it in seconds
-        //currentSpeed = ((position.distance(previousPosition) / SCALING_FACTOR) / delta);
-        //System.out.println("currentSpeed:" + currentSpeed);
-        //previousPosition = new Point2D(position.getX(), position.getY());
-        //updateKnownTerrain();
-        intruder.gameTreeIntruder(delta);      
-        checkForAgentSound();
-        //double walkingDistance = (1.4 * SCALING_FACTOR) * (delta);
-        //if (legalMoveCheck(walkingDistance)) {
-        //    move(walkingDistance);
-        //} else {
-        //    updateDirection(Math.random() * 360);
-        //}
-        //updateGoalPosition();
-        //xGoal = getGoalPosition().getX();
-        //yGoal = getGoalPosition().getY();
-        previousTime = currentTime;
+    public void executeAgentLogic()
+    {
     }
-
 
     public void updateGoalPosition() {
         //some logic with the worldMap and whatever algorithms we are using

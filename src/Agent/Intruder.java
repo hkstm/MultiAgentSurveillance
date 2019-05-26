@@ -112,6 +112,23 @@ public class Intruder extends Agent{
         }
     }
 
+    public void run() {
+        previousTime = System.nanoTime(); //the first time step is reaallllyyyy small (maybe too small, might have to force it to wait)
+        previousPosition = new Point2D(position.getX(), position.getY());
+        while(!exitThread) {
+            executeAgentLogic();
+        }
+    }
+
+    public void executeAgentLogic() {
+        currentTime = System.nanoTime();
+        delta = currentTime - previousTime;
+        delta /= 1e9; //makes it in seconds
+        gameTreeIntruder(delta);
+        checkForAgentSound();
+        previousTime = currentTime;
+    }
+
     public void gameTreeIntruder(double timeStep)
     {
         //TODO check for guards, need the vision to be working for this
@@ -140,6 +157,7 @@ public class Intruder extends Agent{
         }
         if(startTime+freezeTime > currentTime)
         {
+            System.out.println("unfrozen");
             freezeTime = 0;
             startTime = System.nanoTime();
             updateKnownTerrain(); //this should maybe take in some parameters, like how far and how wide the cone is, not all agents have the same vision capabilities :D
@@ -181,6 +199,7 @@ public class Intruder extends Agent{
                 }
                 if(legalMoveCheck(sprintingDistance))
                 {
+                    System.out.println("sprinting");
                     move(sprintingDistance);
                 }
             }
@@ -198,6 +217,7 @@ public class Intruder extends Agent{
                 }
                 if(legalMoveCheck(walkingDistance))
                 {
+                    System.out.println("walking");
                     move(walkingDistance);
                 }
             }
