@@ -7,6 +7,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.ArrayList;
 import java.util.List;
+import java.awt.Point;
 
 import static World.WorldMap.*;
 import static World.GameScene.SCALING_FACTOR;
@@ -18,13 +19,16 @@ import static World.GameScene.SCALING_FACTOR;
 
 public class Intruder extends Agent{
     private boolean tired;
-    private final double RESTING_TIME = 5*1e9;
+    private int counter = 0;
+    private final double SPRINTING_TIME = 5*1e9;
+    private final double RESTING_TIME = 10*1e9;
     private int visionRadius = 10;
     private int visionAngle = 45;
     private double walkingSpeed = 1.4; //m/s
     private double sprintSpeed = 3.0; //m/s
     private double startTime= System.nanoTime();
-    private Point2D tempGoal;
+    private Point tempGoal;
+    private double freezeTime = 0;
 
     /**
      * An Intruder constructor with an empty internal map
@@ -34,20 +38,14 @@ public class Intruder extends Agent{
 
     public Intruder(Point2D position, double direction) {
         super(position, direction);
-        tempGoal = new Point2D(500,500);
+        //tempGoal = new Point2D(500,500);
         this.viewingAngle = 45;
 //        this.viewingAngle = 60;
         this.visualRange[0] = 0;
         this.visualRange[1] = 7.5;
 //        this.visualRange[1] = 20;
         this.color = Color.LIGHTGOLDENRODYELLOW;
-        //this.knownTerrain = worldMap.getWorldGrid();
         this.tired = false;
-        for(int i = 1;i < worldMap.getSize();i++) {
-            for(int j = 1;j<worldMap.getSize();j++) {
-                //knownTerrain[i][j] = 8;
-            }
-        }
     }
 
     public boolean equals(Object obj) {
@@ -114,47 +112,95 @@ public class Intruder extends Agent{
         }
     }
 
-    public void gameTreeIntruder(double timeStep) {
-        int[][] blocks = aStarTerrain(knownTerrain);
-
-        Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)(getGoalPosition().getX()/SCALING_FACTOR), (int)(getGoalPosition().getY()/SCALING_FACTOR), blocks);
-        List<Node> path = new ArrayList<Node>();
-        path = pathFinder.findPath();
-        tempGoal = new Point2D(path.get(path.size()-1).i, path.get(path.size()-1).j);
-        double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.getY()-(int)(position.getY()/SCALING_FACTOR))/Math.abs(tempGoal.getX()-(int)(position.getX()/SCALING_FACTOR))));
-
-        double walkingDistance = (walkingSpeed*SCALING_FACTOR*timeStep);
-        double sprintingDistance = (sprintSpeed*SCALING_FACTOR*timeStep);
-        if(tempGoal.getX() >= (int)(position.getX()/SCALING_FACTOR) && tempGoal.getY() <= (int)(position.getY()/SCALING_FACTOR))
+    public void gameTreeIntruder(double timeStep)
+    {
+        //TODO check for guards, need the vision to be working for this
+        //TODO add weights to flags and other types of squares, try manually an possibly with a genetic algorithm
+        //open door
+        if(knownTerrain[(int)(position.getX()/SCALING_FACTOR)][(int)(position.getY()/SCALING_FACTOR)] == 2)
         {
-            updateDirection(turnAngle);
-        }
-        else if(tempGoal.getX() >= (int)(position.getX()/SCALING_FACTOR) && tempGoal.getY() >= (int)(position.getY()/SCALING_FACTOR))
-        {
-            updateDirection(90+turnAngle);
-        }
-        else if(tempGoal.getX() <= (int)(position.getX()/SCALING_FACTOR) && tempGoal.getY() >= (int)(position.getY()/SCALING_FACTOR))
-        {
-            updateDirection(270-turnAngle);
-        }
-        else if(tempGoal.getX() <= (int)(position.getX()/SCALING_FACTOR) && tempGoal.getY() <= (int)(position.getY()/SCALING_FACTOR))
-        {
-            updateDirection(270+turnAngle);
-        }
-        if(startTime+RESTING_TIME > currentTime)
-        {
-            tired = true;
-        }
-        if(!tired)
-        {
-            if(legalMoveCheck(sprintingDistance))
+            Random random = new Random();
+            startTime = System.nanoTime();
+            if(Math.random() > 0.5)
             {
-                move(sprintingDistance);
+                freezeTime = (random.nextGaussian()*2+12)*1e9;
             }
+            else
+            {
+                freezeTime = 5;
+                //HERE A NOISE MUST BE MADE!!!!!
+            }
+            knownTerrain[(int)position.getX()][(int)position.getY()] = 33;
         }
-        else if(legalMoveCheck(walkingDistance))
+        //go through window
+        if(knownTerrain[(int)(position.getX()/SCALING_FACTOR)][(int)(position.getY()/SCALING_FACTOR)] == 3)
         {
-            move(walkingDistance);
+            startTime = System.nanoTime();
+            freezeTime = 3e9;
+        }
+        if(startTime+freezeTime > currentTime)
+        {
+            freezeTime = 0;
+            startTime = System.nanoTime();
+            updateKnownTerrain(); //this should maybe take in some parameters, like how far and how wide the cone is, not all agents have the same vision capabilities :D
+            int[][] blocks = aStarTerrain(knownTerrain);
+            Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)(getGoalPosition().getX()/SCALING_FACTOR), (int)(getGoalPosition().getY()/SCALING_FACTOR), blocks);
+            List<Node> path = new ArrayList<Node>();
+            path = pathFinder.findPath();
+            tempGoal = new Point(path.get(path.size()-1).i, path.get(path.size()-1).j);
+            double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.y-(int)(position.getY()/SCALING_FACTOR))/Math.abs(tempGoal.x-(int)(position.getX()/SCALING_FACTOR))));
+            double walkingDistance = (walkingSpeed*SCALING_FACTOR*timeStep);
+            double sprintingDistance = (sprintSpeed*SCALING_FACTOR*timeStep);
+            if(tempGoal.x >= (int)(position.getX()/SCALING_FACTOR) && tempGoal.y <= (int)(position.getY()/SCALING_FACTOR))
+            {
+                turnToFace(turnAngle);
+            }
+            else if(tempGoal.x >= (int)(position.getX()/SCALING_FACTOR) && tempGoal.y >= (int)(position.getY()/SCALING_FACTOR))
+            {
+                turnToFace(90+turnAngle);
+            }
+            else if(tempGoal.x <= (int)(position.getX()/SCALING_FACTOR) && tempGoal.y >= (int)(position.getY()/SCALING_FACTOR))
+            {
+                turnToFace(270-turnAngle);
+            }
+            else if(tempGoal.x <= (int)(position.getX()/SCALING_FACTOR) && tempGoal.y <= (int)(position.getY()/SCALING_FACTOR))
+            {
+                turnToFace(270+turnAngle);
+            }
+            if(!tired)
+            {
+                if(counter == 0)
+                {
+                    counter = 1;
+                    startTime = System.nanoTime();
+                }
+                if(startTime+SPRINTING_TIME > currentTime)
+                {
+                    tired = true;
+                    counter = 0;
+                }
+                if(legalMoveCheck(sprintingDistance))
+                {
+                    move(sprintingDistance);
+                }
+            }
+            else
+            {
+                if(counter == 0)
+                {
+                    counter = 1;
+                    startTime = System.nanoTime();
+                }
+                if(startTime+RESTING_TIME > currentTime)
+                {
+                    tired = false;
+                    counter = 0;
+                }
+                if(legalMoveCheck(walkingDistance))
+                {
+                    move(walkingDistance);
+                }
+            }
         }
     }
 }

@@ -3,6 +3,7 @@ import World.WorldMap;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
 
+import java.awt.Point;
 import javafx.geometry.Point2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -92,15 +93,8 @@ public class Agent implements Runnable {
         /**
          * DONT REMOVE THIS GOALPOSITION THING IT IS NECESSARY FOR SOME REASON
          */
-
-        goalPosition = new Point2D(200, 200);
-        while(!exitThread) { {
-                for (int i = 0; i < knownTerrain.length; i++) {
-                    for (int j = 0; j < knownTerrain[0].length; j++) {
-                        //System.out.print(knownTerrain[i][j] + " knownterrain");
-                    }
-                }
-            }
+        //goalPosition = new Point2D(200, 200);
+        while(!exitThread) {
             executeAgentLogic();
         }
     }
@@ -115,27 +109,26 @@ public class Agent implements Runnable {
     }
 
     public void executeAgentLogic() {
-        goalPosition = new Point2D(200, 200);
-        //DONT PRINT EMPTY STRINGS THANKS
+        //goalPosition = new Point2D(200, 200);
         currentTime = System.nanoTime();
         delta = currentTime - previousTime;
         delta /= 1e9; //makes it in seconds
-        previousTime = currentTime;
-        currentSpeed = ((position.distance(previousPosition) / SCALING_FACTOR) / delta);
+        //currentSpeed = ((position.distance(previousPosition) / SCALING_FACTOR) / delta);
         //System.out.println("currentSpeed:" + currentSpeed);
-        previousPosition = new Point2D(position.getX(), position.getY());
-        updateKnownTerrain();
+        //previousPosition = new Point2D(position.getX(), position.getY());
+        //updateKnownTerrain();
         intruder.gameTreeIntruder(delta);      
         checkForAgentSound();
-        double walkingDistance = (1.4 * SCALING_FACTOR) * (delta);
-        if (legalMoveCheck(walkingDistance)) {
-            move(walkingDistance);
-        } else {
-            updateDirection(Math.random() * 360);
-        }
-        updateGoalPosition();
-        xGoal = getGoalPosition().getX();
-        yGoal = getGoalPosition().getY();
+        //double walkingDistance = (1.4 * SCALING_FACTOR) * (delta);
+        //if (legalMoveCheck(walkingDistance)) {
+        //    move(walkingDistance);
+        //} else {
+        //    updateDirection(Math.random() * 360);
+        //}
+        //updateGoalPosition();
+        //xGoal = getGoalPosition().getX();
+        //yGoal = getGoalPosition().getY();
+        previousTime = currentTime;
     }
 
 
@@ -437,6 +430,10 @@ public class Agent implements Runnable {
     public void updateKnownTerrain(){
         for(int r = 0; r < worldMap.getSize(); r++) {
             for(int c = 0; c < worldMap.getSize(); c++){
+                //if(viewingCone.contains(5, 5))  //THERE IS A PROBLEM HERE (not sure if its because the method is being called wrong or if there is a bug in the method)
+                //{
+                //    System.out.println("works for 5");
+                //}
                 if(viewingCone.contains(worldMap.convertArrayToWorld(c) + 0.5 * worldMap.convertArrayToWorld(1),
                         worldMap.convertArrayToWorld(r) + 0.5 * worldMap.convertArrayToWorld(1))) {
                     knownTerrain[r][c] = worldMap.getTileState(r, c);
@@ -629,13 +626,14 @@ public class Agent implements Runnable {
 
     public int[][] aStarTerrain(int[][] terrain) //might be an issue when there are no walls? add a conditional for this
     {
-        ArrayList<Point2D> walls = new ArrayList<Point2D>();
+        List<Point> walls = new ArrayList<Point>();
         for(int i = 0; i < terrain.length; i++)
         {
             for(int j = 0; j < terrain[0].length; j++)
             {
-                if(terrain[i][j] == STRUCTURE || terrain[i][j] == SENTRY || terrain[i][j] == WALL) {
-                    Point2D wall = new Point2D(i, j);
+                if(terrain[i][j] == 1 || terrain[i][j] == 5 || terrain[i][j] == 7)
+                {
+                    Point wall = new Point(i, j);
                     walls.add(wall); //WALL
                 }
             }
@@ -646,14 +644,12 @@ public class Agent implements Runnable {
             blocks[i][0] = (int)walls.get(i).getX();
             blocks[i][1] = (int)walls.get(i).getY();
         }
-        //for(int i = 0; i < blocks[0].length; i++)
-        //{
-        //    for(int j = 0; j < blocks.length;j++)
-        //    {
-        //        System.out.println(blocks[i][j]);
-        //    }
-        //}
-
         return blocks;
     }
+
+    public void turnToFace(double angle)
+    {
+        direction = angle;
+    }
+
 }
