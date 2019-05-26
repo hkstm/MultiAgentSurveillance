@@ -80,7 +80,7 @@ public class Agent implements Runnable {
             {
                 if(worldMap.worldGrid[i][j] == 4)
                 {
-                    goalPosition = new Point(i, j);
+                    goalPosition = new Point(j, i);
                     goalSet = true;
                     System.out.println("goal set");
                 }
