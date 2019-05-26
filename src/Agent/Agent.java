@@ -53,7 +53,7 @@ public class Agent implements Runnable {
     protected double previousTime;
 
     protected Point2D previousPosition;
-    protected volatile Point2D goalPosition;
+    protected volatile Point goalPosition;
 
     protected boolean firstRun;
 
@@ -61,8 +61,7 @@ public class Agent implements Runnable {
     protected boolean sprinting;
     protected double startingAngle;
     protected double endAngle;
-  
-    protected Intruder intruder;
+    private boolean goalSet = false;
 
 
     /**
@@ -75,12 +74,27 @@ public class Agent implements Runnable {
         System.out.println("agent constructor called");
         this.position = position;
         this.direction = direction;
-
+        for(int i = 0; i < knownTerrain[0].length; i++)
+        {
+            for(int j = 0; j < knownTerrain.length; j++)
+            {
+                if(worldMap.worldGrid[i][j] == 4)
+                {
+                    goalPosition = new Point(i, j);
+                    goalSet = true;
+                    System.out.println("goal set");
+                }
+            }
+        }
+        if(goalSet == false)
+        {
+            System.out.println("No Target");
+        }
         //this.goalPosition = position;
         this.visualRange = new double[2];
         this.firstRun = true;
-        for (int i = 0;i < knownTerrain.length;i++) {
-            for (int j = 0;j < knownTerrain[0].length;j++) {
+        for (int i = 0; i < knownTerrain.length; i++) {
+            for (int j = 0; j < knownTerrain[0].length;j++) {
                 knownTerrain[i][j] = 8;
             }
         }
@@ -102,14 +116,6 @@ public class Agent implements Runnable {
     public void executeAgentLogic()
     {
     }
-
-    public void updateGoalPosition() {
-        //some logic with the worldMap and whatever algorithms we are using
-        double x = 200;
-        double y = 200;
-        goalPosition = new Point2D(x, y);
-    }
-
 
     /**
      * to update the direction which an agent is facing
@@ -532,7 +538,7 @@ public class Agent implements Runnable {
         return position;
     }
 
-    public Point2D getGoalPosition() {
+    public Point getGoalPosition() {
         return goalPosition;
     }
 
@@ -609,6 +615,13 @@ public class Agent implements Runnable {
                 }
             }
         }
+        //if(walls.size() == 0)
+        //{
+        //    System.out.println("adding corner");
+        //    Point corner = new Point(0, 0);
+        //    walls.add(corner);
+        //    System.out.println(walls.size());
+        //}
         int[][] blocks = new int[walls.size()][2];
         for(int i = 0; i < walls.size(); i++)
         {

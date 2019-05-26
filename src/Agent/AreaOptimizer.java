@@ -4,6 +4,8 @@ import javafx.geometry.Point2D;
 
 import static World.GameScene.SCALING_FACTOR;
 
+import java.awt.Point;
+
 public class AreaOptimizer extends Guard {
 
     private Point2DReward[][] worldAreaReward;
@@ -24,7 +26,7 @@ public class AreaOptimizer extends Guard {
     public void run() {
         previousTime = System.nanoTime();
         previousPosition = new Point2D(position.getX(), position.getY());
-        goalPosition = new Point2D(200, 200);
+        //goalPosition = new Point(200, 200);
         while(!exitThread) {
             executeAgentLogic();
         }
@@ -93,19 +95,19 @@ public class AreaOptimizer extends Guard {
         return Math.toDegrees(Math.atan2((y - position.getY()), (x - position.getX())));
     }
 
-    public void updateGoalPosition() {
-        //some logic with the worldMap and whatever algorithms we are using
-        double xCurr = 200;
-        double yCurr = 200;
-        for(int r = 0; r < worldAreaReward.length; r++) {
-            for(int c = 0; c < worldAreaReward[0].length; c++) {
-                
-            }
-        }
-        double xGoal = xCurr;
-        double yGoal = yCurr;
-        goalPosition = new Point2D(xGoal, yGoal);
-    }
+    //public void updateGoalPosition() { //im pretty sure we cn remove this :D
+    //    //some logic with the worldMap and whatever algorithms we are using
+    //    double xCurr = 200;
+    //    double yCurr = 200;
+    //    for(int r = 0; r < worldAreaReward.length; r++) {
+    //        for(int c = 0; c < worldAreaReward[0].length; c++) {
+    //
+    //        }
+    //    }
+    //    double xGoal = xCurr;
+    //    double yGoal = yCurr;
+    //    goalPosition = new Point2D(xGoal, yGoal);
+    //}
 
     public void printWorldAreaReward() {
         for(int r = 0; r < worldAreaReward.length; r++) {

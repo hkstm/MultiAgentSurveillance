@@ -26,7 +26,7 @@ public class Intruder extends Agent{
     private int visionAngle = 45;
     private double walkingSpeed = 1.4; //m/s
     private double sprintSpeed = 3.0; //m/s
-    private double startTime= System.nanoTime();
+    private double startTime;
     private Point tempGoal;
     private double freezeTime = 0;
 
@@ -155,14 +155,13 @@ public class Intruder extends Agent{
             startTime = System.nanoTime();
             freezeTime = 3e9;
         }
-        if(startTime+freezeTime > currentTime)
+        if(currentTime+freezeTime > startTime)
         {
-            System.out.println("unfrozen");
             freezeTime = 0;
             startTime = System.nanoTime();
             updateKnownTerrain(); //this should maybe take in some parameters, like how far and how wide the cone is, not all agents have the same vision capabilities :D
             int[][] blocks = aStarTerrain(knownTerrain);
-            Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)(getGoalPosition().getX()/SCALING_FACTOR), (int)(getGoalPosition().getY()/SCALING_FACTOR), blocks);
+            Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), goalPosition.x, goalPosition.y, blocks);
             List<Node> path = new ArrayList<Node>();
             path = pathFinder.findPath();
             tempGoal = new Point(path.get(path.size()-1).i, path.get(path.size()-1).j);
@@ -192,7 +191,7 @@ public class Intruder extends Agent{
                     counter = 1;
                     startTime = System.nanoTime();
                 }
-                if(startTime+SPRINTING_TIME > currentTime)
+                if(currentTime+SPRINTING_TIME > startTime)
                 {
                     tired = true;
                     counter = 0;
@@ -210,7 +209,7 @@ public class Intruder extends Agent{
                     counter = 1;
                     startTime = System.nanoTime();
                 }
-                if(startTime+RESTING_TIME > currentTime)
+                if(currentTime+RESTING_TIME > startTime)
                 {
                     tired = false;
                     counter = 0;
