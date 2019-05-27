@@ -30,8 +30,6 @@ public class Agent implements Runnable {
     public static final int AMOUNT_OF_VISION_TENTACLES = 100;
     public static final int TENTACLE_INCREMENTS = 1000;
     public static final double MAX_TURNING_PER_SECOND = 45;
-    private int counter = 0;
-    private int counter2 = 0;
 
     protected volatile Point2D position;
     protected double direction;
@@ -402,12 +400,10 @@ public class Agent implements Runnable {
 //    }
 
     public void updateKnownTerrain(){
-        counter++;
         for(int r = 0; r < worldMap.getSize(); r++) {
             for(int c = 0; c < worldMap.getSize(); c++){
-                if(viewingCone.contains(worldMap.convertArrayToWorld(c) + 0.5 * worldMap.convertArrayToWorld(1),
-                        worldMap.convertArrayToWorld(r) + 0.5 * worldMap.convertArrayToWorld(1))) {
-                    counter2++;
+                if(viewingCone.contains(worldMap.convertArrayToWorld(c) + 0.5 * worldMap.convertArrayToWorld(1), //changed from *0.5 to *1
+                        worldMap.convertArrayToWorld(r) + 0.5 * worldMap.convertArrayToWorld(1))) { //changed from *0.5 to *1
                     knownTerrain[r][c] = worldMap.getTileState(r, c);
                     //System.out.println("r: "+r+" c: "+c);
                     //System.out.println(worldMap.getTileState(r, c)+" "+knownTerrain[r][c]);

@@ -160,8 +160,8 @@ public class Intruder extends Agent{
             startTime = System.nanoTime();
             //this should maybe take in some parameters, like how far and how wide the cone is, not all agents have the same vision capabilities
             //also, it does not detect walls
+            //direction -= 90;
             updateKnownTerrain();
-            System.out.println(direction);
             //for(int i = 0; i < knownTerrain.length; i++)
             //{
             //    for(int j = 0; j < knownTerrain.length; j++)
@@ -170,8 +170,8 @@ public class Intruder extends Agent{
             //    }
             //    System.out.println();
             //}
-            //System.out.println();
-            //System.out.println();
+            System.out.println();
+            System.out.println();
             int[][] blocks = aStarTerrain(knownTerrain);
             Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), goalPosition.x, goalPosition.y, blocks);
             List<Node> path = new ArrayList<Node>();
