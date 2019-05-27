@@ -48,7 +48,7 @@ public class GameScene extends BorderPane implements Runnable {
 
     private boolean gameStarted; //used for start and stop button
     private int mode; //modes for different gameModes e.g. multiple intruders/guards and what the end game conditions are
-    public static final int ASSUMED_WORLDSIZE = 200;
+    public static final int ASSUMED_WORLDSIZE = 100;
     public static final double SCALING_FACTOR = WINDOW_SIZE/ASSUMED_WORLDSIZE; //ASSUMING WORLD IS ALWAYS 200 X 200 WHICH MEANS THAT IF WE HAVE A SMALLER MAP IN WORLDBUILDER THE INDIVIDUAL TILES ARE "BIGGER" AND THAT WINDOWSIZE IS 1000
     public static Random random = new Random();
     private long currentTimeCountDown;
@@ -79,7 +79,7 @@ public class GameScene extends BorderPane implements Runnable {
         this.startGameBut = new Button("Start/Stop Game"); //should stop and start game, not properly working atm
         Agent.worldMap = worldMap;
 
-        worldMap.addAgent(new Intruder(new Point2D(100, 100), 270));
+        worldMap.addAgent(new Intruder(new Point2D(200, 200), 0));
 //        worldMap.addOnlyAgent(new Intruder(new Point2D(500, 500), 0));
 
         //Actual game "loop" in here

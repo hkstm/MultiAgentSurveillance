@@ -82,7 +82,6 @@ public class Agent implements Runnable {
                 {
                     goalPosition = new Point(j, i);
                     goalSet = true;
-                    System.out.println("goal set");
                 }
             }
         }
@@ -171,7 +170,6 @@ public class Agent implements Runnable {
         //return new Point2D.Double(xEnd, yEnd);
         if (facingDirection >= 0 && facingDirection <= 90)
         {
-            //System.out.println("1");
             double angle = Math.toRadians(direction);
             double newXCoordinate = position.getX()+(distance*Math.sin(angle));
             double newYCoordinate = position.getY()-(distance*Math.cos(angle));
@@ -180,7 +178,6 @@ public class Agent implements Runnable {
         }
         else if (facingDirection >= 90 && facingDirection <= 180)
         {
-            //System.out.println("2");
             double angle = Math.toRadians(180-direction);
             double newXCoordinate = position.getX()+distance*Math.sin(angle);
             double newYCoordinate = position.getY()+distance*Math.cos(angle);
@@ -189,7 +186,6 @@ public class Agent implements Runnable {
         }
         else if (facingDirection >=180 && facingDirection <= 270)
         {
-            //System.out.println("3");
             double angle = Math.toRadians(facingDirection-180);
             double newXCoordinate = position.getX()-distance*Math.sin(angle);
             double newYCoordinate = position.getY()+distance*Math.cos(angle);

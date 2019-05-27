@@ -164,7 +164,7 @@ public class Intruder extends Agent{
             List<Node> path = new ArrayList<Node>();
             path = pathFinder.findPath();
             tempGoal = new Point(path.get(path.size()-1).i, path.get(path.size()-1).j);
-            System.out.println((int)position.getX()/SCALING_FACTOR+" "+(int)position.getX()/SCALING_FACTOR);
+            System.out.println("x: "+(int)(position.getX()/SCALING_FACTOR)+" y: "+(int)(position.getX()/SCALING_FACTOR));
             double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.x-(int)(position.getX()/SCALING_FACTOR))/(Math.abs(tempGoal.y-(int)(position.getY()/SCALING_FACTOR)))));
             double walkingDistance = (walkingSpeed*SCALING_FACTOR*timeStep);
             double sprintingDistance = (sprintSpeed*SCALING_FACTOR*timeStep);
