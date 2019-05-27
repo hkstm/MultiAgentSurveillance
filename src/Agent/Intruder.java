@@ -164,8 +164,16 @@ public class Intruder extends Agent{
             List<Node> path = new ArrayList<Node>();
             path = pathFinder.findPath();
             tempGoal = new Point(path.get(path.size()-1).i, path.get(path.size()-1).j);
-            System.out.println("x: "+(int)(position.getX()/SCALING_FACTOR)+" y: "+(int)(position.getX()/SCALING_FACTOR));
-            double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.x-(int)(position.getX()/SCALING_FACTOR))/(Math.abs(tempGoal.y-(int)(position.getY()/SCALING_FACTOR)))));
+            //System.out.println("x goal: "+tempGoal.x+" y goal: "+tempGoal.y);
+            //System.out.println("x: "+(int)(position.getX()/SCALING_FACTOR)+" y: "+(int)(position.getX()/SCALING_FACTOR));
+            //System.out.println(goalPosition.x+" "+goalPosition.y);
+            //System.out.println(Math.abs(tempGoal.y-(int)(position.getY()/SCALING_FACTOR)));
+            double divisor = Math.abs(tempGoal.y-(int)(position.getY()/SCALING_FACTOR));
+            if(divisor == 0)
+            {
+                divisor++;
+            }
+            double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.x-(int)(position.getX()/SCALING_FACTOR))/(divisor)));
             double walkingDistance = (walkingSpeed*SCALING_FACTOR*timeStep);
             double sprintingDistance = (sprintSpeed*SCALING_FACTOR*timeStep);
             if(tempGoal.x >= (int)(position.getX()/SCALING_FACTOR) && tempGoal.y <= (int)(position.getY()/SCALING_FACTOR))
