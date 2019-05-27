@@ -160,7 +160,7 @@ public class Intruder extends Agent{
             startTime = System.nanoTime();
             //this should maybe take in some parameters, like how far and how wide the cone is, not all agents have the same vision capabilities
             //also, it does not detect walls
-            //direction -= 90;
+            direction -= 90;
             updateKnownTerrain();
             //for(int i = 0; i < knownTerrain.length; i++)
             //{
