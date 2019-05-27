@@ -25,7 +25,7 @@ public class Intruder extends Agent{
     private double walkingSpeed = 1.4; //m/s
     private double sprintSpeed = 3.0; //m/s
     private double startTime;
-    private Point tempGoal;
+    private Point2D tempGoal;
     private double freezeTime = 0;
 
     /**
@@ -158,37 +158,51 @@ public class Intruder extends Agent{
         {
             freezeTime = 0;
             startTime = System.nanoTime();
-            updateKnownTerrain(); //this should maybe take in some parameters, like how far and how wide the cone is, not all agents have the same vision capabilities :D
+            //this should maybe take in some parameters, like how far and how wide the cone is, not all agents have the same vision capabilities
+            //also, it does not detect walls
+            updateKnownTerrain();
+            System.out.println(direction);
+            //for(int i = 0; i < knownTerrain.length; i++)
+            //{
+            //    for(int j = 0; j < knownTerrain.length; j++)
+            //    {
+            //        System.out.print(knownTerrain[i][j]+" ");
+            //    }
+            //    System.out.println();
+            //}
+            //System.out.println();
+            //System.out.println();
             int[][] blocks = aStarTerrain(knownTerrain);
             Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), goalPosition.x, goalPosition.y, blocks);
             List<Node> path = new ArrayList<Node>();
             path = pathFinder.findPath();
-            tempGoal = new Point(path.get(path.size()-1).i, path.get(path.size()-1).j);
+            tempGoal = new Point2D((path.get(path.size()-1).i*SCALING_FACTOR)+(SCALING_FACTOR/2), (path.get(path.size()-1).j*SCALING_FACTOR)+(SCALING_FACTOR/2));
             //System.out.println("x goal: "+tempGoal.x+" y goal: "+tempGoal.y);
             //System.out.println("x: "+(int)(position.getX()/SCALING_FACTOR)+" y: "+(int)(position.getX()/SCALING_FACTOR));
             //System.out.println(goalPosition.x+" "+goalPosition.y);
             //System.out.println(Math.abs(tempGoal.y-(int)(position.getY()/SCALING_FACTOR)));
-            double divisor = Math.abs(tempGoal.y-(int)(position.getY()/SCALING_FACTOR));
+            double divisor = Math.abs(tempGoal.getY()-position.getY());
             if(divisor == 0)
             {
                 divisor++;
+                System.out.println("divisor is zero");
             }
-            double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.x-(int)(position.getX()/SCALING_FACTOR))/(divisor)));
+            double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.getX()-position.getX())/divisor));
             double walkingDistance = (walkingSpeed*SCALING_FACTOR*timeStep);
             double sprintingDistance = (sprintSpeed*SCALING_FACTOR*timeStep);
-            if(tempGoal.x >= (int)(position.getX()/SCALING_FACTOR) && tempGoal.y <= (int)(position.getY()/SCALING_FACTOR))
+            if(tempGoal.getX() >= position.getX() && tempGoal.getY() <= position.getY())
             {
                 turnToFace(turnAngle);
             }
-            else if(tempGoal.x >= (int)(position.getX()/SCALING_FACTOR) && tempGoal.y >= (int)(position.getY()/SCALING_FACTOR))
+            else if(tempGoal.getX() >= position.getX() && tempGoal.getY() > position.getY())
             {
                 turnToFace(180-turnAngle);
             }
-            else if(tempGoal.x <= (int)(position.getX()/SCALING_FACTOR) && tempGoal.y >= (int)(position.getY()/SCALING_FACTOR))
+            else if(tempGoal.getX() < position.getX() && tempGoal.getY() > position.getY())
             {
                 turnToFace(180+turnAngle);
             }
-            else if(tempGoal.x <= (int)(position.getX()/SCALING_FACTOR) && tempGoal.y <= (int)(position.getY()/SCALING_FACTOR))
+            else if(tempGoal.getX() < position.getX() && tempGoal.getY() <= position.getY())
             {
                 turnToFace(360-turnAngle);
             }

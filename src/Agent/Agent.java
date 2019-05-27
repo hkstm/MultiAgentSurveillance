@@ -30,7 +30,8 @@ public class Agent implements Runnable {
     public static final int AMOUNT_OF_VISION_TENTACLES = 100;
     public static final int TENTACLE_INCREMENTS = 1000;
     public static final double MAX_TURNING_PER_SECOND = 45;
-    private int counter = 0; //remove :)
+    private int counter = 0;
+    private int counter2 = 0;
 
     protected volatile Point2D position;
     protected double direction;
@@ -401,19 +402,20 @@ public class Agent implements Runnable {
 //    }
 
     public void updateKnownTerrain(){
+        counter++;
         for(int r = 0; r < worldMap.getSize(); r++) {
             for(int c = 0; c < worldMap.getSize(); c++){
-                //if(viewingCone.contains(5, 5))  //THERE IS A PROBLEM HERE (not sure if its because the method is being called wrong or if there is a bug in the method)
-                //{
-                //    System.out.println("works for 5");
-                //}
                 if(viewingCone.contains(worldMap.convertArrayToWorld(c) + 0.5 * worldMap.convertArrayToWorld(1),
                         worldMap.convertArrayToWorld(r) + 0.5 * worldMap.convertArrayToWorld(1))) {
+                    counter2++;
                     knownTerrain[r][c] = worldMap.getTileState(r, c);
+                    //System.out.println("r: "+r+" c: "+c);
+                    //System.out.println(worldMap.getTileState(r, c)+" "+knownTerrain[r][c]);
 //                    System.out.println("reward reset for r: " + r + " c: " + c);
                 }
             }
         }
+        //System.out.println();
     }
     /**
      * Checks if we can hear other agents and if so add it personal memory with noise
@@ -597,7 +599,7 @@ public class Agent implements Runnable {
         this.color = color;
     }
 
-    public int[][] aStarTerrain(int[][] terrain) //might be an issue when there are no walls? add a conditional for this
+    public int[][] aStarTerrain(int[][] terrain)
     {
         List<Point> walls = new ArrayList<Point>();
         for(int i = 0; i < terrain.length; i++)
