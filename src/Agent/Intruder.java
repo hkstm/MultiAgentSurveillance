@@ -29,6 +29,11 @@ public class Intruder extends Agent{
     private static Point2D tempGoal;
     private double freezeTime = 0;
     private static boolean changed = false;
+    private static boolean blur = false;
+    private final long createdMillis = System.currentTimeMillis();
+    private int sprintCounter = 5;
+    private int walkCounter = 15;
+
 
     /**
      * An Intruder constructor with an empty internal map
@@ -132,7 +137,10 @@ public class Intruder extends Agent{
 
     public void gameTreeIntruder(double timeStep)
     {
+        //TODO add blur
         //TODO check for guards
+        //TODO make noise
+        //TODO test doors and windows
         //TODO add weights to flags and other types of squares, try manually an possibly with a genetic algorithm
         if(oldTempGoal != null)
         {
@@ -228,36 +236,34 @@ public class Intruder extends Agent{
             }
             if(!tired)
             {
-                if(counter == 0)
-                {
-                    counter = 1;
-                    startTime = System.nanoTime();
-                }
-                if(currentTime+SPRINTING_TIME > startTime)
-                {
-                    tired = true;
-                    counter = 0;
-                }
                 if(legalMoveCheck(sprintingDistance))
                 {
-                    move(sprintingDistance);
+                    long nowMillis = System.currentTimeMillis();
+                    int countSec = (int)((nowMillis - this.createdMillis) / 1000);
+                    if (countSec != sprintCounter){
+                        move(sprintingDistance);
+                    }
+                    else{
+                        System.out.println(countSec);
+                        tired = true;
+                        sprintCounter = sprintCounter + 15;
+                    }
                 }
             }
             else
             {
-                if(counter == 0)
-                {
-                    counter = 1;
-                    startTime = System.nanoTime();
-                }
-                if(currentTime+RESTING_TIME > startTime)
-                {
-                    tired = false;
-                    counter = 0;
-                }
                 if(legalMoveCheck(walkingDistance))
                 {
-                    move(walkingDistance);
+                    long nowMillis = System.currentTimeMillis();
+                    int countSec = (int)((nowMillis - this.createdMillis) / 1000);
+                    if (countSec != walkCounter) {
+                        move(walkingDistance);
+                    }
+                    else{
+                        System.out.println(countSec);
+                        tired = false;
+                        walkCounter = walkCounter +15;
+                    }
                 }
             }
         }
@@ -269,11 +275,13 @@ public class Intruder extends Agent{
         {
             if(knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()+10)/SCALING_FACTOR)] == 1 || knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()+10)/SCALING_FACTOR)] == 5 || knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()+10)/SCALING_FACTOR)] == 7)
             {
+                System.out.println("1");
                 tempGoal = new Point2D(tempGoal.getX()-10, tempGoal.getY());
                 changed = true;
             }
             else if(knownTerrain[(int)((oldTempGoal.getY()-10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 1 || knownTerrain[(int)((oldTempGoal.getY()-10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 5 || knownTerrain[(int)((oldTempGoal.getY()-10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 7)
             {
+                System.out.println("2");
                 tempGoal =  new Point2D(tempGoal.getX(), tempGoal.getY()+10);
                 changed = true;
             }
@@ -282,11 +290,13 @@ public class Intruder extends Agent{
         {
             if(knownTerrain[(int)((oldTempGoal.getY()+10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 1 || knownTerrain[(int)((oldTempGoal.getY()+10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 5 || knownTerrain[(int)((oldTempGoal.getY()+10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 7)
             {
+                System.out.println("3");
                 tempGoal = new Point2D(oldTempGoal.getX()-10, oldTempGoal.getY());
                 changed = true;
             }
             if(knownTerrain[(int)((oldTempGoal.getY()-10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 1 || knownTerrain[(int)((oldTempGoal.getY()-10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 5 || knownTerrain[(int)((oldTempGoal.getY()-10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 7)
             {
+                System.out.println("4");
                 tempGoal = new Point2D(tempGoal.getX()+10, tempGoal.getY());
                 changed = true;
             }
@@ -295,12 +305,13 @@ public class Intruder extends Agent{
         {
             if(knownTerrain[(int)((oldTempGoal.getY()+10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 1 || knownTerrain[(int)((oldTempGoal.getY()+10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 5 || knownTerrain[(int)((oldTempGoal.getY()+10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 7)
             {
+                System.out.println("5");
                 tempGoal = new Point2D(tempGoal.getX()-10, tempGoal.getY());
                 changed = true;
             }
             if(knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()+10)/SCALING_FACTOR)] == 1 || knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()+10)/SCALING_FACTOR)] == 5 || knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()+10)/SCALING_FACTOR)] == 7)
             {
-                System.out.println("here");
+                System.out.println("6");
                 tempGoal = new Point2D(tempGoal.getX()-10, tempGoal.getY());
                 changed = true;
             }
@@ -309,11 +320,13 @@ public class Intruder extends Agent{
         {
             if (knownTerrain[(int) (oldTempGoal.getY() / SCALING_FACTOR)][(int) ((oldTempGoal.getX() - 10) / SCALING_FACTOR)] == 1 || knownTerrain[(int) (oldTempGoal.getY() / SCALING_FACTOR)][(int) ((oldTempGoal.getX() - 10) / SCALING_FACTOR)] == 5 || knownTerrain[(int) (oldTempGoal.getY() / SCALING_FACTOR)][(int) ((oldTempGoal.getX() - 10) / SCALING_FACTOR)] == 7)
             {
+                System.out.println("7");
                 tempGoal = new Point2D(tempGoal.getX() + 10, tempGoal.getY());
                 changed = true;
             }
             if (knownTerrain[(int) ((oldTempGoal.getY() - 10) / SCALING_FACTOR)][(int) (oldTempGoal.getX() / SCALING_FACTOR)] == 1 || knownTerrain[(int) ((oldTempGoal.getY() - 10) / SCALING_FACTOR)][(int) (oldTempGoal.getX() / SCALING_FACTOR)] == 5 || knownTerrain[(int) ((oldTempGoal.getY() - 10) / SCALING_FACTOR)][(int) (oldTempGoal.getX() / SCALING_FACTOR)] == 7)
             {
+                System.out.println("8");
                 tempGoal = new Point2D(tempGoal.getX(), tempGoal.getY() + 10);
                 changed = true;
             }
