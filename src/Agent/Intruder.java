@@ -25,8 +25,15 @@ public class Intruder extends Agent{
     private double walkingSpeed = 1.4; //m/s
     private double sprintSpeed = 3.0; //m/s
     private double startTime;
-    private Point2D tempGoal;
+    private static Point2D oldTempGoal;
+    private static Point2D tempGoal;
     private double freezeTime = 0;
+    private static boolean changed = false;
+    private static boolean blur = false;
+    private final long createdMillis = System.currentTimeMillis();
+    private int sprintCounter = 5;
+    private int walkCounter = 15;
+
 
     /**
      * An Intruder constructor with an empty internal map
@@ -130,8 +137,15 @@ public class Intruder extends Agent{
 
     public void gameTreeIntruder(double timeStep)
     {
-        //TODO check for guards, need the vision to be working for this
+        //TODO add blur
+        //TODO check for guards
+        //TODO make noise
+        //TODO test doors and windows
         //TODO add weights to flags and other types of squares, try manually an possibly with a genetic algorithm
+        if(oldTempGoal != null)
+        {
+            checkChangedStatus();
+        }
         //open door
         if(knownTerrain[(int)(position.getX()/SCALING_FACTOR)][(int)(position.getY()/SCALING_FACTOR)] == 2)
         {
@@ -176,7 +190,21 @@ public class Intruder extends Agent{
             Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), goalPosition.x, goalPosition.y, blocks);
             List<Node> path = new ArrayList<Node>();
             path = pathFinder.findPath();
-            tempGoal = new Point2D((path.get(path.size()-1).i*SCALING_FACTOR)+(SCALING_FACTOR/2), (path.get(path.size()-1).j*SCALING_FACTOR)+(SCALING_FACTOR/2));
+            oldTempGoal = tempGoal;
+            if(!changed)
+            {
+                //System.out.println("not changed");
+                tempGoal = new Point2D((path.get(path.size()-1).i*SCALING_FACTOR)+(SCALING_FACTOR/2), (path.get(path.size()-1).j*SCALING_FACTOR)+(SCALING_FACTOR/2));
+            }
+            if(oldTempGoal != null)
+            {
+                cornerCorrection();
+            }
+            if(changed)
+            {
+                //System.out.println("changed");
+            }
+            //System.out.println();
             //System.out.println("x goal: "+tempGoal.x+" y goal: "+tempGoal.y);
             //System.out.println("x: "+(int)(position.getX()/SCALING_FACTOR)+" y: "+(int)(position.getX()/SCALING_FACTOR));
             //System.out.println(goalPosition.x+" "+goalPosition.y);
@@ -208,38 +236,123 @@ public class Intruder extends Agent{
             }
             if(!tired)
             {
-                if(counter == 0)
-                {
-                    counter = 1;
-                    startTime = System.nanoTime();
-                }
-                if(currentTime+SPRINTING_TIME > startTime)
-                {
-                    tired = true;
-                    counter = 0;
-                }
                 if(legalMoveCheck(sprintingDistance))
                 {
-                    move(sprintingDistance);
+                    long nowMillis = System.currentTimeMillis();
+                    int countSec = (int)((nowMillis - this.createdMillis) / 1000);
+                    if (countSec != sprintCounter){
+                        move(sprintingDistance);
+                    }
+                    else{
+                        System.out.println(countSec);
+                        tired = true;
+                        sprintCounter = sprintCounter + 15;
+                    }
                 }
             }
             else
             {
-                if(counter == 0)
-                {
-                    counter = 1;
-                    startTime = System.nanoTime();
-                }
-                if(currentTime+RESTING_TIME > startTime)
-                {
-                    tired = false;
-                    counter = 0;
-                }
                 if(legalMoveCheck(walkingDistance))
                 {
-                    move(walkingDistance);
+                    long nowMillis = System.currentTimeMillis();
+                    int countSec = (int)((nowMillis - this.createdMillis) / 1000);
+                    if (countSec != walkCounter) {
+                        move(walkingDistance);
+                    }
+                    else{
+                        System.out.println(countSec);
+                        tired = false;
+                        walkCounter = walkCounter +15;
+                    }
                 }
             }
+        }
+    }
+
+    public void cornerCorrection()
+    {
+        if(oldTempGoal.getX()+10 == tempGoal.getX() && oldTempGoal.getY()-10 == tempGoal.getY()) //could use inequailty operators here
+        {
+            if(knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()+10)/SCALING_FACTOR)] == 1 || knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()+10)/SCALING_FACTOR)] == 5 || knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()+10)/SCALING_FACTOR)] == 7)
+            {
+                System.out.println("1");
+                tempGoal = new Point2D(tempGoal.getX()-10, tempGoal.getY());
+                changed = true;
+            }
+            else if(knownTerrain[(int)((oldTempGoal.getY()-10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 1 || knownTerrain[(int)((oldTempGoal.getY()-10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 5 || knownTerrain[(int)((oldTempGoal.getY()-10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 7)
+            {
+                System.out.println("2");
+                tempGoal =  new Point2D(tempGoal.getX(), tempGoal.getY()+10);
+                changed = true;
+            }
+        }
+        else if(oldTempGoal.getX()-10 == tempGoal.getX() && oldTempGoal.getY()+10 == tempGoal.getY()) //could use inequailty operators here
+        {
+            if(knownTerrain[(int)((oldTempGoal.getY()+10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 1 || knownTerrain[(int)((oldTempGoal.getY()+10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 5 || knownTerrain[(int)((oldTempGoal.getY()+10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 7)
+            {
+                System.out.println("3");
+                tempGoal = new Point2D(oldTempGoal.getX()-10, oldTempGoal.getY());
+                changed = true;
+            }
+            if(knownTerrain[(int)((oldTempGoal.getY()-10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 1 || knownTerrain[(int)((oldTempGoal.getY()-10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 5 || knownTerrain[(int)((oldTempGoal.getY()-10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 7)
+            {
+                System.out.println("4");
+                tempGoal = new Point2D(tempGoal.getX()+10, tempGoal.getY());
+                changed = true;
+            }
+        }
+        else if(oldTempGoal.getX()+10 == tempGoal.getX() && oldTempGoal.getY()+10 == tempGoal.getY()) //could use inequailty operators here
+        {
+            if(knownTerrain[(int)((oldTempGoal.getY()+10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 1 || knownTerrain[(int)((oldTempGoal.getY()+10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 5 || knownTerrain[(int)((oldTempGoal.getY()+10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 7)
+            {
+                System.out.println("5");
+                tempGoal = new Point2D(tempGoal.getX()-10, tempGoal.getY());
+                changed = true;
+            }
+            if(knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()+10)/SCALING_FACTOR)] == 1 || knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()+10)/SCALING_FACTOR)] == 5 || knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()+10)/SCALING_FACTOR)] == 7)
+            {
+                System.out.println("6");
+                tempGoal = new Point2D(tempGoal.getX()-10, tempGoal.getY());
+                changed = true;
+            }
+        }
+        else if(oldTempGoal.getX()-10 == tempGoal.getX() && oldTempGoal.getY()-10 == tempGoal.getY()) //could use inequailty operators here
+        {
+            if (knownTerrain[(int) (oldTempGoal.getY() / SCALING_FACTOR)][(int) ((oldTempGoal.getX() - 10) / SCALING_FACTOR)] == 1 || knownTerrain[(int) (oldTempGoal.getY() / SCALING_FACTOR)][(int) ((oldTempGoal.getX() - 10) / SCALING_FACTOR)] == 5 || knownTerrain[(int) (oldTempGoal.getY() / SCALING_FACTOR)][(int) ((oldTempGoal.getX() - 10) / SCALING_FACTOR)] == 7)
+            {
+                System.out.println("7");
+                tempGoal = new Point2D(tempGoal.getX() + 10, tempGoal.getY());
+                changed = true;
+            }
+            if (knownTerrain[(int) ((oldTempGoal.getY() - 10) / SCALING_FACTOR)][(int) (oldTempGoal.getX() / SCALING_FACTOR)] == 1 || knownTerrain[(int) ((oldTempGoal.getY() - 10) / SCALING_FACTOR)][(int) (oldTempGoal.getX() / SCALING_FACTOR)] == 5 || knownTerrain[(int) ((oldTempGoal.getY() - 10) / SCALING_FACTOR)][(int) (oldTempGoal.getX() / SCALING_FACTOR)] == 7)
+            {
+                System.out.println("8");
+                tempGoal = new Point2D(tempGoal.getX(), tempGoal.getY() + 10);
+                changed = true;
+            }
+        }
+    }
+
+    public void checkChangedStatus()
+    {
+        Point2D pointToCheck = new Point2D(tempGoal.getX(), tempGoal.getY());
+        Point2D currentPos = new Point2D(position.getX(), position.getY());
+        if(changed && checkApproximateEquality(currentPos, pointToCheck))
+        {
+            System.out.println("changing to false");
+            changed = false;
+        }
+    }
+
+    public boolean checkApproximateEquality(Point2D p1, Point2D p2)
+    {
+        if(p1.getX() <= p2.getX()+1 && p1.getX() >= p2.getX()-1 && p1.getY() <= p2.getY()+1 && p1.getY() >= p2.getY()-1)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 }
