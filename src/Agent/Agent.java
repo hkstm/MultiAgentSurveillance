@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import static World.GameScene.ASSUMED_WORLDSIZE;
 import static World.GameScene.SCALING_FACTOR;
 import static World.WorldMap.*;
 
@@ -442,7 +443,7 @@ public class Agent implements Runnable {
     }
 
     public boolean sees(int r, int c) {
-        return viewingCone.contains((c*(200/worldMap.getSize())*SCALING_FACTOR), (r*(200/worldMap.getSize())*SCALING_FACTOR));
+        return viewingCone.contains((c*(ASSUMED_WORLDSIZE/(double)worldMap.getSize())*SCALING_FACTOR), (r*(ASSUMED_WORLDSIZE/(double)worldMap.getSize())*SCALING_FACTOR));
     }
 
     public void createCone() {
@@ -514,7 +515,7 @@ public class Agent implements Runnable {
     }
 
     public static int locationToWorldgrid(double toBeConverted) {
-        int supposedWorldSize = 200;
+        int supposedWorldSize = ASSUMED_WORLDSIZE;
         return (int)(toBeConverted * (1/((supposedWorldSize/worldMap.getWorldGrid().length)*SCALING_FACTOR)));
     }
 

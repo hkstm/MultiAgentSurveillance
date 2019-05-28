@@ -272,7 +272,7 @@ public class WorldMap implements Serializable {
 
     public double convertArrayToWorld(int arrayIndex)
     {
-        return arrayIndex*(100/worldGrid.length)*SCALING_FACTOR; //changed 200 to 100
+        return arrayIndex*(ASSUMED_WORLDSIZE/worldGrid.length)*SCALING_FACTOR; //changed 200 to 100
     }
 
     public List<Shape> getWorldGridShapes() {
