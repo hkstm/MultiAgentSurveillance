@@ -220,7 +220,6 @@ public class Agent implements Runnable {
         //double y = position.getY();
         position = getMove(distance, direction);
         //System.out.println(position.getY()-y);
-        System.out.println("direction after move: "+direction);
         //System.out.println("location: " + this.position.toString() );
     }
 

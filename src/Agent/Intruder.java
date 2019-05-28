@@ -175,7 +175,6 @@ public class Intruder extends Agent{
             //this should maybe take in some parameters, like how far and how wide the cone is, not all agents have the same vision capabilities
             //also, it does not detect walls
             direction -= 90;
-            System.out.println("direction -90");
             updateKnownTerrain();
             //for(int i = 0; i < knownTerrain.length; i++)
             //{

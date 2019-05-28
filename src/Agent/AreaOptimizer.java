@@ -62,7 +62,6 @@ public class AreaOptimizer extends Guard {
         createCone();
         updateWorldAreaReward(delta);
         updateDirection(getMoveDirection());
-        System.out.println("direction execute: " + direction);
         currentSpeed = ((position.distance(previousPosition)/SCALING_FACTOR)/delta);
         previousPosition= new Point2D(position.getX(), position.getY());
         checkForAgentSound();
