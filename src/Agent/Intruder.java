@@ -170,8 +170,8 @@ public class Intruder extends Agent{
             //    }
             //    System.out.println();
             //}
-            System.out.println();
-            System.out.println();
+            //System.out.println();
+            //System.out.println();
             int[][] blocks = aStarTerrain(knownTerrain);
             Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), goalPosition.x, goalPosition.y, blocks);
             List<Node> path = new ArrayList<Node>();

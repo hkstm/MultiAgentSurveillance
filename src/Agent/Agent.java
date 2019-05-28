@@ -619,8 +619,8 @@ public class Agent implements Runnable {
         int[][] blocks = new int[walls.size()][2];
         for(int i = 0; i < walls.size(); i++)
         {
-            blocks[i][0] = (int)walls.get(i).getX();
-            blocks[i][1] = (int)walls.get(i).getY();
+            blocks[i][0] = (int)walls.get(i).getY();
+            blocks[i][1] = (int)walls.get(i).getX();
         }
         return blocks;
     }
