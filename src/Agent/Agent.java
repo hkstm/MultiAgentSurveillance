@@ -242,7 +242,7 @@ public class Agent implements Runnable {
             return false;
         }
         if (tileStatus == STRUCTURE || tileStatus == SENTRY || tileStatus == WALL) {
-            System.out.println("detected wall, sentry or structure in legal move check");
+            //System.out.println("detected wall, sentry or structure in legal move check");
             return false;
         } else {
             return true;
