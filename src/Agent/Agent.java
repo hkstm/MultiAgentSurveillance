@@ -146,7 +146,6 @@ public class Agent implements Runnable {
             double maxTurn = MAX_TURNING_PER_SECOND * delta;
             double toTurn = Math.abs(directionToGo - direction);
             double turn = Math.min(maxTurn, toTurn);
-            System.out.println("turn: " + turn);
             if(directionToGo > direction) {
                 direction += turn;
             } else {
@@ -445,7 +444,6 @@ public class Agent implements Runnable {
     }
 
     public void createCone() {
-        System.out.println("direction when making cones: "  + direction);
         double x = position.getX();
         double y = position.getY();
         double visualRangeMin = visualRange[0] * SCALING_FACTOR; //max visionRange
