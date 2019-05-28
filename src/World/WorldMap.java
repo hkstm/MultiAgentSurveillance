@@ -23,7 +23,6 @@ public class WorldMap implements Serializable {
     public static final int DOOR = 2;
     public static final int OPEN_DOOR = 22;
     public static final int WINDOW = 3;
-    public static final int OPEN_WINDOW = 33;
     public static final int TARGET = 4;
     public static final int SENTRY = 5;
     public static final int DECREASED_VIS_RANGE = 6;
