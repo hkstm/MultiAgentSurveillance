@@ -99,8 +99,8 @@ public class Agent implements Runnable {
         }
     }
 
-    public void run()
-    {
+    public void run() {
+        System.out.println("running normal agent something went wrong");
     }
 
     public void forceUpdate() {
@@ -112,8 +112,8 @@ public class Agent implements Runnable {
         executeAgentLogic();
     }
 
-    public void executeAgentLogic()
-    {
+    public void executeAgentLogic() {
+        System.out.println("running normal agent logic something went wrong");
     }
 
     /**
@@ -146,6 +146,7 @@ public class Agent implements Runnable {
             double maxTurn = MAX_TURNING_PER_SECOND * delta;
             double toTurn = Math.abs(directionToGo - direction);
             double turn = Math.min(maxTurn, toTurn);
+            System.out.println("turn: " + turn);
             if(directionToGo > direction) {
                 direction += turn;
             } else {
@@ -165,46 +166,44 @@ public class Agent implements Runnable {
      */
 
     public Point2D getMove(double distance, double facingDirection) {
-        //double xEnd = position.x + (distance * Math.cos(Math.toRadians(facingDirection)));
-        //double yEnd = position.y + (distance * Math.sin(Math.toRadians(facingDirection)));
-        //return new Point2D.Double(xEnd, yEnd);
-        if (facingDirection >= 0 && facingDirection <= 90)
-        {
-            double angle = Math.toRadians(direction);
-            double newXCoordinate = position.getX()+(distance*Math.sin(angle));
-            double newYCoordinate = position.getY()-(distance*Math.cos(angle));
-            Point2D newLocation = new Point2D(newXCoordinate, newYCoordinate);
-            return newLocation;
-        }
-        else if (facingDirection >= 90 && facingDirection <= 180)
-        {
-            double angle = Math.toRadians(180-direction);
-            double newXCoordinate = position.getX()+distance*Math.sin(angle);
-            double newYCoordinate = position.getY()+distance*Math.cos(angle);
-            Point2D newLocation = new Point2D(newXCoordinate, newYCoordinate);
-            return newLocation;
-        }
-        else if (facingDirection >=180 && facingDirection <= 270)
-        {
-            double angle = Math.toRadians(facingDirection-180);
-            double newXCoordinate = position.getX()-distance*Math.sin(angle);
-            double newYCoordinate = position.getY()+distance*Math.cos(angle);
-            Point2D newLocation = new Point2D(newXCoordinate, newYCoordinate);
-            return newLocation;
-        }
-        else if (facingDirection >= 270 || facingDirection <= 360)
-        {
-            //System.out.println("4");
-            double angle = Math.toRadians(360-facingDirection);
-            double newXCoordinate = position.getX()-distance*Math.sin(angle);
-            double newYCoordinate = position.getY()-distance*Math.cos(angle);
-            Point2D newLocation = new Point2D(newXCoordinate, newYCoordinate);
-            return newLocation;
-        }
-        else
-        {
-            return position;
-        }
+        double xEnd = position.getX() + (distance * Math.cos(Math.toRadians(facingDirection)));
+        double yEnd = position.getY() + (distance * Math.sin(Math.toRadians(facingDirection)));
+        return new Point2D(xEnd, yEnd);
+//        if (facingDirection >= 0 && facingDirection <= 90) {
+//            double angle = Math.toRadians(direction);
+//            double newXCoordinate = position.getX()+(distance*Math.sin(angle));
+//            double newYCoordinate = position.getY()-(distance*Math.cos(angle));
+//            Point2D newLocation = new Point2D(newXCoordinate, newYCoordinate);
+//            return newLocation;
+//        }
+//        else if (facingDirection >= 90 && facingDirection <= 180)
+//        {
+//            double angle = Math.toRadians(180-direction);
+//            double newXCoordinate = position.getX()+distance*Math.sin(angle);
+//            double newYCoordinate = position.getY()+distance*Math.cos(angle);
+//            Point2D newLocation = new Point2D(newXCoordinate, newYCoordinate);
+//            return newLocation;
+//        }
+//        else if (facingDirection >=180 && facingDirection <= 270)
+//        {
+//            double angle = Math.toRadians(facingDirection-180);
+//            double newXCoordinate = position.getX()-distance*Math.sin(angle);
+//            double newYCoordinate = position.getY()+distance*Math.cos(angle);
+//            Point2D newLocation = new Point2D(newXCoordinate, newYCoordinate);
+//            return newLocation;
+//        }
+//        else if (facingDirection >= 270 || facingDirection <= 360)
+//        {
+//            //System.out.println("4");
+//            double angle = Math.toRadians(360-facingDirection);
+//            double newXCoordinate = position.getX()-distance*Math.sin(angle);
+//            double newYCoordinate = position.getY()-distance*Math.cos(angle);
+//            Point2D newLocation = new Point2D(newXCoordinate, newYCoordinate);
+//            return newLocation;
+//        }
+//        else {
+//            return position;
+//        }
 
     }
 
@@ -221,7 +220,7 @@ public class Agent implements Runnable {
         //double y = position.getY();
         position = getMove(distance, direction);
         //System.out.println(position.getY()-y);
-        //System.out.println("direction after move: "+direction);
+        System.out.println("direction after move: "+direction);
         //System.out.println("location: " + this.position.toString() );
     }
 
@@ -447,6 +446,7 @@ public class Agent implements Runnable {
     }
 
     public void createCone() {
+        System.out.println("direction when making cones: "  + direction);
         double x = position.getX();
         double y = position.getY();
         double visualRangeMin = visualRange[0] * SCALING_FACTOR; //max visionRange
