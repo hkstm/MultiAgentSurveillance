@@ -54,6 +54,8 @@ public class GameScene extends BorderPane implements Runnable {
     private boolean visitedTarget;
     private long firstVisitTime;
     Routine routine;
+    public static Guard guard;
+    public static Intruder intruder;
 
     public GameScene(Stage primaryStage, Settings settings) {
         this.grid = new GridPane(); //main grid that shows the tiles
@@ -76,7 +78,11 @@ public class GameScene extends BorderPane implements Runnable {
         this.startGameBut = new Button("Start/Stop Game"); //should stop and start game, not properly working atm
         Agent.worldMap = worldMap;
         //worldMap.addAgent(new Intruder(new Point2D.Double(100, 100), 270));
-        worldMap.addAgent(new Intruder(new Point2D.Double(500, 500), 0));
+        //worldMap.addAgent(new Intruder(new Point2D.Double(500, 500), 0));
+        guard  = new Guard(new Point2D.Double(200, 300), 70);
+        worldMap.addAgent(guard);
+        intruder = new Intruder(new Point2D.Double(500, 500), 0);
+        worldMap.addAgent(intruder);
         //Actual game "loop" in here
         startGameBut.setOnAction(e -> { //
             currentTimeCountDown = System.nanoTime();
@@ -207,12 +213,6 @@ public class GameScene extends BorderPane implements Runnable {
 //                tmpPane.getChildren().addAll(circle);
 //                agentGroup.getChildren().add(tmpPane);
                 agentGroup.getChildren().add(circle);
-                Routine guard1 = Routines.sequence(
-                        Routines.moveTo(50, 100),
-                        Routines.moveTo(150, 120),
-                        Routines.chase()
-                );
-                guard.setRoutine(guard1);
             }
             if(agent instanceof Intruder) {
                 Intruder intruder = (Intruder) agent;

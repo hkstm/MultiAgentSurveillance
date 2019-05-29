@@ -12,9 +12,20 @@ import static World.GameScene.SCALING_FACTOR;
 public class MoveTo extends Routine {
      static double destX;
      static double destY;
-    Routine routine;
-    WorldMap worldMap;
-    Guard guard;
+    public static WorldMap worldMap;
+    protected double currentTime;
+    protected double delta;
+    protected boolean exitThread;
+    protected double previousTime;
+    protected Point2D.Double previousPosition;
+    protected volatile Point2D.Double goalPosition;
+    double currentSpeed;
+
+    @Override
+    public void start() {
+        super.start();
+    }
+
     public MoveTo(double destX, double destY) {
         super();
         this.destX = destX;
@@ -33,20 +44,48 @@ public class MoveTo extends Routine {
         }
     }
     private void Move(Guard guard) {
-        guard.run();
-        if (isAtDestination(guard)) {
-            succeed();
+        while(!isAtDestination(guard)){
+            previousTime = System.nanoTime();
+            previousPosition = new Point2D.Double(guard.position.getX(), guard.position.getY());
+            /**
+             * DONT REMOVE THIS GOALPOSITION THING IT IS NECESSARY FOR SOME REASON
+             */
+            goalPosition = new Point2D.Double(destX, destY);
+            //goalPosition = new Point2D.Double(200, 200);
+            // Intruder intruder = new Intruder(position, direction);
+
+
+            while(!exitThread) {
+
+                currentTime = System.nanoTime();
+                delta = (currentTime - previousTime)/1e9; //puts it in seconds
+                delta = currentTime - previousTime;
+                delta /= 1e9; //makes it in seconds
+                previousTime = currentTime;
+                currentSpeed = ((guard.position.distance(previousPosition)/SCALING_FACTOR)/delta);
+                //System.out.println("currentSpeed:" + currentSpeed);
+                previousPosition.setLocation(guard.position.getX(), guard.position.getY());
+                guard.checkForAgentSound();
+                double walkingDistance = (1.4 * SCALING_FACTOR) * (delta);
+                if(guard.legalMoveCheck(walkingDistance)) {
+                    guard.move(walkingDistance);
+
+                } else {
+                    double turningAngle = Math.random() * 90 - 45;
+                    guard.turn(turningAngle);
+
+                }
+
+            }
+
+            previousTime = currentTime;
+            System.out.println("guard position: " + guard.getPosition().getX() + " , " + guard.getPosition().getY());
         }
+          succeed();
+
     }
     private boolean isAtDestination(Guard guard){
         return destX == guard.getPosition().getX() && destY == guard.getPosition().getY();
-    }
-    public void update() {
-        if (routine.getState() == null) {
-            // hasn't started yet so we start it
-            routine.start();
-        }
-        routine.act(guard, worldMap);
     }
 
 }

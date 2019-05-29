@@ -6,8 +6,7 @@ import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import Agent.Routine;
-import Agent.Routines;
+
 /**
  * Starter class, creates the javafx main thread
  * @author Kailhan Hokstam
@@ -20,6 +19,7 @@ public class StartWorldBuilder extends Application {
     private Stage primaryStage;
     private SettingsScene settingsScene;
     public static int WINDOW_SIZE = 1000;
+
 
     @Override
     public void start(Stage primaryStage) {

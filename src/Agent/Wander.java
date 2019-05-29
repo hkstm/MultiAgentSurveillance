@@ -1,15 +1,23 @@
 package Agent;
 
+import World.GameScene;
 import World.WorldMap;
 import java.util.Random;
 
+import static Agent.MoveTo.destX;
+import static Agent.MoveTo.destY;
+
 
 public class Wander extends Routine {
-    private static Random random;
     WorldMap worldMap;
     private MoveTo moveTo;
-    private Routine routine;
-    private Guard guard;
+    Guard guard = GameScene.guard;
+
+    @Override
+    public void start() {
+        super.start();
+        this.moveTo.start();
+    }
 
     public void reset() {
         this.moveTo = new MoveTo((Math.random() * 199) +1,(Math.random() * 199) +1);
@@ -18,7 +26,9 @@ public class Wander extends Routine {
     public Wander(WorldMap worldMap) {
         super();
         this.worldMap = worldMap;
-         this.moveTo = new MoveTo((Math.random() * 199) +1,(Math.random() * 199) +1);
+
+         this.moveTo = new MoveTo((Math.random() * 100) +1,(Math.random() * 100) +1);
+         System.out.println(destX + "<-- x, y-->" + destY);
     }
 
     @Override
@@ -33,11 +43,5 @@ public class Wander extends Routine {
             fail();
         }
     }
-    public void update() {
-        if (routine.getState() == null) {
-            // hasn't started yet so we start it
-            routine.start();
-        }
-        routine.act(guard, worldMap);
-    }
+
 }

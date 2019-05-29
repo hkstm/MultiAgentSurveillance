@@ -1,4 +1,5 @@
 package Agent;
+import World.GameScene;
 import World.WorldMap;
 import javafx.scene.paint.Color;
 
@@ -7,6 +8,7 @@ import java.awt.geom.RoundRectangle2D;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static World.GameScene.guard;
 import static World.WorldMap.SENTRY;
 import static World.WorldMap.TARGET;
 
@@ -25,6 +27,13 @@ public class Guard extends Agent {
         this.visualRange[0] = 0;
         this.visualRange[1] = 6;
         this.color = Color.AZURE;
+        Routine guard1 = Routines.sequence(
+               //Routines.moveTo(150,75)
+                 //Routines.chase(guard, GameScene.intruder)
+               Routines.wander(worldMap)
+        );
+        this.setRoutine(guard1);
+
 
         //this.knownTerrain = worldMap.getWorldGrid();
     }
@@ -47,6 +56,7 @@ public class Guard extends Agent {
             this.visualRange[0] = 0;
             this.visualRange[1] = 6;
             this.viewingAngle = 45;
+
         }
     }
 
@@ -67,6 +77,13 @@ public class Guard extends Agent {
                 timer.schedule(openTower, 3000);
             timer.cancel();
         }
+    }
+    public void update() {
+        if (routine.getState() == null) {
+            // hasn't started yet so we start it
+            routine.start();
+        }
+        routine.act(this, worldMap);
     }
     public Routine getRoutine() {
         return routine;

@@ -20,16 +20,13 @@ import static World.GameScene.SCALING_FACTOR;
 
 public class Intruder extends Agent{
     private boolean tired;
-    private int counter = 0;
-    private final double SPRINTING_TIME = 5*1e9;
-    private final double RESTING_TIME = 10*1e9;
+    private final double RESTING_TIME = 5*1e9;
     private int visionRadius = 10;
     private int visionAngle = 45;
     private double walkingSpeed = 1.4; //m/s
     private double sprintSpeed = 3.0; //m/s
     private double startTime= System.nanoTime();
     private Point tempGoal;
-    private double freezeTime = 0;
 
     /**
      * An Intruder constructor with an empty internal map
@@ -68,7 +65,6 @@ public class Intruder extends Agent{
      * @param loud is whether the intruder wishes to open the door fast but loudly or slowly and quietly
      */
 
-    /*
     public void open(boolean loud)
     {
         if (worldMap.coordinatesToCell(position) == DOOR)
@@ -105,7 +101,7 @@ public class Intruder extends Agent{
         {
             class OpenWindow extends TimerTask
             {
-               public void run()
+                public void run()
                 {
                     worldMap.updateTile((int)position.getX(), (int)position.getY(), OPEN_WINDOW);
                     knownTerrain[(int)position.getX()][(int)position.getY()] = OPEN_WINDOW;
@@ -116,97 +112,47 @@ public class Intruder extends Agent{
             timer.schedule(openWindow, 3000);
         }
     }
-    */
-
     public void gameTreeIntruder(double timeStep)
     {
-        //TODO check for guards, need the vision to be working for this
-        //TODO add weights to flags and other types of squares, try manually an possibly with a genetic algorithm
-        //open door
-        if(knownTerrain[(int)position.x][(int)position.y] == 2)
+        updateKnownTerrain(visionRadius*SCALING_FACTOR, viewingAngle);
+        int[][] blocks = aStarTerrain(knownTerrain);
+        Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)(getGoalPosition().getX()/SCALING_FACTOR), (int)(getGoalPosition().getY()/SCALING_FACTOR), blocks);
+        List<Node> path = new ArrayList<Node>();
+        path = pathFinder.findPath();
+        tempGoal = new Point(path.get(path.size()-1).i, path.get(path.size()-1).j);
+        double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.y-(int)(position.y/SCALING_FACTOR))/Math.abs(tempGoal.x-(int)(position.x/SCALING_FACTOR))));
+        double walkingDistance = (walkingSpeed*SCALING_FACTOR*timeStep);
+        double sprintingDistance = (sprintSpeed*SCALING_FACTOR*timeStep);
+        if(tempGoal.x >= (int)(position.x/SCALING_FACTOR) && tempGoal.y <= (int)(position.y/SCALING_FACTOR))
         {
-            Random random = new Random();
-            startTime = System.nanoTime();
-            if(Math.random() > 0.5)
-            {
-                freezeTime = (random.nextGaussian()*2+12)*1e9;
-            }
-            else
-            {
-                freezeTime = 5;
-                //HERE A NOISE MUST BE MADE!!!!!
-            }
-            knownTerrain[(int)position.x][(int)position.y] = 33;
+            turnToFace(turnAngle);
         }
-        //go through window
-        if(knownTerrain[(int)position.x][(int)position.y] == 3)
+        else if(tempGoal.x >= (int)(position.x/SCALING_FACTOR) && tempGoal.y >= (int)(position.y/SCALING_FACTOR))
         {
-            startTime = System.nanoTime();
-            freezeTime = 3e9;
+            turnToFace(90+turnAngle);
         }
-        if(startTime+freezeTime > currentTime)
+        else if(tempGoal.x <= (int)(position.x/SCALING_FACTOR) && tempGoal.y >= (int)(position.y/SCALING_FACTOR))
         {
-            freezeTime = 0;
-            startTime = System.nanoTime();
-            updateKnownTerrain(visionRadius*SCALING_FACTOR, viewingAngle); //there is a problem with this, its not seeing walls :(
-            int[][] blocks = aStarTerrain(knownTerrain);
-            Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)(getGoalPosition().getX()/SCALING_FACTOR), (int)(getGoalPosition().getY()/SCALING_FACTOR), blocks);
-            List<Node> path = new ArrayList<Node>();
-            path = pathFinder.findPath();
-            tempGoal = new Point(path.get(path.size()-1).i, path.get(path.size()-1).j);
-            double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.y-(int)(position.y/SCALING_FACTOR))/Math.abs(tempGoal.x-(int)(position.x/SCALING_FACTOR))));
-            double walkingDistance = (walkingSpeed*SCALING_FACTOR*timeStep);
-            double sprintingDistance = (sprintSpeed*SCALING_FACTOR*timeStep);
-            if(tempGoal.x >= (int)(position.x/SCALING_FACTOR) && tempGoal.y <= (int)(position.y/SCALING_FACTOR))
+            turnToFace(270-turnAngle);
+        }
+        else if(tempGoal.x <= (int)(position.x/SCALING_FACTOR) && tempGoal.y <= (int)(position.y/SCALING_FACTOR))
+        {
+            turnToFace(270+turnAngle);
+        }
+        if(startTime+RESTING_TIME > currentTime)
+        {
+            tired = true;
+        }
+        if(!tired)
+        {
+            if(legalMoveCheck(sprintingDistance))
             {
-                turnToFace(turnAngle);
+                move(sprintingDistance);
             }
-            else if(tempGoal.x >= (int)(position.x/SCALING_FACTOR) && tempGoal.y >= (int)(position.y/SCALING_FACTOR))
-            {
-                turnToFace(90+turnAngle);
-            }
-            else if(tempGoal.x <= (int)(position.x/SCALING_FACTOR) && tempGoal.y >= (int)(position.y/SCALING_FACTOR))
-            {
-                turnToFace(270-turnAngle);
-            }
-            else if(tempGoal.x <= (int)(position.x/SCALING_FACTOR) && tempGoal.y <= (int)(position.y/SCALING_FACTOR))
-            {
-                turnToFace(270+turnAngle);
-            }
-            if(!tired)
-            {
-                if(counter == 0)
-                {
-                    counter = 1;
-                    startTime = System.nanoTime();
-                }
-                if(startTime+SPRINTING_TIME > currentTime)
-                {
-                    tired = true;
-                    counter = 0;
-                }
-                if(legalMoveCheck(sprintingDistance))
-                {
-                    move(sprintingDistance);
-                }
-            }
-            else
-            {
-                if(counter == 0)
-                {
-                    counter = 1;
-                    startTime = System.nanoTime();
-                }
-                if(startTime+RESTING_TIME > currentTime)
-                {
-                    tired = false;
-                    counter = 0;
-                }
-                if(legalMoveCheck(walkingDistance))
-                {
-                    move(walkingDistance);
-                }
-            }
+        }
+        else if(legalMoveCheck(walkingDistance))
+        {
+            move(walkingDistance);
         }
     }
 }

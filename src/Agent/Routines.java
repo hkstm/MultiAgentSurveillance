@@ -36,8 +36,6 @@ public class Routines {
         return new Wander(worldMap);
     }
 
-    public static Routine chase() {
-        return new Chase();
-    }
+    public static Routine chase(Guard guard, Intruder intruder) {return new Chase(guard,intruder);}
 
 }
