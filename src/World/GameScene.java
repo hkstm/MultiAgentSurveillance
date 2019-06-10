@@ -103,7 +103,7 @@ public class GameScene extends BorderPane implements Runnable {
                         /**
                          * This is the code that actually gets repeated as long as the game is running
                          */
-                        worldMap.forceUpdateAgents();
+//                        worldMap.forceUpdateAgents();
                         redrawBoard();
                         long delta = (currentTime - previousTime);
                         previousTime = currentTime;

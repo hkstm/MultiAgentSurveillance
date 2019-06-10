@@ -139,6 +139,8 @@ public class Intruder extends Agent{
         //TODO make noise
         //TODO test doors and windows
         //TODO add weights to flags and other types of squares, try manually an possibly with a genetic algorithm
+        //this createCone should be redundant but it resolves some errors due to not being able to properly access the cones
+        createCone();
         if(oldTempGoal != null)
         {
             checkChangedStatus();
