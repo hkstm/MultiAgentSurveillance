@@ -2,6 +2,11 @@ package Agent;
 
 import javafx.geometry.Point2D;
 
+/**
+ * Reward points used in the AreaOptimzer bot
+ * @author Kailhan
+ */
+
 public class Point2DReward extends Point2D {
 
     private double reward;

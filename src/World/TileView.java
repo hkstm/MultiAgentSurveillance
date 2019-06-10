@@ -3,6 +3,12 @@ package World;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
+/**
+ * The "tiles" that you see in when running the game (not building), ImageViews that explicitly store their position
+ * on the grid and what kinda tiles they are
+ * @author Kailhan
+ */
+
 public class TileView extends ImageView {
 
     private int rowIndex;

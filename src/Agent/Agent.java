@@ -2,9 +2,11 @@ package Agent;
 import World.WorldMap;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
-
-import java.awt.Point;
 import javafx.geometry.Point2D;
+import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Shape;
+
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -15,7 +17,7 @@ import static World.WorldMap.*;
 
 /**
  * This is the superclass of Intruder and Guard, which contains methods for actions
- * @author Benjamin, Kailhan Hokstam
+ * @author Benjamin, Kailhan
  */
 
 public class Agent implements Runnable {
@@ -53,7 +55,7 @@ public class Agent implements Runnable {
     protected double previousTime;
 
     protected Point2D previousPosition;
-    protected volatile Point goalPosition;
+    protected volatile Point2D goalPosition;
 
     protected boolean firstRun;
 
@@ -62,6 +64,7 @@ public class Agent implements Runnable {
     protected double startingAngle;
     protected double endAngle;
     private boolean goalSet = false;
+
 
 
     /**
@@ -74,19 +77,16 @@ public class Agent implements Runnable {
         System.out.println("agent constructor called");
         this.position = position;
         this.direction = direction;
-        for(int i = 0; i < knownTerrain[0].length; i++)
-        {
-            for(int j = 0; j < knownTerrain.length; j++)
-            {
-                if(worldMap.worldGrid[i][j] == 4)
-                {
-                    goalPosition = new Point(j, i);
+        this.color = Color.LIGHTSEAGREEN;
+        for(int i = 0; i < knownTerrain[0].length; i++) {
+            for(int j = 0; j < knownTerrain.length; j++) {
+                if(worldMap.worldGrid[i][j] == 4) {
+                    goalPosition = new Point2D(j, i);
                     goalSet = true;
                 }
             }
         }
-        if(goalSet == false)
-        {
+        if(goalSet == false) {
             System.out.println("No Target");
         }
         //this.goalPosition = position;
@@ -99,10 +99,31 @@ public class Agent implements Runnable {
         }
     }
 
+    /**
+     * Default run method, should not really be used (e.g. should be overwritten in subclasses and those should be instantiated)
+     */
     public void run() {
-        System.out.println("running normal agent something went wrong");
+        previousTime = System.nanoTime();
+        previousPosition = new Point2D(position.getX(), position.getY());
+        /**
+         * DONT REMOVE THIS GOALPOSITION THING IT IS NECESSARY FOR SOME REASON
+         */
+
+        goalPosition = new Point2D(200, 200);
+        while(!exitThread) { {
+            for (int i = 0; i < knownTerrain.length; i++) {
+                for (int j = 0; j < knownTerrain[0].length; j++) {
+                    //System.out.print(knownTerrain[i][j] + " knownterrain");
+                }
+            }
+        }
+            executeAgentLogic();
+        }
     }
 
+    /**
+     * Used instead of the run method if we want to manually control when the agent should update
+     */
     public void forceUpdate() {
         if(firstRun) {
             previousTime = System.nanoTime();
@@ -112,8 +133,43 @@ public class Agent implements Runnable {
         executeAgentLogic();
     }
 
+    /**
+     * Default agent logic, should not really be used (e.g. should be overwritten in subclasses and those should be instantiated)
+     */
     public void executeAgentLogic() {
-        System.out.println("running normal agent logic something went wrong");
+        goalPosition = new Point2D(200, 200);
+        //DONT PRINT EMPTY STRINGS THANKS
+        currentTime = System.nanoTime();
+        delta = currentTime - previousTime;
+        delta /= 1e9; //makes it in seconds
+        previousTime = currentTime;
+        currentSpeed = ((position.distance(previousPosition) / SCALING_FACTOR) / delta);
+        //System.out.println("currentSpeed:" + currentSpeed);
+        previousPosition = new Point2D(position.getX(), position.getY());
+        updateKnownTerrain();
+
+        checkForAgentSound();
+        double walkingDistance = (1.4 * SCALING_FACTOR) * (delta);
+        if (legalMoveCheck(walkingDistance)) {
+            move(walkingDistance);
+//            System.out.println("moving");
+        } else {
+            updateDirection(Math.random() * 360);
+//            System.out.println("turning");
+        }
+        updateGoalPosition();
+        xGoal = getGoalPosition().getX();
+        yGoal = getGoalPosition().getY();
+    }
+
+    /**
+     * Idk if this is still used but it removing it used to break stuff
+     */
+    public void updateGoalPosition() {
+        //some logic with the worldMap and whatever algorithms we are using
+        double x = 200;
+        double y = 200;
+        goalPosition = new Point2D(x, y);
     }
 
     /**
@@ -141,6 +197,11 @@ public class Agent implements Runnable {
         }
     }
 
+    /**
+     * Method that you should use when trying to update an agents direction
+     * Limits the amount you can turn
+     * @param directionToGo direction you are trying to face (in degrees 0 - 360, I think)
+     */
     public void updateDirection(double directionToGo) {
         if(!sprinting) {
             double maxTurn = MAX_TURNING_PER_SECOND * delta;
@@ -155,6 +216,7 @@ public class Agent implements Runnable {
             System.out.println("logic for turning while sprinting needs to be implemented rip");
         }
 
+
     }
 
     /**
@@ -168,42 +230,6 @@ public class Agent implements Runnable {
         double xEnd = position.getX() + (distance * Math.cos(Math.toRadians(facingDirection)));
         double yEnd = position.getY() + (distance * Math.sin(Math.toRadians(facingDirection)));
         return new Point2D(xEnd, yEnd);
-//        if (facingDirection >= 0 && facingDirection <= 90) {
-//            double angle = Math.toRadians(direction);
-//            double newXCoordinate = position.getX()+(distance*Math.sin(angle));
-//            double newYCoordinate = position.getY()-(distance*Math.cos(angle));
-//            Point2D newLocation = new Point2D(newXCoordinate, newYCoordinate);
-//            return newLocation;
-//        }
-//        else if (facingDirection >= 90 && facingDirection <= 180)
-//        {
-//            double angle = Math.toRadians(180-direction);
-//            double newXCoordinate = position.getX()+distance*Math.sin(angle);
-//            double newYCoordinate = position.getY()+distance*Math.cos(angle);
-//            Point2D newLocation = new Point2D(newXCoordinate, newYCoordinate);
-//            return newLocation;
-//        }
-//        else if (facingDirection >=180 && facingDirection <= 270)
-//        {
-//            double angle = Math.toRadians(facingDirection-180);
-//            double newXCoordinate = position.getX()-distance*Math.sin(angle);
-//            double newYCoordinate = position.getY()+distance*Math.cos(angle);
-//            Point2D newLocation = new Point2D(newXCoordinate, newYCoordinate);
-//            return newLocation;
-//        }
-//        else if (facingDirection >= 270 || facingDirection <= 360)
-//        {
-//            //System.out.println("4");
-//            double angle = Math.toRadians(360-facingDirection);
-//            double newXCoordinate = position.getX()-distance*Math.sin(angle);
-//            double newYCoordinate = position.getY()-distance*Math.cos(angle);
-//            Point2D newLocation = new Point2D(newXCoordinate, newYCoordinate);
-//            return newLocation;
-//        }
-//        else {
-//            return position;
-//        }
-
     }
 
     /**
@@ -212,9 +238,7 @@ public class Agent implements Runnable {
      *                 depending on the time-step, speeds will need to be divided before being used as parameters
      *                 angle is not required here because it is an instance variable of the Agent
      */
-
-    public void move(double distance)
-    {
+    public void move(double distance) {
         //System.out.println("direction before move: "+direction);
         //double y = position.getY();
         position = getMove(distance, direction);
@@ -247,156 +271,9 @@ public class Agent implements Runnable {
         }
     }
 
-//    /**
-//     * updates the internal map of an Agent based on their field of vision based on sounds of sightings of other agents or in the case of intruders, sighting of new terrain
-//     * @param radius is the distance an Agent can see in front of them
-//     * @param angle is the width of view of an Agent
-//     */
-//    public void updateKnownTerrain(double radius, double angle)
-//    {
-//        boolean stop = false;
-//        int[][] actualTerrain = worldMap.getWorldGrid();
-//        //setting search bounds
-//        Point corner1 = new Point((int) position.getX(), (int) position.getY());
-//        Point2D straight = getMove(radius, direction);
-//        Point corner2 = new Point((int) straight.getX(), (int) straight.getY());
-//        Point2D left = getMove(radius, direction-(angle/2));
-//        Point corner3 = new Point((int) left.getX(), (int) left.getY());
-//        Point2D right = getMove(radius, direction+(angle/2));
-//        Point corner4 = new Point((int) right.getX(), (int) right.getY());
-//        //possible to go < -180 and > 180 here, fix this in the future
-//        int XMax = (Math.max((int) Math.max(corner1.getX(), corner2.getX()), (int) Math.max(corner3.getX(), corner4.getX()))/10);
-//        int XMin = (Math.min((int) Math.min(corner1.getX(), corner2.getX()), (int) Math.min(corner3.getX(), corner4.getX()))/10);
-//        int YMax = (Math.max((int) Math.max(corner1.getY(), corner2.getY()), (int) Math.max(corner3.getY(), corner4.getY()))/10);
-//        int YMin = (Math.min((int) Math.min(corner1.getY(), corner2.getY()), (int) Math.min(corner3.getY(), corner4.getY()))/10);
-//        if (XMax > 99)
-//        {
-//            XMax = 99;
-//        }
-//        if (XMin < 0)
-//        {
-//            XMin = 0;
-//        }
-//        if (YMax > 99)
-//        {
-//            YMax = 99;
-//        }
-//        if (YMin < 0)
-//        {
-//            YMin = 0;
-//        }
-//        //checking if the points (each corner of each square in the bounds) is within the circle of search
-//        for (int i = YMin;i <= YMax;i++)
-//        {
-//            for (int j = XMin;j <= XMax;j++)
-//            {
-//                if (Math.abs(direction) < 90) //this seems like a wierd condition
-//                {
-//                    //top left corner
-//                    //System.out.println                                                                                                                               (Math.abs(Math.abs(Math.abs(direction)-(180-Math.abs(Math.atan((Math.abs(position.getX()/10-j))/(Math.abs(position.getY()/10-i))))))));
-//                    if (Math.sqrt(((position.getX()/10-j)*(position.getX()/10-j))+((position.getY()/10-i)*(position.getY()/10-i))) <= radius && Math.abs(Math.abs(direction)-(Math.abs(Math.toDegrees(Math.atan((Math.abs(position.getX()/10-j))/(Math.abs(position.getY()/10-i))))))) <= angle/2)
-//                    {
-//                        //System.out.println("1");
-//                        knownTerrain[i][j] = worldMap.getTileState(i, j);
-//                    }
-//                    //top right corner
-//                    else if (Math.sqrt(((position.getX()/10-(j+1))*(position.getX()/10-(j+1)))+((position.getY()/10-i)*(position.getY()/10-i))) <= radius && Math.abs(Math.abs(direction)-(Math.abs(Math.toDegrees(Math.atan((Math.abs(position.getX()/10-(j+1)))/(Math.abs(position.getY()/10-i))))))) <= angle/2)
-//                    {
-//                        //System.out.println("2");
-//                        knownTerrain[i][j] = worldMap.getTileState(i, j);
-//                    }
-//                    //bottom right corner
-//                    else if (Math.sqrt(((position.getX()/10-(j+1))*(position.getX()/10-(j+1)))+((position.getY()/10-(i+1))*(position.getY()/10-(i+1)))) <= radius && Math.abs(Math.abs(direction)-(Math.abs(Math.toDegrees(Math.atan((Math.abs(position.getX()/10-(j+1)))/(Math.abs(position.getY()/10-(i+1)))))))) <= angle/2)
-//                    {
-//                        //System.out.println("3");
-//                        knownTerrain[i][j] = worldMap.getTileState(i, j);
-//                    }
-//                    //bottom left corner
-//                    else if (Math.sqrt(((position.getX()/10-j) * (position.getX()/10-j))+((position.getY()/10-(i+1))*(position.getY()/10-(i+1)))) <= radius && Math.abs(Math.abs(direction)-(Math.abs(Math.toDegrees(Math.atan((Math.abs(position.getX()/10-j)) / (Math.abs(position.getY()/10-(i+1)))))))) <= angle/2)
-//                    {
-//                        //System.out.println("4");
-//                        knownTerrain[i][j] = worldMap.getTileState(i, j);
-//                    }
-//                }
-//                else
-//                {
-//                    //top left corner
-//                    if (Math.sqrt(((position.getX() / 10 - j) * (position.getX() / 10 - j)) + ((position.getY() / 10 - i) * (position.getY() / 10 - i))) <= radius && Math.abs(Math.abs(direction) - (180-(Math.abs(Math.toDegrees(Math.atan((Math.abs(position.getX() / 10 - j)) / (Math.abs(position.getY() / 10 - i)))))))) <= angle / 2) {
-//                        knownTerrain[i][j] = worldMap.getTileState(i, j);
-//                    }
-//                    //top right corner
-//                    else if (Math.sqrt(((position.getX() / 10 - (j + 1)) * (position.getX() / 10 - (j + 1))) + ((position.getY() / 10 - i) * (position.getY() / 10 - i))) <= radius && Math.abs(Math.abs(direction) - (180-(Math.abs(Math.toDegrees(Math.atan((Math.abs(position.getX() / 10 - (j + 1))) / (Math.abs(position.getY() / 10 - i)))))))) <= angle / 2) {
-//                        knownTerrain[i][j] = worldMap.getTileState(i, j);
-//                    }
-//                    //bottom right corner
-//                    else if (Math.sqrt(((position.getX() / 10 - (j + 1)) * (position.getX() / 10 - (j + 1))) + ((position.getY() / 10 - (i + 1)) * (position.getY() / 10 - (i + 1)))) <= radius && Math.abs(Math.abs(direction) - (180-(Math.abs(Math.toDegrees(Math.atan((Math.abs(position.getX() / 10 - (j + 1))) / (Math.abs(position.getY() / 10 - (i + 1))))))))) <= angle / 2) {
-//                        knownTerrain[i][j] = worldMap.getTileState(i, j);
-//                    }
-//                    //bottom left corner
-//                    else if (Math.sqrt(((position.getX() / 10 - j) * (position.getX() / 10 - j)) + ((position.getY() / 10 - (i + 1)) * (position.getY() / 10 - (i + 1)))) <= radius && Math.abs(Math.abs(direction) - (180-(Math.abs(Math.toDegrees(Math.atan((Math.abs(position.getX() / 10 - j)) / (Math.abs(position.getY() / 10 - (i + 1))))))))) <= angle / 2) {
-//                        knownTerrain[i][j] = worldMap.getTileState(i, j);
-//                    }
-//                }
-//                if (j == 0 || j == 99 || i == 0 || i == 99)
-//                {
-//                    System.out.println("edge in vision");
-//                    stop = true;
-//                    break;
-//                }
-//            }
-//            if (stop == true)
-//            {
-//                break;
-//            }
-//        }
-//        stop = false;
-//        //scan through and remove areas hidden by other structures
-//        for (int i = YMin;i <= YMax;i++)
-//        {
-//            for (int j = XMin;j <= XMax;j++)
-//            {
-//                //System.out.println("i: "+i+" j: "+j+" x coordinate: "+position.getX()+" XMin: "+XMin);
-//                if (actualTerrain[i][j] == 1 || actualTerrain[i][j] == 2 || actualTerrain[i][j] == 3 || actualTerrain[i][j] == 5 || actualTerrain[i][j] == 7)
-//                {
-//                    for (int k = YMin;k <= YMax;k++)
-//                    {
-//                        for (int l = XMin;l <= XMax;l++)
-//                        {
-//                            if (Math.sqrt(((position.getX()/10-l)*(position.getX()/10-l))+((position.getY()/10-k)*(position.getY()/10))-k) > Math.sqrt(((position.getX()/10-j)*(position.getX()/10-j))+((position.getY()/10-i)*(position.getY()/10))-i))
-//                            {
-//                                if (direction > 0 && direction <= 90 && Math.atan((l-position.getX()/10)/(k-position.getY()/10)) >= Math.atan((j-position.getX()/10)/(i-position.getY()/10)) && Math.atan(((l+1)-position.getX()/10)/((k-1)-position.getY()/10)) <= Math.atan(((j+1)-position.getX()/10)/((i-1)-position.getY()/10)))
-//                                {
-//                                    knownTerrain[k][l] = actualTerrain[k][l];
-//                                }
-//                                else if (direction > 90 && direction <= 180 && Math.atan((k-position.getY()/10)/((l+1)-position.getX()/10)) >= Math.atan((i-position.getY()/10)/((j+1)-position.getX()/10)) && Math.atan(((k-1)-position.getY()/10)/(l-position.getX()/10)) <= Math.atan(((i+1)-position.getY()/10)/(j-position.getX()/10)))
-//                                {
-//                                    knownTerrain[k][l] = actualTerrain[k][l];
-//                                }
-//                                else if (direction <= 0 && direction > -90 && Math.atan(((l+1)-position.getX()/10)/(k-position.getY()/10)) <= Math.atan(((j+1)-position.getX()/10)/(i-position.getY()/10)) && Math.atan((l-position.getX()/10)/((k-1)-position.getY()/10)) >= Math.atan((j-position.getX()/10)/((i-1)-position.getY()/10)))
-//                                {
-//                                    knownTerrain[k][l] = actualTerrain[k][l];
-//                                }
-//                                else if (direction <= -90 && direction > -180 && Math.atan((k-position.getY()/10)/(l-position.getX()/10)) <= Math.atan((i-position.getY()/10)/(j-position.getX()/10)) && Math.atan(((k-1)-position.getY()/10)/((l+1)-position.getX()/10)) >= Math.atan(((i-1)-position.getY()/10)/((j+1)-position.getX()/10)))
-//                                {
-//                                    knownTerrain[k][l] = actualTerrain[k][l];
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//                if (j == 0 || j == 99 || i == 0 || i == 99)
-//                {
-//                    stop = true;
-//                    break;
-//                }
-//            }
-//            if (stop == true)
-//            {
-//                break;
-//            }
-//        }
-//    }
-
+    /**
+     * Checks if a tile is contained in an agents cone and if so adds it to the knownTerrain array
+     */
     public void updateKnownTerrain(){
         for(int r = 0; r < worldMap.getSize(); r++) {
             for(int c = 0; c < worldMap.getSize(); c++){
@@ -411,6 +288,7 @@ public class Agent implements Runnable {
         }
         //System.out.println();
     }
+
     /**
      * Checks if we can hear other agents and if so add it personal memory with noise
      */
@@ -443,6 +321,11 @@ public class Agent implements Runnable {
         return viewingCone.contains((c*(ASSUMED_WORLDSIZE/(double)worldMap.getSize())*SCALING_FACTOR), (r*(ASSUMED_WORLDSIZE/(double)worldMap.getSize())*SCALING_FACTOR));
     }
 
+    /**
+     * This method updaes an agents viewing cone, not checked yet it if works when in sentry/min visual range is not zero
+     * commented out code might be necessary in that case
+     * Needs to be called direct or indirectly (WorldMap.createCones())
+     */
     public void createCone() {
         double x = position.getX();
         double y = position.getY();
@@ -511,11 +394,26 @@ public class Agent implements Runnable {
         return viewingCone;
     }
 
+    /**
+     * Converts world location to array, for example when you want to check if some coordinate you are trying to access
+     * is a wall or not
+     * @param toBeConverted x or y world coordinate (assuming we use a square world so calculations for x and y are the same)
+     * @return column or row that can be looked up in worldArray
+     */
     public static int locationToWorldgrid(double toBeConverted) {
-        int supposedWorldSize = ASSUMED_WORLDSIZE;
-        return (int)(toBeConverted * (1/((supposedWorldSize/worldMap.getWorldGrid().length)*SCALING_FACTOR)));
+        return (int)(toBeConverted * (1/((ASSUMED_WORLDSIZE/worldMap.getWorldGrid().length)*SCALING_FACTOR)));
     }
 
+    /**
+     * NOT SURE IF THIS ACTUALLY WORKS, assumpitions w.r.t. 0 degrees being right and the angle being in degrees might not be right
+     * @param point1X
+     * @param point1Y
+     * @param point2X
+     * @param point2Y
+     * @param fixedX
+     * @param fixedY
+     * @return
+     */
     public static double angleBetweenTwoPointsWithFixedPoint(double point1X, double point1Y,
                                                              double point2X, double point2Y,
                                                              double fixedX, double fixedY) {
@@ -530,7 +428,7 @@ public class Agent implements Runnable {
         return position;
     }
 
-    public Point getGoalPosition() {
+    public Point2D getGoalPosition() {
         return goalPosition;
     }
 
@@ -593,8 +491,13 @@ public class Agent implements Runnable {
         this.color = color;
     }
 
-    public int[][] aStarTerrain(int[][] terrain)
+
+    public void turnToFace(double angle)
     {
+        direction = angle;
+    }
+
+    public int[][] aStarTerrain(int[][] terrain) {
         List<Point> walls = new ArrayList<Point>();
         for(int i = 0; i < terrain.length; i++)
         {
@@ -621,11 +524,6 @@ public class Agent implements Runnable {
             blocks[i][1] = (int)walls.get(i).getX();
         }
         return blocks;
-    }
-
-    public void turnToFace(double angle)
-    {
-        direction = angle;
     }
 
 }

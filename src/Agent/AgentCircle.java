@@ -7,7 +7,7 @@ import javafx.geometry.Point2D;
 
 /**
  * Specific Circle class cause OOB yuh, if you dont want the agents to clip in the walls this is where you gotta be
- * @author Kailhan Hokstam
+ * @author Kailhan
  */
 
 public class AgentCircle extends Circle {

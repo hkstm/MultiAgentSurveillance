@@ -27,7 +27,7 @@ import static World.StartWorldBuilder.WINDOW_SIZE;
 
 /**
  * Main in game screen
- * @author Kailhan Hokstam
+ * @author Kailhan
  */
 public class GameScene extends BorderPane implements Runnable {
 
@@ -79,8 +79,9 @@ public class GameScene extends BorderPane implements Runnable {
         this.startGameBut = new Button("Start/Stop Game"); //should stop and start game, not properly working atm
         Agent.worldMap = worldMap;
 
-        worldMap.addAgent(new AreaOptimizer(new Point2D(200, 200), 0));
-//        worldMap.addOnlyAgent(new Intruder(new Point2D(500, 500), 0));
+//        worldMap.addAgent(new AreaOptimizer(new Point2D(300, 500), 0));
+        worldMap.addOnlyAgent(new AreaOptimizer(new Point2D(300, 500), 0));
+
 
         //Actual game "loop" in here
         startGameBut.setOnAction(e -> { //
@@ -94,7 +95,11 @@ public class GameScene extends BorderPane implements Runnable {
                     long previousTime = currentTimeCalc;
                     @Override
                     public void handle(long currentTime) {
-//                        worldMap.forceUpdateAgents();
+
+                        /**
+                         * This is the code that actually gets repeated as long as the game is running
+                         */
+                        worldMap.forceUpdateAgents();
                         redrawBoard();
                         long delta = (currentTime - previousTime);
                         previousTime = currentTime;
@@ -109,11 +114,59 @@ public class GameScene extends BorderPane implements Runnable {
                 redrawBoard();
             }
         });
+
         this.startGameBut.setWrapText(true);
 
         redrawBoard(); //redrawing board otherwise window that displays board and button is not properly sized
         initFullScreen();
     }
+
+    public void run(){
+        redrawBoard();
+    }
+
+    /**
+     * Updates tiles and general information displayed in the actual game screen
+     */
+    public void redrawBoard() {
+        grid.getChildren().clear();
+        createTiles();
+        createAgents();
+        drawCones();
+//        drawTileShapes();
+        agentGroup.toFront();
+    }
+
+    public void drawCones() {
+        worldMap.createCones();
+        agentGroup.getChildren().addAll(worldMap.getAgentsCones());
+    }
+
+    public void drawTileShapes() {
+        worldMap.createWorldGridShapes();
+        agentGroup.getChildren().addAll(worldMap.getWorldGridShapes());
+    }
+
+    public void initTiles() {
+        for (int r = 0; r < worldMap.getSize(); r++) {
+            for (int c = 0; c < worldMap.getSize(); c++) {
+                tileViews.add(c + (r * worldMap.getSize()),  new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c)));
+                grid.add(tileViews.get(c + (r * worldMap.getSize())), c, r);
+            }
+        }
+    }
+
+    public void createTiles() {
+        for (int r = 0; r < worldMap.getSize(); r++) {
+            for (int c = 0; c < worldMap.getSize(); c++) {
+                if(tileViews.get(c + (r * worldMap.getSize())).getState() != worldMap.getTileState(r, c)) {
+                    tileViews.set(c + (r * worldMap.getSize()),  new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c)));
+                }
+                grid.add(tileViews.get(c + (r * worldMap.getSize())), c, r);
+            }
+        }
+    }
+
 //   he intruder wins if he is 3 seconds in any of the target areas or vists the target area twice with a time
 //   difference of at least 3 seconds. The guards win if the intruder is no more than 0.5 meter away and in sight.
 //   All intruders need to complete their objective or any of them.
@@ -149,6 +202,40 @@ public class GameScene extends BorderPane implements Runnable {
             alert.setContentText("INTRUDER has reached TARGET");
             alert.showAndWait();
             goToMenuBut.fire();
+        }
+    }
+
+    /**
+     * Actually add AgentCircles to list which is drawn
+     */
+    public void createAgents() {
+        agentGroup.getChildren().clear();
+//        AgentCircle circleTmp = new AgentCircle(new Point2D(1000, 1000));
+//        circleTmp.setFill(Color.CORNFLOWERBLUE);
+//        agentGroup.getChildren().add(circleTmp);
+//        agentGroup.toFront();
+        for(Agent agent : worldMap.getAgents()) {
+            AgentCircle circle = new AgentCircle(agent);
+            agentGroup.getChildren().add(circle);
+//            if(agent instanceof Guard) {
+//                Guard guard = (Guard) agent;
+//                AgentCircle circle = new AgentCircle(guard);
+////                Pane tmpPane = new Pane();
+////                tmpPane.getChildren().addAll(circle);
+////                agentGroup.getChildren().add(tmpPane);
+//                agentGroup.getChildren().add(circle);
+//            }
+//            if(agent instanceof Intruder) {
+//                Intruder intruder = (Intruder) agent;
+//                AgentCircle circle = new AgentCircle(intruder);
+////                Pane tmpPane = new Pane();
+////                tmpPane.getChildren().addAll(circle);
+////                agentGroup.getChildren().add(tmpPane);
+//                agentGroup.getChildren().add(circle);
+////                System.out.println("position in create agents: " + intruder.getPosition().toString());
+//            }
+            agentGroup.toFront();
+            //System.out.println("proceeding after while loop, agent on seperate thread");
         }
     }
 
@@ -193,38 +280,6 @@ public class GameScene extends BorderPane implements Runnable {
                     System.out.println("Agent heard sound");
                 }
             }
-        }
-    }
-
-    /**
-     * Actually add AgentCircles to list which is drawn
-     */
-    public void createAgents() {
-        agentGroup.getChildren().clear();
-//        AgentCircle circleTmp = new AgentCircle(new Point2D(1000, 1000));
-//        circleTmp.setFill(Color.CORNFLOWERBLUE);
-//        agentGroup.getChildren().add(circleTmp);
-//        agentGroup.toFront();
-        for(Agent agent : worldMap.getAgents()) {
-            if(agent instanceof Guard) {
-                Guard guard = (Guard) agent;
-                AgentCircle circle = new AgentCircle(guard);
-//                Pane tmpPane = new Pane();
-//                tmpPane.getChildren().addAll(circle);
-//                agentGroup.getChildren().add(tmpPane);
-                agentGroup.getChildren().add(circle);
-            }
-            if(agent instanceof Intruder) {
-                Intruder intruder = (Intruder) agent;
-                AgentCircle circle = new AgentCircle(intruder);
-//                Pane tmpPane = new Pane();
-//                tmpPane.getChildren().addAll(circle);
-//                agentGroup.getChildren().add(tmpPane);
-                agentGroup.getChildren().add(circle);
-//                System.out.println("position in create agents: " + intruder.getPosition().toString());
-            }
-            agentGroup.toFront();
-            //System.out.println("proceeding after while loop, agent on seperate thread");
         }
     }
 
@@ -299,52 +354,6 @@ public class GameScene extends BorderPane implements Runnable {
             this.primaryStage.show();
         });
         this.restartGameBut.setWrapText(true);
-    }
-
-    public void run(){
-     redrawBoard();
-    }
-
-    /**
-     * Updates tiles and general information displayed in the actual game screen
-     */
-    public void redrawBoard() {
-        grid.getChildren().clear();
-        createTiles();
-        createAgents();
-        drawCones();
-//        drawTileShapes();
-        agentGroup.toFront();
-    }
-
-    public void drawCones() {
-        worldMap.createCones();
-        agentGroup.getChildren().addAll(worldMap.getAgentsCones());
-    }
-
-    public void drawTileShapes() {
-        worldMap.createWorldGridShapes();
-        agentGroup.getChildren().addAll(worldMap.getWorldGridShapes());
-    }
-
-    public void initTiles() {
-        for (int r = 0; r < worldMap.getSize(); r++) {
-            for (int c = 0; c < worldMap.getSize(); c++) {
-                tileViews.add(c + (r * worldMap.getSize()),  new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c)));
-                grid.add(tileViews.get(c + (r * worldMap.getSize())), c, r);
-            }
-        }
-    }
-
-    public void createTiles() {
-        for (int r = 0; r < worldMap.getSize(); r++) {
-            for (int c = 0; c < worldMap.getSize(); c++) {
-                if(tileViews.get(c + (r * worldMap.getSize())).getState() != worldMap.getTileState(r, c)) {
-                    tileViews.set(c + (r * worldMap.getSize()),  new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c)));
-                }
-                grid.add(tileViews.get(c + (r * worldMap.getSize())), c, r);
-            }
-        }
     }
 
     public Scene getGameScene() {

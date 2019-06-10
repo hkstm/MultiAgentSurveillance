@@ -187,9 +187,10 @@ public class Intruder extends Agent{
             //System.out.println();
             //System.out.println();
             int[][] blocks = aStarTerrain(knownTerrain);
-            Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), goalPosition.x, goalPosition.y, blocks);
+            Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks);
             List<Node> path = new ArrayList<Node>();
             path = pathFinder.findPath();
+
             oldTempGoal = tempGoal;
             if(!changed)
             {
@@ -218,6 +219,10 @@ public class Intruder extends Agent{
             double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.getX()-position.getX())/divisor));
             double walkingDistance = (walkingSpeed*SCALING_FACTOR*timeStep);
             double sprintingDistance = (sprintSpeed*SCALING_FACTOR*timeStep);
+            /**
+             * you probably dont wanna do this anymore with the new move logic and also call updateDirection()
+             * for proper turning ~Kailhan
+             */
             if(tempGoal.getX() >= position.getX() && tempGoal.getY() <= position.getY())
             {
                 turnToFace(turnAngle);
