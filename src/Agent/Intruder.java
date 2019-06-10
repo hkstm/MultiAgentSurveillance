@@ -187,7 +187,11 @@ public class Intruder extends Agent{
             //System.out.println();
             //System.out.println();
             int[][] blocks = aStarTerrain(knownTerrain);
-            Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks);
+            /**
+             * idk what this is supposed to be but getting out of bounds trying to do it the way it was previously done -kailhan
+             */
+            Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, locationToWorldgrid(position.getX()),
+                   locationToWorldgrid(position.getY()), locationToWorldgrid(goalPosition.getX()), locationToWorldgrid(position.getY()), blocks);
             List<Node> path = new ArrayList<Node>();
             path = pathFinder.findPath();
 
@@ -195,6 +199,9 @@ public class Intruder extends Agent{
             if(!changed)
             {
                 //System.out.println("not changed");
+                /**
+                 * idk what this is supposed to be but ask me because this is gonna cause confusion wrt coordinates I think -kailhan
+                 */
                 tempGoal = new Point2D((path.get(path.size()-1).i*SCALING_FACTOR)+(SCALING_FACTOR/2), (path.get(path.size()-1).j*SCALING_FACTOR)+(SCALING_FACTOR/2));
             }
             if(oldTempGoal != null)

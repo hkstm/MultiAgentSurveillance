@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import static Agent.Agent.locationToWorldgrid;
 import static World.GameScene.ASSUMED_WORLDSIZE;
 import static World.GameScene.SCALING_FACTOR;
 
@@ -225,8 +226,8 @@ public class WorldMap implements Serializable {
      */
     public int coordinatesToCell(Point2D location) {
         int windowSize = StartWorldBuilder.WINDOW_SIZE;
-        int rowIndex = (int) ((location.getY()/windowSize) * worldGrid.length);
-        int columnIndex = (int) ((location.getX()/windowSize) * worldGrid.length);
+        int rowIndex = locationToWorldgrid(location.getY());
+        int columnIndex = locationToWorldgrid(location.getX());
         return worldGrid[rowIndex][columnIndex];
     }
 

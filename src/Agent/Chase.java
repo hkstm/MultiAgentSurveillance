@@ -3,7 +3,6 @@ package Agent;
 import World.GameScene;
 import World.WorldMap;
 import javafx.scene.shape.Shape;
-import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
