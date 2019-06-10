@@ -1,15 +1,12 @@
 package Agent;
+import World.WorldMap;
 import javafx.scene.paint.Color;
 
 import javafx.geometry.Point2D;
 import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.ArrayList;
 import java.util.List;
-import java.awt.Point;
 
-import static World.WorldMap.*;
 import static World.GameScene.SCALING_FACTOR;
 
 /**
@@ -176,11 +173,11 @@ public class Intruder extends Agent{
             //also, it does not detect walls
             direction -= 90;
             updateKnownTerrain();
-            //for(int i = 0; i < knownTerrain.length; i++)
+            //for(int row = 0; row < knownTerrain.length; row++)
             //{
-            //    for(int j = 0; j < knownTerrain.length; j++)
+            //    for(int column = 0; column < knownTerrain.length; column++)
             //    {
-            //        System.out.print(knownTerrain[i][j]+" ");
+            //        System.out.print(knownTerrain[row][column]+" ");
             //    }
             //    System.out.println();
             //}
@@ -200,10 +197,16 @@ public class Intruder extends Agent{
             {
                 //System.out.println("not changed");
                 /**
-                 * idk what this is supposed to be but ask me because this is gonna cause confusion wrt coordinates I think -kailhan
+                 * idk what this is supposed to be but it is dying if i dont change it -kailhan
                  */
-                tempGoal = new Point2D((path.get(path.size()-1).i*SCALING_FACTOR)+(SCALING_FACTOR/2), (path.get(path.size()-1).j*SCALING_FACTOR)+(SCALING_FACTOR/2));
-            }
+
+                if(path.size() > 0) {
+                    tempGoal = new Point2D(worldMap.convertArrayToWorld(path.get(path.size()-1).row) + worldMap.convertArrayToWorld(1)/2, worldMap.convertArrayToWorld(path.get(path.size()-1).column) + worldMap.convertArrayToWorld(1)/2);
+                } else {
+                    System.out.println("path size: " + path.size() + "setting tempGoal to current position");
+                    tempGoal = new Point2D(position.getX(), position.getY());
+                }
+             }
             if(oldTempGoal != null)
             {
                 cornerCorrection();

@@ -49,7 +49,7 @@ public class Guard extends Agent {
         return equals;
     }
     public void updateVisualRange(){
-        if (worldMap.coordinatesToCell(position) == SENTRY) { // i.e. guard in on a tower
+        if (worldMap.coordinatesToCell(position) == SENTRY) { // row.e. guard in on a tower
            this.visualRange[0] = 2;
            this.visualRange[1] = 15;
            this.viewingAngle = 30;

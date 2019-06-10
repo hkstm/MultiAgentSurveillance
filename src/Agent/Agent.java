@@ -119,7 +119,7 @@ public class Agent implements Runnable {
         while(!exitThread) { {
             for (int i = 0; i < knownTerrain.length; i++) {
                 for (int j = 0; j < knownTerrain[0].length; j++) {
-                    //System.out.print(knownTerrain[i][j] + " knownterrain");
+                    //System.out.print(knownTerrain[row][column] + " knownterrain");
                 }
             }
         }
@@ -375,7 +375,7 @@ public class Agent implements Runnable {
                 tentacle.setEndX(xLeftTopLine);
                 tentacle.setEndY(yLeftTopLine);
                 if(worldMap.isVisionObscuring(worldMap.getWorldGrid()[locationToWorldgrid(yLeftTopLine)][locationToWorldgrid(xLeftTopLine)]) || j == TENTACLE_INCREMENTS-1) {
-//                    if(j != TENTACLE_INCREMENTS-1) obstructed = true;
+//                    if(column != TENTACLE_INCREMENTS-1) obstructed = true;
                     collisionPoints[(i*2)+0] = xLeftTopLine;
                     collisionPoints[(i*2)+1] = yLeftTopLine;
                     break tentacleincrementloop;

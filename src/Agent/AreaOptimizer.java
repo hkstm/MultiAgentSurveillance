@@ -123,7 +123,7 @@ public class AreaOptimizer extends Guard {
 //        Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)(x/SCALING_FACTOR), (int)(y/SCALING_FACTOR), blocks);
 //        List<Node> path = new ArrayList<Node>();
 //        path = pathFinder.findPath();
-//        Point2D goal = new Point2D((path.get(path.size()-1).i*SCALING_FACTOR)+(SCALING_FACTOR/2), (path.get(path.size()-1).j*SCALING_FACTOR)+(SCALING_FACTOR/2));
+//        Point2D goal = new Point2D((path.get(path.size()-1).row*SCALING_FACTOR)+(SCALING_FACTOR/2), (path.get(path.size()-1).column*SCALING_FACTOR)+(SCALING_FACTOR/2));
         Point2D goal = new Point2D(x, y);
 //        System.out.println("x: " + x + " y: " + y);
 //        printWorldAreaReward();

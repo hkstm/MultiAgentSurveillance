@@ -46,7 +46,7 @@ public class Astar {
     }
 
     public void updateCost(Node current, Node next, int cost){
-        if (next == null || closeCell[next.i][next.j]){
+        if (next == null || closeCell[next.row][next.column]){
             return;
         }
         int nextFinalCost = next.heuristic + cost;
@@ -74,47 +74,47 @@ public class Astar {
                 break;
             }
 
-            closeCell[current.i][current.j] = true;
+            closeCell[current.row][current.column] = true;
 
             if (current.equals(grid[ei][ej])){
                 return;
             }
 
-            if (current.i - 1 >= 0){
-                next = grid[current.i - 1][current.j];
+            if (current.row - 1 >= 0){
+                next = grid[current.row - 1][current.column];
                 updateCost(current, next, current.fCost + vhCost);
 
-                if (current.j - 1 >= 0){
-                    next = grid[current.i - 1][current.j - 1];
+                if (current.column - 1 >= 0){
+                    next = grid[current.row - 1][current.column - 1];
                     updateCost(current, next, current.fCost + diaCost);
                 }
 
-                if (current.j + 1 < grid[0].length) {
-                    next = grid[current.i - 1][current.j + 1];
+                if (current.column + 1 < grid[0].length) {
+                    next = grid[current.row - 1][current.column + 1];
                     updateCost(current, next, current.fCost + diaCost);
                 }
             }
 
-            if (current.i + 1 < grid.length){
-                next =  grid[current.i + 1][current.j ];
+            if (current.row + 1 < grid.length){
+                next =  grid[current.row + 1][current.column];
                 updateCost(current, next, current.fCost + vhCost);
 
-                if (current.j - 1 >= 0){
-                    next = grid[current.i + 1][current.j - 1];
+                if (current.column - 1 >= 0){
+                    next = grid[current.row + 1][current.column - 1];
                     updateCost(current, next, current.fCost + diaCost);
                 }
-                if (current.j + 1 < grid.length){
-                    next = grid[current.i + 1][current.j + 1];
+                if (current.column + 1 < grid.length){
+                    next = grid[current.row + 1][current.column + 1];
                     updateCost(current, next, current.fCost + diaCost);
                 }
             }
 
-            if (current.j - 1 >= 0){
-                next = grid[current.i][current.j - 1];
+            if (current.column - 1 >= 0){
+                next = grid[current.row][current.column - 1];
                 updateCost(current, next, current.fCost + vhCost);
             }
-            if (current.j + 1 < grid[0].length){
-                next = grid[current.i][current.j + 1];
+            if (current.column + 1 < grid[0].length){
+                next = grid[current.row][current.column + 1];
                 updateCost(current, next, current.fCost + vhCost);
             }
         }
@@ -127,24 +127,24 @@ public class Astar {
             //System.out.println("path");
             Node current = grid[ei][ej];
             //System.out.println(current);
-            grid[current.i][current.j].solution = true;
+            grid[current.row][current.column].solution = true;
 
             while (current.parent != null) {
                 path.add(current);
                 //System.out.println("->" + current.parent);
-                grid[current.parent.i][current.parent.j].solution = true;
+                grid[current.parent.row][current.parent.column].solution = true;
                 current = current.parent;
 
                 //System.out.println(path);
                 //System.out.println("\n");
 
-                /*for (int i = 0; i < grid.length; i++) {
-                    for (int j = 0; j < grid[0].length; j++) {
-                        if (i == si && j == sj) {
+                /*for (int row = 0; row < grid.length; row++) {
+                    for (int column = 0; column < grid[0].length; column++) {
+                        if (row == si && column == sj) {
                             System.out.print("SO");
-                        } else if (i == ei && j == ej) {
+                        } else if (row == ei && column == ej) {
                             System.out.print("ED");
-                        } else if (grid[i][j] != null) {
+                        } else if (grid[row][column] != null) {
                             System.out.printf("%-3d", 0);
                         } else {
                             System.out.print("BL");
