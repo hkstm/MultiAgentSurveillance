@@ -3,16 +3,17 @@ import Agent.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
 
-import java.awt.geom.Point2D;
+import javafx.geometry.Point2D;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import static World.GameScene.ASSUMED_WORLDSIZE;
 import static World.GameScene.SCALING_FACTOR;
 
 /**
  * WorldMap data structure
- * @author Kailhan Hokstam
+ * @author Kailhan
  */
 
 public class WorldMap implements Serializable {
@@ -156,7 +157,18 @@ public class WorldMap implements Serializable {
      */
     public void addAgent(Agent toBeAdded) {
         this.agents.add(toBeAdded);
-        this.agentThreads.add(new Thread(toBeAdded));
+        Thread threadToBeAdded = new Thread(toBeAdded);
+        threadToBeAdded.setPriority(1);
+        this.agentThreads.add(threadToBeAdded);
+        //startAgents();
+    }
+
+    /**
+     * Adds an agent that you wanna use without thread e.g. use forceUpdate() methods
+     * @param toBeAdded agents that you want to add
+     */
+    public void addOnlyAgent(Agent toBeAdded) {
+        this.agents.add(toBeAdded);
         //startAgents();
     }
 
@@ -182,6 +194,15 @@ public class WorldMap implements Serializable {
     }
 
     /**
+     * Manually force all agents to update there state, used if not starting threads and using the run method
+     */
+    public void forceUpdateAgents() {
+        for(Agent agent : agents) {
+            agent.forceUpdate();
+        }
+    }
+
+    /**
      * Loops through all agents and checks if any agent is in target location, assuming theres only 1 intruder that needs to reach it
      * @return true if 1 agent is in target spot otherwise false
      */
@@ -202,14 +223,21 @@ public class WorldMap implements Serializable {
      * @param location is the point at which the terrain type is desired
      * @return an integer describing the terrain type in the worldGrid corresponding to the input location
      */
-
-    public int coordinatesToCell(Point2D.Double location) {
+    public int coordinatesToCell(Point2D location) {
         int windowSize = StartWorldBuilder.WINDOW_SIZE;
         int rowIndex = (int) ((location.getY()/windowSize) * worldGrid.length);
         int columnIndex = (int) ((location.getX()/windowSize) * worldGrid.length);
-        return getTileState(rowIndex, columnIndex);
+        return worldGrid[rowIndex][columnIndex];
     }
 
+    /**
+     * Used in WorldBuilder so that we can fill an area instead of only one tile with a certain tileType
+     * @param topLeftRow top left corner of rectangle - y coordinate
+     * @param topLeftCol top left corner of rectangle - x coordinate
+     * @param botRightRow bottom right corner fo rectangle - y coordinate
+     * @param botRightCol bottom right corner of rectangle - x coordinate
+     * @param tileStatus the type of tile you want to set for the area
+     */
     public void fillWorldArray(int topLeftRow, int topLeftCol, int botRightRow, int botRightCol, int tileStatus) {
         for(int i = topLeftRow; i < botRightRow; i++) {
             for(int j = topLeftCol; j < botRightCol; j++) {
@@ -218,11 +246,22 @@ public class WorldMap implements Serializable {
         }
     }
 
+    /**
+     * Convenience method to check if a tile is enterable, e.g. you could walk there but you might need to open door,
+     * Not sure what a sentry tile should be
+     * @param toCheck the type of the tile you want to check
+     * @return if it is enterable
+     */
     public boolean isNotEnterableTile(int toCheck) {
         if((toCheck == STRUCTURE) || (toCheck == WALL)) return true;
         else return false;
     }
 
+    /**
+     * Convenience method to check if a tile is vision obscuring
+     * @param toCheck the type of the tile you want to check
+     * @return if it is vision obscuring or not
+     */
     public boolean isVisionObscuring(int toCheck) {
         if ((toCheck == STRUCTURE) || (toCheck == WALL) || (toCheck == DOOR) ||
                 (toCheck == WINDOW)) {
@@ -231,6 +270,9 @@ public class WorldMap implements Serializable {
         else return false;
     }
 
+    /**
+     * Creates cones for all agents and stores them in agentsCones array for access
+     */
     public void createCones() {
         agentsCones.clear();
         for(Agent agent : agents) {
@@ -239,16 +281,19 @@ public class WorldMap implements Serializable {
         }
     }
 
+    /**
+     * Create shapes based on vision obscuring tiles, list can be gotten with getWorldGridShapes()
+     */
     public void createWorldGridShapes() {
         worldGridShapes.clear();
         for(int r = 0; r < worldGrid.length; r++) {
             for( int c = 0; c < worldGrid[0].length; c++) {
                 if(isVisionObscuring(worldGrid[r][c])) {
                     Rectangle tile = new Rectangle();
-                    tile.setX(c*(200/worldGrid.length)*SCALING_FACTOR);
-                    tile.setY(r*(200/worldGrid.length)*SCALING_FACTOR);
-                    tile.setWidth((200/worldGrid.length)*SCALING_FACTOR);
-                    tile.setHeight((200/worldGrid.length)*SCALING_FACTOR);
+                    tile.setX(convertArrayToWorld(c));
+                    tile.setY(convertArrayToWorld(r));
+                    tile.setWidth((ASSUMED_WORLDSIZE/worldGrid.length)*SCALING_FACTOR);
+                    tile.setHeight((ASSUMED_WORLDSIZE/worldGrid.length)*SCALING_FACTOR);
                     tile.setFill(Color.BLACK);
                     worldGridShapes.add(tile);
                 }
@@ -256,6 +301,19 @@ public class WorldMap implements Serializable {
         }
     }
 
+    /**
+     * Converts array coordinate to corresponding left-top world coordinate
+     * @param arrayIndex x or y array "coordinate"
+     * @return
+     */
+    public double convertArrayToWorld(int arrayIndex) {
+        return arrayIndex*(ASSUMED_WORLDSIZE/worldGrid.length)*SCALING_FACTOR;
+    }
+
+    /**
+     * Shapes that represent tiles that cannot be seen through, used for debugging
+     * @return List of cones
+     */
     public List<Shape> getWorldGridShapes() {
         return worldGridShapes;
     }

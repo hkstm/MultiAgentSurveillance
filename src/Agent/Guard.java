@@ -3,8 +3,7 @@ import World.GameScene;
 import World.WorldMap;
 import javafx.scene.paint.Color;
 
-import java.awt.geom.Point2D;
-import java.awt.geom.RoundRectangle2D;
+import javafx.geometry.Point2D;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -21,11 +20,13 @@ public class Guard extends Agent {
      */
 
     Routine routine;
-    public Guard(Point2D.Double position, double direction) {
+    public Guard(Point2D position, double direction) {
         super(position, direction);
         this.viewingAngle = 45;
+//        this.viewingAngle = 60;
         this.visualRange[0] = 0;
         this.visualRange[1] = 6;
+//        this.visualRange[1] = 20;
         this.color = Color.AZURE;
         Routine guard1 = Routines.sequence(
                //Routines.moveTo(150,75)

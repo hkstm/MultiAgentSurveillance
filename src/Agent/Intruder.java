@@ -1,14 +1,13 @@
 package Agent;
-import World.WorldMap;
 import javafx.scene.paint.Color;
 
-import java.awt.Point;
-import java.awt.geom.Point2D;
+import javafx.geometry.Point2D;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.ArrayList;
 import java.util.List;
+import java.awt.Point;
 
 import static World.WorldMap.*;
 import static World.GameScene.SCALING_FACTOR;
@@ -20,13 +19,21 @@ import static World.GameScene.SCALING_FACTOR;
 
 public class Intruder extends Agent{
     private boolean tired;
-    private final double RESTING_TIME = 5*1e9;
-    private int visionRadius = 10;
-    private int visionAngle = 45;
+    private int counter = 0;
+    private final double SPRINTING_TIME = 5*1e9;
+    private final double RESTING_TIME = 10*1e9;
     private double walkingSpeed = 1.4; //m/s
     private double sprintSpeed = 3.0; //m/s
-    private double startTime= System.nanoTime();
-    private Point tempGoal;
+    private double startTime;
+    private static Point2D oldTempGoal;
+    private static Point2D tempGoal;
+    private double freezeTime = 0;
+    private static boolean changed = false;
+    private static boolean blur = false;
+    private final long createdMillis = System.currentTimeMillis();
+    private int sprintCounter = 5;
+    private int walkCounter = 15;
+
 
     /**
      * An Intruder constructor with an empty internal map
@@ -34,19 +41,16 @@ public class Intruder extends Agent{
      * @param direction is the angle which the agent is facing, this spans from -180 to 180 degrees
      */
 
-    public Intruder(Point2D.Double position, double direction) {
+    public Intruder(Point2D position, double direction) {
         super(position, direction);
+        //tempGoal = new Point2D(500,500);
         this.viewingAngle = 45;
+//        this.viewingAngle = 60;
         this.visualRange[0] = 0;
         this.visualRange[1] = 7.5;
+//        this.visualRange[1] = 20;
         this.color = Color.LIGHTGOLDENRODYELLOW;
-        //this.knownTerrain = worldMap.getWorldGrid();
         this.tired = false;
-        for(int i = 1;i < 200;i++) {
-            for(int j = 1;j<200;j++) {
-                //knownTerrain[i][j] = 8;
-            }
-        }
     }
 
     public boolean equals(Object obj) {
@@ -62,9 +66,9 @@ public class Intruder extends Agent{
     /**
      * A method for going through a window or door. It is important the the intruder is standing on the tile to be changed.
      * The time taken is consistent (3 seconds for a window and 5 for a door), unless a door is to be opened quietly, in which case a normal distribution is used.
-     * @param loud is whether the intruder wishes to open the door fast but loudly or slowly and quietly
      */
 
+    /*
     public void open(boolean loud)
     {
         if (worldMap.coordinatesToCell(position) == DOOR)
@@ -112,47 +116,248 @@ public class Intruder extends Agent{
             timer.schedule(openWindow, 3000);
         }
     }
+    */
+
+    public void run() {
+        previousTime = System.nanoTime(); //the first time step is reaallllyyyy small (maybe too small, might have to force it to wait)
+        previousPosition = new Point2D(position.getX(), position.getY());
+        while(!exitThread) {
+            executeAgentLogic();
+        }
+    }
+
+    public void executeAgentLogic() {
+        currentTime = System.nanoTime();
+        delta = currentTime - previousTime;
+        delta /= 1e9; //makes it in seconds
+        gameTreeIntruder(delta);
+        checkForAgentSound();
+        previousTime = currentTime;
+    }
+
     public void gameTreeIntruder(double timeStep)
     {
-        updateKnownTerrain(visionRadius*SCALING_FACTOR, viewingAngle);
-        int[][] blocks = aStarTerrain(knownTerrain);
-        Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)(getGoalPosition().getX()/SCALING_FACTOR), (int)(getGoalPosition().getY()/SCALING_FACTOR), blocks);
-        List<Node> path = new ArrayList<Node>();
-        path = pathFinder.findPath();
-        tempGoal = new Point(path.get(path.size()-1).i, path.get(path.size()-1).j);
-        double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.y-(int)(position.y/SCALING_FACTOR))/Math.abs(tempGoal.x-(int)(position.x/SCALING_FACTOR))));
-        double walkingDistance = (walkingSpeed*SCALING_FACTOR*timeStep);
-        double sprintingDistance = (sprintSpeed*SCALING_FACTOR*timeStep);
-        if(tempGoal.x >= (int)(position.x/SCALING_FACTOR) && tempGoal.y <= (int)(position.y/SCALING_FACTOR))
+        //TODO add blur
+        //TODO check for guards
+        //TODO make noise
+        //TODO test doors and windows
+        //TODO add weights to flags and other types of squares, try manually an possibly with a genetic algorithm
+        if(oldTempGoal != null)
         {
-            turnToFace(turnAngle);
+            checkChangedStatus();
         }
-        else if(tempGoal.x >= (int)(position.x/SCALING_FACTOR) && tempGoal.y >= (int)(position.y/SCALING_FACTOR))
+        //open door
+        if(knownTerrain[(int)(position.getX()/SCALING_FACTOR)][(int)(position.getY()/SCALING_FACTOR)] == 2)
         {
-            turnToFace(90+turnAngle);
-        }
-        else if(tempGoal.x <= (int)(position.x/SCALING_FACTOR) && tempGoal.y >= (int)(position.y/SCALING_FACTOR))
-        {
-            turnToFace(270-turnAngle);
-        }
-        else if(tempGoal.x <= (int)(position.x/SCALING_FACTOR) && tempGoal.y <= (int)(position.y/SCALING_FACTOR))
-        {
-            turnToFace(270+turnAngle);
-        }
-        if(startTime+RESTING_TIME > currentTime)
-        {
-            tired = true;
-        }
-        if(!tired)
-        {
-            if(legalMoveCheck(sprintingDistance))
+            Random random = new Random();
+            startTime = System.nanoTime();
+            if(Math.random() > 0.5)
             {
-                move(sprintingDistance);
+                freezeTime = (random.nextGaussian()*2+12)*1e9;
+            }
+            else
+            {
+                freezeTime = 5;
+                //HERE A NOISE MUST BE MADE!!!!!
+            }
+            knownTerrain[(int)position.getX()][(int)position.getY()] = 33;
+        }
+        //go through window
+        if(knownTerrain[(int)(position.getX()/SCALING_FACTOR)][(int)(position.getY()/SCALING_FACTOR)] == 3)
+        {
+            startTime = System.nanoTime();
+            freezeTime = 3e9;
+        }
+        if(currentTime+freezeTime > startTime)
+        {
+            freezeTime = 0;
+            startTime = System.nanoTime();
+            //this should maybe take in some parameters, like how far and how wide the cone is, not all agents have the same vision capabilities
+            //also, it does not detect walls
+            direction -= 90;
+            updateKnownTerrain();
+            //for(int i = 0; i < knownTerrain.length; i++)
+            //{
+            //    for(int j = 0; j < knownTerrain.length; j++)
+            //    {
+            //        System.out.print(knownTerrain[i][j]+" ");
+            //    }
+            //    System.out.println();
+            //}
+            //System.out.println();
+            //System.out.println();
+            int[][] blocks = aStarTerrain(knownTerrain);
+            Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks);
+            List<Node> path = new ArrayList<Node>();
+            path = pathFinder.findPath();
+
+            oldTempGoal = tempGoal;
+            if(!changed)
+            {
+                //System.out.println("not changed");
+                tempGoal = new Point2D((path.get(path.size()-1).i*SCALING_FACTOR)+(SCALING_FACTOR/2), (path.get(path.size()-1).j*SCALING_FACTOR)+(SCALING_FACTOR/2));
+            }
+            if(oldTempGoal != null)
+            {
+                cornerCorrection();
+            }
+            if(changed)
+            {
+                //System.out.println("changed");
+            }
+            //System.out.println();
+            //System.out.println("x goal: "+tempGoal.x+" y goal: "+tempGoal.y);
+            //System.out.println("x: "+(int)(position.getX()/SCALING_FACTOR)+" y: "+(int)(position.getX()/SCALING_FACTOR));
+            //System.out.println(goalPosition.x+" "+goalPosition.y);
+            //System.out.println(Math.abs(tempGoal.y-(int)(position.getY()/SCALING_FACTOR)));
+            double divisor = Math.abs(tempGoal.getY()-position.getY());
+            if(divisor == 0)
+            {
+                divisor++;
+                System.out.println("divisor is zero");
+            }
+            double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.getX()-position.getX())/divisor));
+            double walkingDistance = (walkingSpeed*SCALING_FACTOR*timeStep);
+            double sprintingDistance = (sprintSpeed*SCALING_FACTOR*timeStep);
+            /**
+             * you probably dont wanna do this anymore with the new move logic and also call updateDirection()
+             * for proper turning ~Kailhan
+             */
+            if(tempGoal.getX() >= position.getX() && tempGoal.getY() <= position.getY())
+            {
+                turnToFace(turnAngle);
+            }
+            else if(tempGoal.getX() >= position.getX() && tempGoal.getY() > position.getY())
+            {
+                turnToFace(180-turnAngle);
+            }
+            else if(tempGoal.getX() < position.getX() && tempGoal.getY() > position.getY())
+            {
+                turnToFace(180+turnAngle);
+            }
+            else if(tempGoal.getX() < position.getX() && tempGoal.getY() <= position.getY())
+            {
+                turnToFace(360-turnAngle);
+            }
+            if(!tired)
+            {
+                if(legalMoveCheck(sprintingDistance))
+                {
+                    long nowMillis = System.currentTimeMillis();
+                    int countSec = (int)((nowMillis - this.createdMillis) / 1000);
+                    if (countSec != sprintCounter){
+                        move(sprintingDistance);
+                    }
+                    else{
+                        System.out.println(countSec);
+                        tired = true;
+                        sprintCounter = sprintCounter + 15;
+                    }
+                }
+            }
+            else
+            {
+                if(legalMoveCheck(walkingDistance))
+                {
+                    long nowMillis = System.currentTimeMillis();
+                    int countSec = (int)((nowMillis - this.createdMillis) / 1000);
+                    if (countSec != walkCounter) {
+                        move(walkingDistance);
+                    }
+                    else{
+                        System.out.println(countSec);
+                        tired = false;
+                        walkCounter = walkCounter +15;
+                    }
+                }
             }
         }
-        else if(legalMoveCheck(walkingDistance))
+    }
+
+    public void cornerCorrection()
+    {
+        if(oldTempGoal.getX()+10 == tempGoal.getX() && oldTempGoal.getY()-10 == tempGoal.getY()) //could use inequailty operators here
         {
-            move(walkingDistance);
+            if(knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()+10)/SCALING_FACTOR)] == 1 || knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()+10)/SCALING_FACTOR)] == 5 || knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()+10)/SCALING_FACTOR)] == 7)
+            {
+                System.out.println("1");
+                tempGoal = new Point2D(tempGoal.getX()-10, tempGoal.getY());
+                changed = true;
+            }
+            else if(knownTerrain[(int)((oldTempGoal.getY()-10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 1 || knownTerrain[(int)((oldTempGoal.getY()-10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 5 || knownTerrain[(int)((oldTempGoal.getY()-10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 7)
+            {
+                System.out.println("2");
+                tempGoal =  new Point2D(tempGoal.getX(), tempGoal.getY()+10);
+                changed = true;
+            }
+        }
+        else if(oldTempGoal.getX()-10 == tempGoal.getX() && oldTempGoal.getY()+10 == tempGoal.getY()) //could use inequailty operators here
+        {
+            if(knownTerrain[(int)((oldTempGoal.getY()+10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 1 || knownTerrain[(int)((oldTempGoal.getY()+10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 5 || knownTerrain[(int)((oldTempGoal.getY()+10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 7)
+            {
+                System.out.println("3");
+                tempGoal = new Point2D(oldTempGoal.getX()-10, oldTempGoal.getY());
+                changed = true;
+            }
+            if(knownTerrain[(int)((oldTempGoal.getY()-10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 1 || knownTerrain[(int)((oldTempGoal.getY()-10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 5 || knownTerrain[(int)((oldTempGoal.getY()-10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 7)
+            {
+                System.out.println("4");
+                tempGoal = new Point2D(tempGoal.getX()+10, tempGoal.getY());
+                changed = true;
+            }
+        }
+        else if(oldTempGoal.getX()+10 == tempGoal.getX() && oldTempGoal.getY()+10 == tempGoal.getY()) //could use inequailty operators here
+        {
+            if(knownTerrain[(int)((oldTempGoal.getY()+10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 1 || knownTerrain[(int)((oldTempGoal.getY()+10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 5 || knownTerrain[(int)((oldTempGoal.getY()+10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 7)
+            {
+                System.out.println("5");
+                tempGoal = new Point2D(tempGoal.getX()-10, tempGoal.getY());
+                changed = true;
+            }
+            if(knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()+10)/SCALING_FACTOR)] == 1 || knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()+10)/SCALING_FACTOR)] == 5 || knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()+10)/SCALING_FACTOR)] == 7)
+            {
+                System.out.println("6");
+                tempGoal = new Point2D(tempGoal.getX()-10, tempGoal.getY());
+                changed = true;
+            }
+        }
+        else if(oldTempGoal.getX()-10 == tempGoal.getX() && oldTempGoal.getY()-10 == tempGoal.getY()) //could use inequailty operators here
+        {
+            if (knownTerrain[(int) (oldTempGoal.getY() / SCALING_FACTOR)][(int) ((oldTempGoal.getX() - 10) / SCALING_FACTOR)] == 1 || knownTerrain[(int) (oldTempGoal.getY() / SCALING_FACTOR)][(int) ((oldTempGoal.getX() - 10) / SCALING_FACTOR)] == 5 || knownTerrain[(int) (oldTempGoal.getY() / SCALING_FACTOR)][(int) ((oldTempGoal.getX() - 10) / SCALING_FACTOR)] == 7)
+            {
+                System.out.println("7");
+                tempGoal = new Point2D(tempGoal.getX() + 10, tempGoal.getY());
+                changed = true;
+            }
+            if (knownTerrain[(int) ((oldTempGoal.getY() - 10) / SCALING_FACTOR)][(int) (oldTempGoal.getX() / SCALING_FACTOR)] == 1 || knownTerrain[(int) ((oldTempGoal.getY() - 10) / SCALING_FACTOR)][(int) (oldTempGoal.getX() / SCALING_FACTOR)] == 5 || knownTerrain[(int) ((oldTempGoal.getY() - 10) / SCALING_FACTOR)][(int) (oldTempGoal.getX() / SCALING_FACTOR)] == 7)
+            {
+                System.out.println("8");
+                tempGoal = new Point2D(tempGoal.getX(), tempGoal.getY() + 10);
+                changed = true;
+            }
+        }
+    }
+
+    public void checkChangedStatus()
+    {
+        Point2D pointToCheck = new Point2D(tempGoal.getX(), tempGoal.getY());
+        Point2D currentPos = new Point2D(position.getX(), position.getY());
+        if(changed && checkApproximateEquality(currentPos, pointToCheck))
+        {
+            System.out.println("changing to false");
+            changed = false;
+        }
+    }
+
+    public boolean checkApproximateEquality(Point2D p1, Point2D p2)
+    {
+        if(p1.getX() <= p2.getX()+1 && p1.getX() >= p2.getX()-1 && p1.getY() <= p2.getY()+1 && p1.getY() >= p2.getY()-1)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 }
