@@ -277,6 +277,7 @@ public class WorldMap implements Serializable {
     public void createCones() {
         agentsCones.clear();
         for(Agent agent : agents) {
+            agent.createCone();
             agentsCones.add(agent.getCone());
         }
     }

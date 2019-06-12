@@ -260,22 +260,20 @@ public class Agent implements Runnable {
      */
 
     public boolean legalMoveCheck(double distance) {
-        Point2D positionToCheck = new Point2D(getMove(distance, direction).getX(), getMove(distance, direction).getY());
-        int tileStatus;
-
-        try {
-            tileStatus = worldMap.coordinatesToCell(positionToCheck);
-        }
-        catch(Exception e) {
+        Point2D tmpMove = getMove(distance, direction);
+        Point2D positionToCheck = new Point2D(tmpMove.getX(), tmpMove.getY());
+        int tileStatus = EMPTY;
+        if(positionToCheck.getY() < 0 || positionToCheck.getY() > (worldMap.getSize()-1) || positionToCheck.getX() < 0 || positionToCheck.getX() > (worldMap.getSize()-1)) {
             System.out.println("Location accessed in array is out of bounds");
             return false;
+        } else {
+            tileStatus = worldMap.coordinatesToCell(positionToCheck);
         }
         if (tileStatus == STRUCTURE || tileStatus == SENTRY || tileStatus == WALL) {
             //System.out.println("detected wall, sentry or structure in legal move check");
             return false;
-        } else {
-            return true;
         }
+        return true;
     }
 
     /**

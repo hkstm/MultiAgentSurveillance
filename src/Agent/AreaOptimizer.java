@@ -67,7 +67,6 @@ public class AreaOptimizer extends Guard {
     public void executeAgentLogic() {
         currentTime = System.nanoTime();
         delta = (currentTime - previousTime)/1e9; //makes it in seconds
-        System.out.println("previous tick done in: " + delta);
         previousTime = currentTime;
         createCone();
         updateKnownTerrain();
@@ -121,8 +120,8 @@ public class AreaOptimizer extends Guard {
         }
         x /= totalReward;
         y /= totalReward;
-        x += SCALING_FACTOR;
-        y += SCALING_FACTOR;
+        x += worldMap.convertArrayToWorld(1)/2; //correction to middle of tile instead of left top
+        y += worldMap.convertArrayToWorld(1)/2; //correction to middle of tile instead of left top
 //        int[][] blocks = aStarTerrain(knownTerrain);
 //        Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)(x/SCALING_FACTOR), (int)(y/SCALING_FACTOR), blocks);
 //        List<Node> path = new ArrayList<Node>();
@@ -131,6 +130,7 @@ public class AreaOptimizer extends Guard {
         Point2D goal = new Point2D(x, y);
 //        System.out.println("x: " + x + " y: " + y);
 //        printWorldAreaReward();
+        System.out.println("goalpoint x: " + x + " y: " + y);
         return Math.toDegrees(Math.atan2((goal.getY() - position.getY()), (goal.getX() - position.getX())));
     }
 

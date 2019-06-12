@@ -1,6 +1,7 @@
 package World;
 
 import javafx.animation.AnimationTimer;
+import javafx.scene.CacheHint;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -102,15 +103,15 @@ public class GameScene extends BorderPane implements Runnable {
                     public void handle(long currentTime) {
 
 
-                        long beforeUpdatingAgents = System.nanoTime();
+//                        long beforeUpdatingAgents = System.nanoTime();
                         worldMap.forceUpdateAgents();
-                        long afterUpdatingAgents = System.nanoTime();
-                        System.out.println("updating agentstook: " + ((afterUpdatingAgents-beforeUpdatingAgents)/1e9));
+//                        long afterUpdatingAgents = System.nanoTime();
+//                        System.out.println("updating agentstook: " + ((afterUpdatingAgents-beforeUpdatingAgents)/1e9));
 
-                        long beforeDrawingBoard = System.nanoTime();
+//                        long beforeDrawingBoard = System.nanoTime();
                         redrawBoard();
-                        long afterDrawingBoard = System.nanoTime();
-                        System.out.println("redrawing board took: " + ((afterDrawingBoard-beforeDrawingBoard)/1e9));
+//                        long afterDrawingBoard = System.nanoTime();
+//                        System.out.println("redrawing board took: " + ((afterDrawingBoard-beforeDrawingBoard)/1e9));
 
 
                         long delta = (currentTime - previousTime);
@@ -119,7 +120,7 @@ public class GameScene extends BorderPane implements Runnable {
 //                        generateRandomSound(delta);
 //                        haveGuardsCapturedIntruder(mode, delta);
 //                        haveIntrudersWon(mode, delta);
-                        System.out.println();
+//                        System.out.println();
                     }
                 }.start();
             } else {
@@ -168,8 +169,9 @@ public class GameScene extends BorderPane implements Runnable {
     public void initTiles() {
         for (int r = 0; r < worldMap.getSize(); r++) {
             for (int c = 0; c < worldMap.getSize(); c++) {
-                tileViews.add(c + (r * worldMap.getSize()),  new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c)));
-                grid.add(tileViews.get(c + (r * worldMap.getSize())), c, r);
+                TileView tmpView = new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c));
+                tileViews.add(c + (r * worldMap.getSize()), tmpView);
+                grid.add(tmpView, c, r);tileViews.set(c + (r * worldMap.getSize()),  new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c)));
             }
         }
     }
@@ -178,9 +180,11 @@ public class GameScene extends BorderPane implements Runnable {
         for (int r = 0; r < worldMap.getSize(); r++) {
             for (int c = 0; c < worldMap.getSize(); c++) {
                 if(tileViews.get(c + (r * worldMap.getSize())).getState() != worldMap.getTileState(r, c)) {
-                    tileViews.set(c + (r * worldMap.getSize()),  new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c)));
+//                    tileViews.set(c + (r * worldMap.getSize()),  new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c)));
                 }
-                grid.add(tileViews.get(c + (r * worldMap.getSize())), c, r);
+                TileView tmpView = new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c));
+                tileViews.set(c + (r * worldMap.getSize()), tmpView);
+                grid.add(tmpView, c, r);
             }
         }
     }
@@ -235,23 +239,6 @@ public class GameScene extends BorderPane implements Runnable {
         for(Agent agent : worldMap.getAgents()) {
             AgentCircle circle = new AgentCircle(agent);
             agentGroup.getChildren().add(circle);
-//            if(agent instanceof Guard) {
-//                Guard guard = (Guard) agent;
-//                AgentCircle circle = new AgentCircle(guard);
-////                Pane tmpPane = new Pane();
-////                tmpPane.getChildren().addAll(circle);
-////                agentGroup.getChildren().add(tmpPane);
-//                agentGroup.getChildren().add(circle);
-//            }
-//            if(agent instanceof Intruder) {
-//                Intruder intruder = (Intruder) agent;
-//                AgentCircle circle = new AgentCircle(intruder);
-////                Pane tmpPane = new Pane();
-////                tmpPane.getChildren().addAll(circle);
-////                agentGroup.getChildren().add(tmpPane);
-//                agentGroup.getChildren().add(circle);
-////                System.out.println("position in create agents: " + intruder.getPosition().toString());
-//            }
             agentGroup.toFront();
             //System.out.println("proceeding after while loop, agent on seperate thread");
         }
