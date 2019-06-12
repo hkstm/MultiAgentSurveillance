@@ -136,6 +136,7 @@ public class Intruder extends Agent{
         currentTime = System.nanoTime();
         delta = currentTime - previousTime;
         delta /= 1e9; //makes it in seconds
+        createCone();
         gameTreeIntruder(delta);
         checkForAgentSound();
         previousTime = currentTime;

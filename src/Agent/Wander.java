@@ -14,7 +14,7 @@ public class Wander extends Routine {
     /**
      * you dont wanna do this hmu if i forgot to mention it when meeting -kailhan
      */
-    Guard guard = GameScene.guard;
+    private Guard guard;
 
     @Override
     public void start() {

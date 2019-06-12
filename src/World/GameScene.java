@@ -100,13 +100,26 @@ public class GameScene extends BorderPane implements Runnable {
                     long previousTime = currentTimeCalc;
                     @Override
                     public void handle(long currentTime) {
+
+
+                        long beforeUpdatingAgents = System.nanoTime();
                         worldMap.forceUpdateAgents();
+                        long afterUpdatingAgents = System.nanoTime();
+                        System.out.println("updating agentstook: " + ((afterUpdatingAgents-beforeUpdatingAgents)/1e9));
+
+                        long beforeDrawingBoard = System.nanoTime();
                         redrawBoard();
+                        long afterDrawingBoard = System.nanoTime();
+                        System.out.println("redrawing board took: " + ((afterDrawingBoard-beforeDrawingBoard)/1e9));
+
+
                         long delta = (currentTime - previousTime);
+//                        System.out.println("drawing tick in: " + (delta/1e9));
                         previousTime = currentTime;
 //                        generateRandomSound(delta);
 //                        haveGuardsCapturedIntruder(mode, delta);
 //                        haveIntrudersWon(mode, delta);
+                        System.out.println();
                     }
                 }.start();
             } else {

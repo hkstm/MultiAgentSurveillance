@@ -67,9 +67,10 @@ public class AreaOptimizer extends Guard {
     public void executeAgentLogic() {
         currentTime = System.nanoTime();
         delta = (currentTime - previousTime)/1e9; //makes it in seconds
+        System.out.println("previous tick done in: " + delta);
         previousTime = currentTime;
         updateKnownTerrain();
-        //update vision
+//        update vision
         createCone();
         updateWorldAreaReward(delta);
         updateDirection(getMoveDirection());
@@ -82,6 +83,7 @@ public class AreaOptimizer extends Guard {
         if (legalMoveCheck(walkingDistance)) {
             move(walkingDistance);
         }
+//        move(walkingDistance);
 
     }
 
