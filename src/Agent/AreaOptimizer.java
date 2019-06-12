@@ -69,9 +69,10 @@ public class AreaOptimizer extends Guard {
         delta = (currentTime - previousTime)/1e9; //makes it in seconds
         System.out.println("previous tick done in: " + delta);
         previousTime = currentTime;
+        createCone();
         updateKnownTerrain();
 //        update vision
-        createCone();
+
         updateWorldAreaReward(delta);
         updateDirection(getMoveDirection());
         currentSpeed = ((position.distance(previousPosition)/SCALING_FACTOR)/delta);

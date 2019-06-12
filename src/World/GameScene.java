@@ -125,18 +125,22 @@ public class GameScene extends BorderPane implements Runnable {
             } else {
                 gameStarted = false;
                 worldMap.removeAllAgents();
-                redrawBoard();
+                initRedrawBoard();
             }
         });
 
         this.startGameBut.setWrapText(true);
 
-        redrawBoard(); //redrawing board otherwise window that displays board and button is not properly sized
+        initRedrawBoard(); //redrawing board otherwise window that displays board and button is not properly sized
         initFullScreen();
     }
 
-    public void run(){
-        redrawBoard();
+    public void run(){initRedrawBoard();
+    }
+
+    public void initRedrawBoard(){
+        grid.getChildren().clear();
+        createTiles();
     }
 
     /**
