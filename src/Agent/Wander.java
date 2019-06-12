@@ -11,6 +11,9 @@ import static Agent.MoveTo.destY;
 public class Wander extends Routine {
     WorldMap worldMap;
     private MoveTo moveTo;
+    /**
+     * you dont wanna do this hmu if i forgot to mention it when meeting -kailhan
+     */
     Guard guard = GameScene.guard;
 
     @Override

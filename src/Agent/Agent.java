@@ -37,7 +37,7 @@ public class Agent implements Runnable {
     public static final double SOUND_NOISE_STDEV =  10;  //stndard dev of normal distributed noise
     public static final int AMOUNT_OF_VISION_TENTACLES = 100;
     public static final int TENTACLE_INCREMENTS = 1000;
-    public static final double MAX_TURNING_PER_SECOND = 45;
+    public static final double MAX_TURNING_PER_SECOND = 180;
 
     protected volatile Point2D position;
     protected double direction;
@@ -262,6 +262,7 @@ public class Agent implements Runnable {
     public boolean legalMoveCheck(double distance) {
         Point2D positionToCheck = new Point2D(getMove(distance, direction).getX(), getMove(distance, direction).getY());
         int tileStatus;
+
         try {
             tileStatus = worldMap.coordinatesToCell(positionToCheck);
         }

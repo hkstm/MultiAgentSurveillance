@@ -7,7 +7,6 @@ import javafx.geometry.Point2D;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static World.GameScene.guard;
 import static World.WorldMap.SENTRY;
 import static World.WorldMap.TARGET;
 
@@ -38,6 +37,39 @@ public class Guard extends Agent {
 
         //this.knownTerrain = worldMap.getWorldGrid();
     }
+
+    /**
+     * This should be the structure of any bot but Im not sure how this bot fits into it -kailhan
+     */
+
+    public void run() {
+        previousTime = System.nanoTime();
+        previousPosition = new Point2D(position.getX(), position.getY());
+        while(!exitThread) {
+            executeAgentLogic();
+        }
+    }
+
+    public void forceUpdate() {
+        if(firstRun) {
+            previousTime = System.nanoTime();
+            previousPosition = new Point2D(position.getX(), position.getY());
+            firstRun = false;
+        }
+        executeAgentLogic();
+    }
+
+    public void executeAgentLogic() {
+        currentTime = System.nanoTime();
+        delta = currentTime - previousTime;
+        delta /= 1e9; //makes it in seconds
+        checkForAgentSound();
+        previousTime = currentTime;
+    }
+
+    /**
+     * ^^^
+     */
 
     public boolean equals(Object obj) {
         boolean equals = false;

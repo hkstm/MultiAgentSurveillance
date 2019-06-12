@@ -82,6 +82,7 @@ public class AreaOptimizer extends Guard {
         if (legalMoveCheck(walkingDistance)) {
             move(walkingDistance);
         }
+
     }
 
     public void updateWorldAreaReward(double delta) {

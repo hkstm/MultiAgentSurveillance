@@ -57,9 +57,6 @@ public class GameScene extends BorderPane implements Runnable {
     private boolean countDown;
     private boolean visitedTarget;
     private long firstVisitTime;
-    Routine routine;
-    public static Guard guard;
-    public static Intruder intruder;
 
     public GameScene(Stage primaryStage, Settings settings) {
         this.grid = new GridPane(); //main grid that shows the tiles
@@ -83,33 +80,33 @@ public class GameScene extends BorderPane implements Runnable {
 
         this.startGameBut = new Button("Start/Stop Game"); //should stop and start game, not properly working atm
         Agent.worldMap = worldMap;
-        guard  = new Guard(new Point2D(200, 300), 70);
-        worldMap.addAgent(guard);
-        intruder = new Intruder(new Point2D(500, 500), 0);
-        worldMap.addAgent(intruder);
+        Guard guard  = new Guard(new Point2D(200, 300), 70);
+        Intruder intruder = new Intruder(new Point2D(500, 500), 0);
+        AreaOptimizer areaOptimzer = new AreaOptimizer(new Point2D(500, 500), 0);
+//        worldMap.addAgent(guard);
+//        worldMap.addAgent(intruder);
+//        worldMap.addOnlyAgent(guard);
+//        worldMap.addOnlyAgent(intruder);
+        worldMap.addOnlyAgent(areaOptimzer);
         //Actual game "loop" in here
         startGameBut.setOnAction(e -> { //
             currentTimeCountDown = System.nanoTime();
             if(!gameStarted) {
                 gameStarted = true;
-                worldMap.startAgents();
+//                worldMap.startAgents();
                 System.out.println("Started agents");
                 new AnimationTimer() {
                     long currentTimeCalc = System.nanoTime();
                     long previousTime = currentTimeCalc;
                     @Override
                     public void handle(long currentTime) {
-
-                        /**
-                         * This is the code that actually gets repeated as long as the game is running
-                         */
-//                        worldMap.forceUpdateAgents();
+                        worldMap.forceUpdateAgents();
                         redrawBoard();
                         long delta = (currentTime - previousTime);
                         previousTime = currentTime;
-                        generateRandomSound(delta);
-                        haveGuardsCapturedIntruder(mode, delta);
-                        haveIntrudersWon(mode, delta);
+//                        generateRandomSound(delta);
+//                        haveGuardsCapturedIntruder(mode, delta);
+//                        haveIntrudersWon(mode, delta);
                     }
                 }.start();
             } else {

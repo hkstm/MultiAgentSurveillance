@@ -123,6 +123,15 @@ public class Intruder extends Agent{
         }
     }
 
+    public void forceUpdate() {
+        if(firstRun) {
+            previousTime = System.nanoTime();
+            previousPosition = new Point2D(position.getX(), position.getY());
+            firstRun = false;
+        }
+        executeAgentLogic();
+    }
+
     public void executeAgentLogic() {
         currentTime = System.nanoTime();
         delta = currentTime - previousTime;
