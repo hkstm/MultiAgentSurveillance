@@ -2,6 +2,7 @@ package Agent;
 import javafx.scene.paint.Color;
 
 import javafx.geometry.Point2D;
+import java.awt.Point;
 import java.util.Random;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,8 @@ public class Intruder extends Agent{
     private int sprintCounter = 5;
     private int walkCounter = 10; //check if this is right (might be 10 sec not 15)
     private boolean blind = false;
+    private List<Point> tempWalls = new ArrayList<Point>();
+    private boolean rePath = false;
 
 
     /**
@@ -97,6 +100,7 @@ public class Intruder extends Agent{
         //TODO add weights to flags and other types of squares, try manually an possibly with a genetic algorithm
         //this createCone should be redundant but it resolves some errors due to not being able to properly access the cones
         createCone();
+        rePath = false;
         if(!frozen)
         {
             //open door
@@ -144,7 +148,7 @@ public class Intruder extends Agent{
                 //System.out.println("blinnnnnnnnnnnnnnnnnnnnnnnnnnd");
                 long nowMillis = System.currentTimeMillis();
                 int countSec = (int)((nowMillis - this.blindMillis) / 1000);
-                System.out.println(countSec);
+                //System.out.println(countSec);
                 if (countSec == 2){
                     blind = false;
                 }
@@ -162,11 +166,10 @@ public class Intruder extends Agent{
             //System.out.println();
             //System.out.println();
 
+            oldTempGoal = tempGoal;
             int[][] blocks = aStarTerrain(knownTerrain);
             Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks);
-            List<Node> path = new ArrayList<Node>();
-            path = pathFinder.findPath();
-            oldTempGoal = tempGoal;
+            List<Node> path = pathFinder.findPath();
             if(!changed)
             {
                 tempGoal = new Point2D((path.get(path.size()-1).row*SCALING_FACTOR)+(SCALING_FACTOR/2), (path.get(path.size()-1).column*SCALING_FACTOR)+(SCALING_FACTOR/2));
@@ -179,6 +182,23 @@ public class Intruder extends Agent{
             }
             if(oldTempGoal != null)
             {
+                wallPhaseDetection();
+                if(rePath)
+                {
+                    blocks = aStarTerrain(knownTerrain);
+                    pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks);
+                    path = pathFinder.findPath();
+                    if(!changed)
+                    {
+                        tempGoal = new Point2D((path.get(path.size()-1).row*SCALING_FACTOR)+(SCALING_FACTOR/2), (path.get(path.size()-1).column*SCALING_FACTOR)+(SCALING_FACTOR/2));
+                        if (path.size() > 1) {
+                            previousTempGoal = new Point2D((path.get(path.size() - 2).row * SCALING_FACTOR) + (SCALING_FACTOR / 2), (path.get(path.size() - 2).column * SCALING_FACTOR) + (SCALING_FACTOR / 2));
+                        }
+                        else{
+                            previousTempGoal = tempGoal;
+                        }
+                    }
+                }
                 cornerCorrection();
             }
             double divisor = Math.abs(tempGoal.getY()-position.getY());
@@ -273,7 +293,7 @@ public class Intruder extends Agent{
                 tempGoal = new Point2D(oldTempGoal.getX()-10, oldTempGoal.getY());
                 changed = true;
             }
-            if(isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()-10)/SCALING_FACTOR)))
+            else if(isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()-10)/SCALING_FACTOR)))
             {
                 tempGoal = new Point2D(oldTempGoal.getX(), oldTempGoal.getY()+10);
                 changed = true;
@@ -286,7 +306,7 @@ public class Intruder extends Agent{
                 tempGoal = new Point2D(oldTempGoal.getX()+10, oldTempGoal.getY());
                 changed = true;
             }
-            if(isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()+10)/SCALING_FACTOR)))
+            else if(isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()+10)/SCALING_FACTOR)))
             {
                 tempGoal = new Point2D(oldTempGoal.getX(), oldTempGoal.getY()+10);
                 changed = true;
@@ -299,11 +319,44 @@ public class Intruder extends Agent{
                 tempGoal = new Point2D(oldTempGoal.getX(), oldTempGoal.getY()-10);
                 changed = true;
             }
-            if (isObstruction((int)((oldTempGoal.getY()-10)/SCALING_FACTOR), (int)(oldTempGoal.getX()/SCALING_FACTOR)))
+            else if (isObstruction((int)((oldTempGoal.getY()-10)/SCALING_FACTOR), (int)(oldTempGoal.getX()/SCALING_FACTOR)))
             {
                 tempGoal = new Point2D(oldTempGoal.getX()-10, oldTempGoal.getY());
                 changed = true;
             }
+        }
+    }
+
+    public void wallPhaseDetection()
+    {
+        if(oldTempGoal.getX()+10 == tempGoal.getX() && oldTempGoal.getY()-10 == tempGoal.getY() && isObstruction((int) (oldTempGoal.getY() / SCALING_FACTOR), (int) ((oldTempGoal.getX() + 10) / SCALING_FACTOR)) && isObstruction((int) ((oldTempGoal.getY() - 10) / SCALING_FACTOR), (int) (oldTempGoal.getX() / SCALING_FACTOR)))
+        {
+            Point tempWall = new Point((int) (tempGoal.getX() / SCALING_FACTOR), (int) (tempGoal.getY() / SCALING_FACTOR));
+            tempWalls.add(tempWall);
+            knownTerrain[(int) tempWall.getY()][(int) tempWall.getX()] = 7;
+            rePath = true;
+        }
+        else if(oldTempGoal.getX()-10 == tempGoal.getX() && oldTempGoal.getY()+10 == tempGoal.getY() && isObstruction((int)((oldTempGoal.getY()+10)/SCALING_FACTOR), (int)(oldTempGoal.getX()/SCALING_FACTOR)) && isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()-10)/SCALING_FACTOR)))
+        {
+            Point tempWall = new Point((int) (tempGoal.getX() / SCALING_FACTOR), (int) (tempGoal.getY() / SCALING_FACTOR));
+            tempWalls.add(tempWall);
+            knownTerrain[(int) tempWall.getY()][(int) tempWall.getX()] = 7;
+            rePath = true;
+        }
+        else if(oldTempGoal.getX()+10 == tempGoal.getX() && oldTempGoal.getY()+10 == tempGoal.getY() && isObstruction((int)((oldTempGoal.getY()+10)/SCALING_FACTOR), (int)(oldTempGoal.getX()/SCALING_FACTOR)) && isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()+10)/SCALING_FACTOR)))
+        {
+            System.out.println("3 " + tempGoal);
+            Point tempWall = new Point((int)(tempGoal.getX() / SCALING_FACTOR), (int)(tempGoal.getY() / SCALING_FACTOR));
+            tempWalls.add(tempWall);
+            knownTerrain[(int)tempWall.getY()][(int)tempWall.getX()] = 7;
+            rePath = true;
+        }
+        else if(oldTempGoal.getX()-10 == tempGoal.getX() && oldTempGoal.getY()-10 == tempGoal.getY() && isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()-10)/SCALING_FACTOR)) && isObstruction((int)((oldTempGoal.getY()-10)/SCALING_FACTOR), (int)(oldTempGoal.getX()/SCALING_FACTOR)))
+        {
+            Point tempWall = new Point((int) (tempGoal.getX() / SCALING_FACTOR), (int) (tempGoal.getY() / SCALING_FACTOR));
+            tempWalls.add(tempWall);
+            knownTerrain[(int) tempWall.getY()][(int) tempWall.getX()] = 7;
+            rePath = true;
         }
     }
 
