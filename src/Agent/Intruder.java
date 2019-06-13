@@ -2,6 +2,7 @@ package Agent;
 import javafx.scene.paint.Color;
 
 import javafx.geometry.Point2D;
+import java.awt.Point;
 import java.util.Random;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,7 @@ public class Intruder extends Agent{
     private int sprintCounter = 5;
     private int walkCounter = 10; //check if this is right (might be 10 sec not 15)
     private boolean blind = false;
+    private ArrayList<Point> tempWalls;
 
 
     /**
@@ -250,7 +252,11 @@ public class Intruder extends Agent{
     {
         if(oldTempGoal.getX()+10 == tempGoal.getX() && oldTempGoal.getY()-10 == tempGoal.getY())
         {
-            if(isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()+10)/SCALING_FACTOR)))
+            if(isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()+10)/SCALING_FACTOR)) && isObstruction((int)((oldTempGoal.getY()-10)/SCALING_FACTOR), (int)(oldTempGoal.getX()/SCALING_FACTOR)))
+            {
+                tempWalls.add()
+            }
+            else if(isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()+10)/SCALING_FACTOR)))
             {
                 tempGoal = new Point2D(oldTempGoal.getX(), oldTempGoal.getY()-10);
                 changed = true;
