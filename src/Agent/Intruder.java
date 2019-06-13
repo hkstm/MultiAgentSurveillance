@@ -101,6 +101,28 @@ public class Intruder extends Agent{
         //this createCone should be redundant but it resolves some errors due to not being able to properly access the cones
         createCone();
         rePath = false;
+        if(tempWalls.size() > 0)
+        {
+            for(int i = 0 ; i < tempWalls.size() ; i++)
+            {
+                knownTerrain[tempWalls.get(i).y][tempWalls.get(i).x] = worldMap.getWorldGrid()[tempWalls.get(i).y][tempWalls.get(i).y];
+                int[][] phaseDetectionBlocks = aStarTerrain(knownTerrain);
+                Astar phaseDetectionPathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), phaseDetectionBlocks);
+                List<Node> phaseDetectionPath = phaseDetectionPathFinder.findPath();
+                for(int j = 0 ; j < phaseDetectionPath.size() ; j++)
+                {
+                    if(phaseDetectionPath.get(j).row == tempWalls.get(i).y && phaseDetectionPath.get(j).column == tempWalls.get(i).x)
+                    {
+                        knownTerrain[tempWalls.get(i).y][tempWalls.get(i).x] = 7;
+                    }
+                    else
+                    {
+                        tempWalls.remove(i);
+                        break;
+                    }
+                }
+            }
+        }
         if(!frozen)
         {
             //open door
@@ -345,7 +367,6 @@ public class Intruder extends Agent{
         }
         else if(oldTempGoal.getX()+10 == tempGoal.getX() && oldTempGoal.getY()+10 == tempGoal.getY() && isObstruction((int)((oldTempGoal.getY()+10)/SCALING_FACTOR), (int)(oldTempGoal.getX()/SCALING_FACTOR)) && isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()+10)/SCALING_FACTOR)))
         {
-            System.out.println("3 " + tempGoal);
             Point tempWall = new Point((int)(tempGoal.getX() / SCALING_FACTOR), (int)(tempGoal.getY() / SCALING_FACTOR));
             tempWalls.add(tempWall);
             knownTerrain[(int)tempWall.getY()][(int)tempWall.getX()] = 7;
@@ -391,3 +412,4 @@ public class Intruder extends Agent{
         return false;
     }
 }
+
