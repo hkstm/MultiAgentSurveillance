@@ -128,7 +128,6 @@ public class Astar {
             Node current = grid[ei][ej];
             //System.out.println(current);
             grid[current.row][current.column].solution = true;
-
             while (current.parent != null) {
                 path.add(current);
                 //System.out.println("->" + current.parent);

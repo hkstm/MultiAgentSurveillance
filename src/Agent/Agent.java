@@ -379,9 +379,6 @@ public class Agent implements Runnable {
 //                    if(column != TENTACLE_INCREMENTS-1) obstructed = true;
                     collisionPoints[(i*2)+0] = xLeftTopLine;
                     collisionPoints[(i*2)+1] = yLeftTopLine;
-                    System.out.println(locationToWorldgrid(yLeftTopLine)+" "+locationToWorldgrid(xLeftTopLine));
-                    System.out.println(knownTerrain[locationToWorldgrid(yLeftTopLine)][locationToWorldgrid(xLeftTopLine)]);
-                    System.out.println();
                     knownTerrain[locationToWorldgrid(yLeftTopLine)][locationToWorldgrid(xLeftTopLine)] = worldMap.getWorldGrid()[locationToWorldgrid(yLeftTopLine)][locationToWorldgrid(xLeftTopLine)];
                     break tentacleincrementloop;
                 }

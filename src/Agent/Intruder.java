@@ -159,8 +159,8 @@ public class Intruder extends Agent{
             //    }
             //    System.out.println();
             //}
-            System.out.println();
-            System.out.println();
+            //System.out.println();
+            //System.out.println();
 
             int[][] blocks = aStarTerrain(knownTerrain);
             Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks);
@@ -248,53 +248,53 @@ public class Intruder extends Agent{
 
     public void cornerCorrection()
     {
-        if(oldTempGoal.getX()+10 == tempGoal.getX() && oldTempGoal.getY()-10 == tempGoal.getY()) //could use inequailty operators here
+        if(oldTempGoal.getX()+10 == tempGoal.getX() && oldTempGoal.getY()-10 == tempGoal.getY())
         {
-            if(knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()+10)/SCALING_FACTOR)] == 1 || knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()+10)/SCALING_FACTOR)] == 5 || knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()+10)/SCALING_FACTOR)] == 7)
+            if(isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()+10)/SCALING_FACTOR)))
             {
                 tempGoal = new Point2D(oldTempGoal.getX(), oldTempGoal.getY()-10);
                 changed = true;
             }
-            else if(knownTerrain[(int)((oldTempGoal.getY()-10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 1 || knownTerrain[(int)((oldTempGoal.getY()-10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 5 || knownTerrain[(int)((oldTempGoal.getY()-10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 7)
+            else if(isObstruction((int)((oldTempGoal.getY()-10)/SCALING_FACTOR), (int)(oldTempGoal.getX()/SCALING_FACTOR)))
             {
                 tempGoal =  new Point2D(oldTempGoal.getX()+10, oldTempGoal.getY());
                 changed = true;
             }
         }
-        else if(oldTempGoal.getX()-10 == tempGoal.getX() && oldTempGoal.getY()+10 == tempGoal.getY()) //could use inequailty operators here
+        else if(oldTempGoal.getX()-10 == tempGoal.getX() && oldTempGoal.getY()+10 == tempGoal.getY())
         {
-            if(knownTerrain[(int)((oldTempGoal.getY()+10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 1 || knownTerrain[(int)((oldTempGoal.getY()+10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 5 || knownTerrain[(int)((oldTempGoal.getY()+10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 7)
+            if(isObstruction((int)((oldTempGoal.getY()+10)/SCALING_FACTOR), (int)(oldTempGoal.getX()/SCALING_FACTOR)))
             {
                 tempGoal = new Point2D(oldTempGoal.getX()-10, oldTempGoal.getY());
                 changed = true;
             }
-            if(knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()-10)/SCALING_FACTOR)] == 1 || knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()-10)/SCALING_FACTOR)] == 5 || knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()-10)/SCALING_FACTOR)] == 7)
+            if(isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()-10)/SCALING_FACTOR)))
             {
                 tempGoal = new Point2D(oldTempGoal.getX(), oldTempGoal.getY()+10);
                 changed = true;
             }
         }
-        else if(oldTempGoal.getX()+10 == tempGoal.getX() && oldTempGoal.getY()+10 == tempGoal.getY()) //could use inequailty operators here
+        else if(oldTempGoal.getX()+10 == tempGoal.getX() && oldTempGoal.getY()+10 == tempGoal.getY())
         {
-            if(knownTerrain[(int)((oldTempGoal.getY()+10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 1 || knownTerrain[(int)((oldTempGoal.getY()+10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 5 || knownTerrain[(int)((oldTempGoal.getY()+10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 7)
+            if(isObstruction((int)((oldTempGoal.getY()+10)/SCALING_FACTOR), (int)(oldTempGoal.getX()/SCALING_FACTOR)))
             {
                 tempGoal = new Point2D(oldTempGoal.getX()+10, oldTempGoal.getY());
                 changed = true;
             }
-            if(knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()+10)/SCALING_FACTOR)] == 1 || knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()+10)/SCALING_FACTOR)] == 5 || knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()+10)/SCALING_FACTOR)] == 7)
+            if(isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()+10)/SCALING_FACTOR)))
             {
                 tempGoal = new Point2D(oldTempGoal.getX(), oldTempGoal.getY()+10);
                 changed = true;
             }
         }
-        else if(oldTempGoal.getX()-10 == tempGoal.getX() && oldTempGoal.getY()-10 == tempGoal.getY()) //could use inequailty operators here
+        else if(oldTempGoal.getX()-10 == tempGoal.getX() && oldTempGoal.getY()-10 == tempGoal.getY())
         {
-            if (knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()-10)/SCALING_FACTOR)] == 1 || knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()-10)/SCALING_FACTOR)] == 5 || knownTerrain[(int)(oldTempGoal.getY()/SCALING_FACTOR)][(int)((oldTempGoal.getX()-10)/SCALING_FACTOR)] == 7)
+            if (isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()-10)/SCALING_FACTOR)))
             {
                 tempGoal = new Point2D(oldTempGoal.getX(), oldTempGoal.getY()-10);
                 changed = true;
             }
-            if (knownTerrain[(int)((oldTempGoal.getY()-10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 1 || knownTerrain[(int)((oldTempGoal.getY()-10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 5 || knownTerrain[(int)((oldTempGoal.getY()-10)/SCALING_FACTOR)][(int)(oldTempGoal.getX()/SCALING_FACTOR)] == 7)
+            if (isObstruction((int)((oldTempGoal.getY()-10)/SCALING_FACTOR), (int)(oldTempGoal.getX()/SCALING_FACTOR)))
             {
                 tempGoal = new Point2D(oldTempGoal.getX()-10, oldTempGoal.getY());
                 changed = true;
@@ -322,5 +322,14 @@ public class Intruder extends Agent{
         {
             return false;
         }
+    }
+
+    public boolean isObstruction(int y, int x)
+    {
+        if(knownTerrain[y][x] == 1 || knownTerrain[y][x] == 5 || knownTerrain[y][x] == 7)
+        {
+            return true;
+        }
+        return false;
     }
 }
