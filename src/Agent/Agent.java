@@ -16,6 +16,7 @@ import static Agent.MoveTo.destX;
 import static Agent.MoveTo.destY;
 import static World.GameScene.*;
 import static World.GameScene.ASSUMED_WORLDSIZE;
+import static World.StartWorldBuilder.WINDOW_SIZE;
 import static World.GameScene.SCALING_FACTOR;
 
 import static World.WorldMap.*;
@@ -263,7 +264,8 @@ public class Agent implements Runnable {
         Point2D tmpMove = getMove(distance, direction);
         Point2D positionToCheck = new Point2D(tmpMove.getX(), tmpMove.getY());
         int tileStatus = EMPTY;
-        if(positionToCheck.getY() < 0 || positionToCheck.getY() > (worldMap.getSize()-1) || positionToCheck.getX() < 0 || positionToCheck.getX() > (worldMap.getSize()-1)) {
+        if(((int)positionToCheck.getY())/SCALING_FACTOR < 0 || ((int)positionToCheck.getY())/SCALING_FACTOR > (worldMap.getSize()-1) || ((int)positionToCheck.getX())/SCALING_FACTOR < 0 || ((int)positionToCheck.getX())/SCALING_FACTOR > (worldMap.getSize()-1)) {
+            System.out.println(worldMap.getSize());
             System.out.println("Location accessed in array is out of bounds");
             return false;
         } else {
@@ -377,6 +379,10 @@ public class Agent implements Runnable {
 //                    if(column != TENTACLE_INCREMENTS-1) obstructed = true;
                     collisionPoints[(i*2)+0] = xLeftTopLine;
                     collisionPoints[(i*2)+1] = yLeftTopLine;
+                    System.out.println(locationToWorldgrid(yLeftTopLine)+" "+locationToWorldgrid(xLeftTopLine));
+                    System.out.println(knownTerrain[locationToWorldgrid(yLeftTopLine)][locationToWorldgrid(xLeftTopLine)]);
+                    System.out.println();
+                    knownTerrain[locationToWorldgrid(yLeftTopLine)][locationToWorldgrid(xLeftTopLine)] = worldMap.getWorldGrid()[locationToWorldgrid(yLeftTopLine)][locationToWorldgrid(xLeftTopLine)];
                     break tentacleincrementloop;
                 }
             }
