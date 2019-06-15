@@ -55,7 +55,7 @@ public class AreaOptimizer extends Guard {
             move(walkingDistance);
         }
 //        move(walkingDistance);
-
+        updatePerformanceCriteria();
     }
 
     public void updateWorldAreaReward(double delta) {
@@ -91,6 +91,11 @@ public class AreaOptimizer extends Guard {
      * @return the angle between the best point to go and current position
      */
     public double getMoveDirection() {
+        for(Agent intruder : worldMap.getAgents()) {
+            if(intruder instanceof Intruder) {
+                if(viewingCone.contains(intruder.getPosition())) return Math.toDegrees(Math.atan2((intruder.getPosition().getY() - position.getY()), (intruder.getPosition().getX() - position.getX())));
+            }
+        }
         double x = 0;
         double y = 0;
         double totalReward = 0;

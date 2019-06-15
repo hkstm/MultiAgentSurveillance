@@ -15,12 +15,21 @@ public class Guard extends Agent {
 
     /**
      * A subclass of Agent for the Guards with an internal map containing the starting positions of other guards and the terrain across the map
-     * @author Benjamin, Thibaut
+     * @author Benjamin, Thibaut, Kailhan
      */
 
     Routine routine;
+    protected double timeCost; //time untill end in seconds
+    protected double distanceCost; //meters moved
+    protected double directCommsCost; //message size in "bytes"
+    protected double indirectCommsCost; //number of markers placed;
+
     public Guard(Point2D position, double direction) {
         super(position, direction);
+        this.timeCost = 0;
+        this.distanceCost = 0;
+        this.directCommsCost = 0;
+        this.indirectCommsCost = 0;
         this.viewingAngle = 45;
 //        this.viewingAngle = 60;
         this.visualRange[0] = 0;
@@ -38,11 +47,16 @@ public class Guard extends Agent {
         //this.knownTerrain = worldMap.getWorldGrid();
     }
 
+    public void updatePerformanceCriteria() {
+        timeCost += delta;
+        distanceCost += previousPosition.distance(position);
+    }
+
     /**
      * put your agent specific logic in this
      */
     public void executeAgentLogic() {
-
+        updatePerformanceCriteria();
     }
 
     /**
