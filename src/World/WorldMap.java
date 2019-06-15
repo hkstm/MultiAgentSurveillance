@@ -210,10 +210,10 @@ public class WorldMap implements Serializable {
     public boolean intruderInTarget() {
         for(Agent agent : agents) {
             if(agent instanceof Intruder) {
-//                if(coordinatesToCell(agent.getPosition()) == TARGET) {
-//                    System.out.println("agent intruderInTargetPos: " + agent.getPosition().toString());
-//                    return true;
-//                }
+                if(coordinatesToCell(agent.getPosition()) == TARGET) {
+                    System.out.println("agent intruderInTargetPos: " + agent.getPosition().toString());
+                    return true;
+                }
             }
         }
         return false;
@@ -225,7 +225,6 @@ public class WorldMap implements Serializable {
      * @return an integer describing the terrain type in the worldGrid corresponding to the input location
      */
     public int coordinatesToCell(Point2D location) {
-        int windowSize = StartWorldBuilder.WINDOW_SIZE;
         int rowIndex = locationToWorldgrid(location.getY());
         int columnIndex = locationToWorldgrid(location.getX());
         return worldGrid[rowIndex][columnIndex];

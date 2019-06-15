@@ -63,7 +63,12 @@ public class Intruder extends Agent{
      */
 
     public void executeAgentLogic() {
-        gameTreeIntruder(delta);
+        try {
+            gameTreeIntruder(delta);
+        }
+        catch(Exception e) {
+            System.out.println("pls fix when intruder is on target");
+        }
     }
 
     public void gameTreeIntruder(double timeStep)

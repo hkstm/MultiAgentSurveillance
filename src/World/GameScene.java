@@ -1,6 +1,7 @@
 package World;
 
 import javafx.animation.AnimationTimer;
+import javafx.application.Platform;
 import javafx.scene.CacheHint;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -101,26 +102,26 @@ public class GameScene extends BorderPane implements Runnable {
                     long previousTime = currentTimeCalc;
                     @Override
                     public void handle(long currentTime) {
-
-
+                        if(gameStarted){
 //                        long beforeUpdatingAgents = System.nanoTime();
-                        worldMap.forceUpdateAgents();
+                            worldMap.forceUpdateAgents();
 //                        long afterUpdatingAgents = System.nanoTime();
 //                        System.out.println("updating agentstook: " + ((afterUpdatingAgents-beforeUpdatingAgents)/1e9));
 
 //                        long beforeDrawingBoard = System.nanoTime();
-                        redrawBoard();
+                            redrawBoard();
 //                        long afterDrawingBoard = System.nanoTime();
 //                        System.out.println("redrawing board took: " + ((afterDrawingBoard-beforeDrawingBoard)/1e9));
 
 
-                        long delta = (currentTime - previousTime);
+                            long delta = (currentTime - previousTime);
 //                        System.out.println("drawing tick in: " + (delta/1e9));
-                        previousTime = currentTime;
-//                        generateRandomSound(delta);
-//                        haveGuardsCapturedIntruder(mode, delta);
-//                        haveIntrudersWon(mode, delta);
+                            previousTime = currentTime;
+                            generateRandomSound(delta);
+                            haveGuardsCapturedIntruder(mode, delta);
+                            haveIntrudersWon(mode, delta);
 //                        System.out.println();
+                        }
                     }
                 }.start();
             } else {
@@ -218,12 +219,41 @@ public class GameScene extends BorderPane implements Runnable {
         }
         if(intrudersWon) {
             gameStarted = false;
+
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Game Finished");
             alert.setHeaderText(null);
             alert.setContentText("INTRUDER has reached TARGET");
-            alert.showAndWait();
+            alert.setOnHidden(evt -> Platform.exit());
+            alert.show();
             goToMenuBut.fire();
+        }
+    }
+
+    /**
+     * Checks if guard are in range to "capture" intruder and if so they have won the game, multiple modes need to be added
+     * e.g. if "all" intruders need to be caught or only 1
+     */
+    public void haveGuardsCapturedIntruder(int mode, long delta) {
+        for(Agent agentGuard : worldMap.getAgents()) {
+            if(agentGuard instanceof Guard) {
+                for(Agent agentIntruder : worldMap.getAgents()) {
+                    if(agentIntruder instanceof Intruder) {
+                        if(agentGuard.getPosition().distance(agentIntruder.getPosition()) < (0.5 * SCALING_FACTOR)) {
+                            gameStarted = false;
+
+                            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                            alert.setTitle("Game Finished");
+                            alert.setHeaderText(null);
+                            alert.setContentText("GUARDS have found INTRUDER");
+                            alert.setOnHidden(evt -> Platform.exit());
+
+                            alert.show();
+                            goToMenuBut.fire();
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -241,30 +271,6 @@ public class GameScene extends BorderPane implements Runnable {
             agentGroup.getChildren().add(circle);
             agentGroup.toFront();
             //System.out.println("proceeding after while loop, agent on seperate thread");
-        }
-    }
-
-    /**
-     * Checks if guard are in range to "capture" intruder and if so they have won the game, multiple modes need to be added
-     * e.g. if "all" intruders need to be caught or only 1
-     */
-    public void haveGuardsCapturedIntruder(int mode, long delta) {
-        for(Agent agentGuard : worldMap.getAgents()) {
-            if(agentGuard instanceof Guard) {
-                for(Agent agentIntruder : worldMap.getAgents()) {
-                    if(agentIntruder instanceof Intruder) {
-                        if(agentGuard.getPosition().distance(agentIntruder.getPosition()) < (0.5 * SCALING_FACTOR)) {
-                            gameStarted = false;
-                            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                            alert.setTitle("Game Finished");
-                            alert.setHeaderText(null);
-                            alert.setContentText("GUARDS have found INTRUDER");
-                            alert.showAndWait();
-                            goToMenuBut.fire();
-                        }
-                    }
-                }
-            }
         }
     }
 
