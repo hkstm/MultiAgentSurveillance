@@ -39,33 +39,10 @@ public class Guard extends Agent {
     }
 
     /**
-     * This should be the structure of any bot but Im not sure how this bot fits into it -kailhan
+     * put your agent specific logic in this
      */
-
-    public void run() {
-        previousTime = System.nanoTime();
-        previousPosition = new Point2D(position.getX(), position.getY());
-        while(!exitThread) {
-            executeAgentLogic();
-        }
-    }
-
-    public void forceUpdate() {
-        if(firstRun) {
-            previousTime = System.nanoTime();
-            previousPosition = new Point2D(position.getX(), position.getY());
-            firstRun = false;
-        }
-        executeAgentLogic();
-    }
-
     public void executeAgentLogic() {
-        currentTime = System.nanoTime();
-        delta = currentTime - previousTime;
-        delta /= 1e9; //makes it in seconds
-        createCone();
-        checkForAgentSound();
-        previousTime = currentTime;
+
     }
 
     /**

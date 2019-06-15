@@ -38,15 +38,18 @@ public class Agent implements Runnable {
     public static final double SOUND_NOISE_STDEV =  10;  //stndard dev of normal distributed noise
     public static final int AMOUNT_OF_VISION_TENTACLES = 100;
     public static final int TENTACLE_INCREMENTS = 1000;
-    public static final double MAX_TURNING_PER_SECOND = 180;
+    public static final double MAX_TURNING_PER_SECOND = 180; //degrees
+    public static final double MAX_NONBLIND_TURNING_PER_SECOND = 45; //degrees
+    public static final double MAX_TURNING_WHILE_SPRINTING = 10;
+    public static final double TIME_BLINDED = 0.5;
+    public static final double MIN_TIME_BEFORE_SHORT_DETECT_IN_DECREASEDVIS = 10;//seconds
+    public static final double BASE_SPEED = 1.4; //m/s
+    public static final double SPRINT_SPEED = 3.0; //m/s
 
     protected volatile Point2D position;
     protected double direction;
     protected int[][] knownTerrain = new int[worldMap.getSize()][worldMap.getSize()];
     protected List<AudioLog> audioLogs = new ArrayList<AudioLog>();
-    protected volatile double xGoal;
-    protected volatile double yGoal;
-    protected double convertedDistance;
     protected double currentSpeed;
     protected Color color;
 
@@ -67,11 +70,18 @@ public class Agent implements Runnable {
 
     protected boolean turning;
     protected boolean sprinting;
-    protected double startingAngle;
-    protected double endAngle;
+
+    protected long startTimeFastTurn;
+    protected double previousDirection;
+    protected boolean blind;
+    protected boolean hiddenInDecreasedVis;
+    protected boolean shortDetectionRange;
+    protected long startTimeDecreasedVis;
+
+    protected boolean turnedMaxWhileSprinting;
+    protected double turningLeft;
+
     private boolean goalSet = false;
-
-
 
     /**
      * Constructor for Agent
@@ -87,7 +97,7 @@ public class Agent implements Runnable {
         this.color = Color.LIGHTSEAGREEN;
         for(int i = 0; i < knownTerrain[0].length; i++) {
             for(int j = 0; j < knownTerrain.length; j++) {
-                if(worldMap.worldGrid[i][j] == 4) {
+                if(worldMap.worldGrid[i][j] == TARGET) {
                     goalPosition = new Point2D(j, i);
                     goalSet = true;
                 }
@@ -101,7 +111,7 @@ public class Agent implements Runnable {
         this.firstRun = true;
         for (int i = 0; i < knownTerrain.length; i++) {
             for (int j = 0; j < knownTerrain[0].length;j++) {
-                knownTerrain[i][j] = 8;
+                knownTerrain[i][j] = UNEXPLORED;
             }
         }
     }
@@ -112,19 +122,10 @@ public class Agent implements Runnable {
     public void run() {
         previousTime = System.nanoTime();
         previousPosition = new Point2D(position.getX(), position.getY());
-        /**
-         * DONT REMOVE THIS GOALPOSITION THING IT IS NECESSARY FOR SOME REASON
-         */
-
-        goalPosition = new Point2D(200, 200);
-        while(!exitThread) { {
-            for (int i = 0; i < knownTerrain.length; i++) {
-                for (int j = 0; j < knownTerrain[0].length; j++) {
-                    //System.out.print(knownTerrain[row][column] + " knownterrain");
-                }
-            }
-        }
-            executeAgentLogic();
+        previousDirection = direction;
+        firstRun = false;
+        while(!exitThread) {
+            executeGeneralAgentLogic();
         }
     }
 
@@ -135,28 +136,58 @@ public class Agent implements Runnable {
         if(firstRun) {
             previousTime = System.nanoTime();
             previousPosition = new Point2D(position.getX(), position.getY());
+            previousDirection = direction;
             firstRun = false;
         }
+        executeGeneralAgentLogic();
+    }
+
+    public void executeGeneralAgentLogic() {
+        currentTime = System.nanoTime();
+        delta = currentTime - previousTime;
+        delta /= 1e9; //makes it in seconds
+        previousTime = currentTime;
+        previousDirection = direction;
+        //System.out.println("currentSpeed:" + currentSpeed);
+        previousPosition = new Point2D(position.getX(), position.getY());
+        /**
+         * this is the point where the logic of your bot gets called
+         */
         executeAgentLogic();
+        /**
+         *
+         */
+        checkForAgentSound();
+        if((Math.abs(previousDirection - direction) * delta) > (MAX_NONBLIND_TURNING_PER_SECOND * delta)) {
+            startTimeFastTurn = System.nanoTime();
+            blind = true;
+        } else if((System.nanoTime() - startTimeFastTurn)/1e9 > (TIME_BLINDED + delta)) blind = false; //TIME_BLINDED in seconds so have to convert nanoTime()
+        if(!blind) {
+            createCone();
+            updateKnownTerrain();
+        }
+        if(worldMap.checkTile(locationToWorldgrid(position.getX()), locationToWorldgrid(position.getX()), DECREASED_VIS_RANGE) && !hiddenInDecreasedVis){
+            hiddenInDecreasedVis = true;
+            startTimeDecreasedVis = System.nanoTime();
+        }
+        if(!sprinting) {
+            turningLeft = MAX_TURNING_WHILE_SPRINTING;
+        } else {
+            turningLeft -= (Math.abs(previousDirection-direction));
+        }
+        if(turningLeft <= 0) turnedMaxWhileSprinting = true;
+        else turnedMaxWhileSprinting = false;
+        if(hiddenInDecreasedVis && ((System.nanoTime() - startTimeDecreasedVis)/1e9) > MIN_TIME_BEFORE_SHORT_DETECT_IN_DECREASEDVIS) shortDetectionRange = true;
+        else shortDetectionRange = false;
+        if(!hiddenInDecreasedVis) shortDetectionRange = false;
+        currentSpeed = ((position.distance(previousPosition) / SCALING_FACTOR) / delta);
     }
 
     /**
      * Default agent logic, should not really be used (e.g. should be overwritten in subclasses and those should be instantiated)
      */
     public void executeAgentLogic() {
-        goalPosition = new Point2D(200, 200);
-        //DONT PRINT EMPTY STRINGS THANKS
-        currentTime = System.nanoTime();
-        delta = currentTime - previousTime;
-        delta /= 1e9; //makes it in seconds
-        previousTime = currentTime;
-        currentSpeed = ((position.distance(previousPosition) / SCALING_FACTOR) / delta);
-        //System.out.println("currentSpeed:" + currentSpeed);
-        previousPosition = new Point2D(position.getX(), position.getY());
-        updateKnownTerrain();
-
-        checkForAgentSound();
-        double walkingDistance = (1.4 * SCALING_FACTOR) * (delta);
+        double walkingDistance = (BASE_SPEED * SCALING_FACTOR) * (delta);
         if (legalMoveCheck(walkingDistance)) {
             move(walkingDistance);
 //            System.out.println("moving");
@@ -164,9 +195,6 @@ public class Agent implements Runnable {
             updateDirection(Math.random() * 360);
 //            System.out.println("turning");
         }
-        updateGoalPosition();
-        xGoal = getGoalPosition().getX();
-        yGoal = getGoalPosition().getY();
     }
 
     /**
@@ -210,7 +238,7 @@ public class Agent implements Runnable {
      * @param directionToGo direction you are trying to face (in degrees 0 - 360, I think)
      */
     public void updateDirection(double directionToGo) {
-        if(!sprinting) {
+        if(!turnedMaxWhileSprinting) {
             double maxTurn = MAX_TURNING_PER_SECOND * delta;
             double toTurn = Math.abs(directionToGo - direction);
             double turn = Math.min(maxTurn, toTurn);
@@ -220,10 +248,8 @@ public class Agent implements Runnable {
                 direction -= turn;
             }
         } else {
-            System.out.println("logic for turning while sprinting needs to be implemented rip");
+            System.out.println("you have tunred to match while sprinting");
         }
-
-
     }
 
     /**
@@ -537,6 +563,10 @@ public class Agent implements Runnable {
             blocks[i][1] = (int)walls.get(i).getX();
         }
         return blocks;
+    }
+
+    public void blindCheck(){
+
     }
 
 }

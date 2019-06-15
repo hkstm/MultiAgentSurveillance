@@ -45,48 +45,11 @@ public class AreaOptimizer extends Guard {
     }
 
     /**
-     * Starts the thread and everything in the while loop will keep on executing untill you call worldMap.stopAgent(//this agent//)
-     */
-    public void run() {
-        previousTime = System.nanoTime();
-        previousPosition = new Point2D(position.getX(), position.getY());
-        goalPosition = new Point2D(200, 200);
-        //this loop will keep on getting executed as long as the correspond thread is running
-        while(!exitThread) {
-            executeAgentLogic();
-        }
-    }
-
-    /**
-     * Used instead of the run method if we want to manually control when the agent should update
-     */
-    public void forceUpdate() {
-        if(firstRun) {
-            previousTime = System.nanoTime();
-            previousPosition = new Point2D(position.getX(), position.getY());
-            firstRun = false;
-        }
-        executeAgentLogic();
-    }
-
-    /**
      * Logic that gets executed every tick
      */
     public void executeAgentLogic() {
-        currentTime = System.nanoTime();
-        delta = (currentTime - previousTime)/1e9; //makes it in seconds
-        previousTime = currentTime;
-        createCone();
-        updateKnownTerrain();
-//        update vision
-
         updateWorldAreaReward(delta);
         updateDirection(getMoveDirection());
-        currentSpeed = ((position.distance(previousPosition)/SCALING_FACTOR)/delta);
-        previousPosition= new Point2D(position.getX(), position.getY());
-        checkForAgentSound();
-
-
         double walkingDistance = (1.4 * SCALING_FACTOR) * (delta);
         if (legalMoveCheck(walkingDistance)) {
             move(walkingDistance);
@@ -109,7 +72,7 @@ public class AreaOptimizer extends Guard {
                     score += worldAreaReward[r][c].consumeReward();
                     worldAreaReward[r][c].resetReward();
 //                    worldAreaReward[r][c].updateReward(RECENT_AREA_PENALTY * delta);
-                    System.out.println("reward: " + worldAreaReward[r][c].getReward());
+//                    System.out.println("reward: " + worldAreaReward[r][c].getReward());
 //                    System.out.println("reward reset for r: " + r + " c: " + c);
 //                    System.out.println("viewingcone contains tile: " + worldMap.convertArrayToWorld(c-1) + 1 * worldMap.convertArrayToWorld(1) + " r/y: " + worldMap.convertArrayToWorld(r-1) + 1 * worldMap.convertArrayToWorld(1));
                 } else {
