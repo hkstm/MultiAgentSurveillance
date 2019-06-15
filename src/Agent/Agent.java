@@ -150,6 +150,10 @@ public class Agent implements Runnable {
         previousDirection = direction;
         //System.out.println("currentSpeed:" + currentSpeed);
         previousPosition = new Point2D(position.getX(), position.getY());
+        if(!blind) {
+            createCone();
+            updateKnownTerrain();
+        }
         /**
          * this is the point where the logic of your bot gets called
          */
@@ -162,10 +166,6 @@ public class Agent implements Runnable {
             startTimeFastTurn = System.nanoTime();
             blind = true;
         } else if((System.nanoTime() - startTimeFastTurn)/1e9 > (TIME_BLINDED + delta)) blind = false; //TIME_BLINDED in seconds so have to convert nanoTime()
-        if(!blind) {
-            createCone();
-            updateKnownTerrain();
-        }
         if(worldMap.checkTile(locationToWorldgrid(position.getX()), locationToWorldgrid(position.getX()), DECREASED_VIS_RANGE) && !hiddenInDecreasedVis){
             hiddenInDecreasedVis = true;
             startTimeDecreasedVis = System.nanoTime();
