@@ -20,6 +20,7 @@ import java.awt.*;
 import javafx.geometry.Point2D;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Random;
 import Agent.*;
 import Agent.Routine;
@@ -218,15 +219,7 @@ public class GameScene extends BorderPane implements Runnable {
             intrudersWon = true;
         }
         if(intrudersWon) {
-            gameStarted = false;
-
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Game Finished");
-            alert.setHeaderText(null);
-            alert.setContentText("INTRUDER has reached TARGET");
-            alert.setOnHidden(evt -> Platform.exit());
-            alert.show();
-            goToMenuBut.fire();
+            createAlert("INTRUDER has reached TARGET");
         }
     }
 
@@ -235,19 +228,31 @@ public class GameScene extends BorderPane implements Runnable {
      * e.g. if "all" intruders need to be caught or only 1
      */
     public void haveGuardsCapturedIntruder(int mode, long delta) {
-        for(Agent agentGuard : worldMap.getAgents()) {
+//        for(Iterator<Agent> agentGuards = worldMap.getAgents().iterator(); agentGuards.hasNext(); ) {
+//            Agent agentGuard = agentGuards.next();
+//            if(agentGuard instanceof Guard) {
+//                for(Iterator<Agent> agentIntruders = worldMap.getAgents().iterator(); agentIntruders.hasNext(); ) {
+//                    Agent agentIntruder = agentIntruders.next();
+//                    if(agentIntruder instanceof Intruder) {
+//                        if(agentGuard.getPosition().distance(agentIntruder.getPosition()) < (0.5 * SCALING_FACTOR)) {
+//                            createAlert("GUARDS have found INTRUDER");
+//                        }
+//                    }
+//                }
+//            }
+//        }
+        Agent[] agentGuards = worldMap.getAgents().toArray(new Agent[worldMap.getAgents().size()]);
+        Agent[] agentIntruders = worldMap.getAgents().toArray(new Agent[worldMap.getAgents().size()]);
+        for(Agent agentGuard : agentGuards) {
             if(agentGuard instanceof Guard) {
-                for(Agent agentIntruder : worldMap.getAgents()) {
+                for(Agent agentIntruder : agentIntruders) {
                     if(agentIntruder instanceof Intruder) {
                         if(agentGuard.getPosition().distance(agentIntruder.getPosition()) < (0.5 * SCALING_FACTOR)) {
                             gameStarted = false;
-
                             Alert alert = new Alert(Alert.AlertType.INFORMATION);
                             alert.setTitle("Game Finished");
                             alert.setHeaderText(null);
                             alert.setContentText("GUARDS have found INTRUDER");
-                            alert.setOnHidden(evt -> Platform.exit());
-
                             alert.show();
                             goToMenuBut.fire();
                         }
@@ -255,6 +260,17 @@ public class GameScene extends BorderPane implements Runnable {
                 }
             }
         }
+    }
+
+    private void createAlert(String s) {
+        gameStarted = false;
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Game Finished");
+        alert.setHeaderText(null);
+        alert.setContentText(s);
+        alert.setOnHidden(evt -> Platform.exit());
+        alert.show();
+        goToMenuBut.fire();
     }
 
     /**
