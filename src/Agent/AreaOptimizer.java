@@ -17,7 +17,9 @@ public class AreaOptimizer extends Guard {
 
     private Point2DReward[][] worldAreaReward;
     private double score;
-    public final double REWARD_FACTOR = 0.1;
+    public final double NOT_SEEN_REWARD = 100;
+    public final double INTRUDER_BONUS_REWARD = 10;
+    public final double RECENT_AREA_PENALTY = 0;
     private Point2D goalPosition;
 
     /**
@@ -34,6 +36,12 @@ public class AreaOptimizer extends Guard {
                 worldAreaReward[r][c] = new Point2DReward(c, r, 10);
             }
         }
+//        for(int r = 0; r < worldMap.getSize(); r++) {
+//            for(int c = 0; c < 10; c++) {
+//                //initializing reward array with fixed flat reward
+//                worldAreaReward[r][c] = new Point2DReward(c, r, 100);
+//            }
+//        }
     }
 
     /**
@@ -93,12 +101,24 @@ public class AreaOptimizer extends Guard {
                 //check if middle of tile is in cone
                 if(viewingCone.contains(worldMap.convertArrayToWorld(c-1) + 1 * worldMap.convertArrayToWorld(1),
                         worldMap.convertArrayToWorld(r-1) + 1 * worldMap.convertArrayToWorld(1))) {
+                    for(Agent agent : worldMap.getAgents()) {
+                        if((locationToWorldgrid(agent.getPosition().getX()) == c) && (locationToWorldgrid(agent.getPosition().getY()) == r)) {
+                            worldAreaReward[r][c].updateReward(INTRUDER_BONUS_REWARD * delta);
+                        }
+                    }
                     score += worldAreaReward[r][c].consumeReward();
                     worldAreaReward[r][c].resetReward();
+//                    worldAreaReward[r][c].updateReward(RECENT_AREA_PENALTY * delta);
+                    System.out.println("reward: " + worldAreaReward[r][c].getReward());
 //                    System.out.println("reward reset for r: " + r + " c: " + c);
+//                    System.out.println("viewingcone contains tile: " + worldMap.convertArrayToWorld(c-1) + 1 * worldMap.convertArrayToWorld(1) + " r/y: " + worldMap.convertArrayToWorld(r-1) + 1 * worldMap.convertArrayToWorld(1));
                 } else {
-                    worldAreaReward[r][c].updateReward (REWARD_FACTOR * delta);
+                    if(!worldMap.isVisionObscuring(worldMap.getTileState(r, c))) {
+//                        System.out.println("rewardnotseen: " + worldAreaReward[r][c].getReward());
+                        worldAreaReward[r][c].updateReward(NOT_SEEN_REWARD * delta);
+                    }
                 }
+//                System.out.println("reward: " + worldAreaReward[r][c].getReward());
             }
         }
     }
@@ -130,7 +150,7 @@ public class AreaOptimizer extends Guard {
         Point2D goal = new Point2D(x, y);
 //        System.out.println("x: " + x + " y: " + y);
 //        printWorldAreaReward();
-        System.out.println("goalpoint x: " + x + " y: " + y);
+//        System.out.println("goalpoint x: " + x + " y: " + y);
         return Math.toDegrees(Math.atan2((goal.getY() - position.getY()), (goal.getX() - position.getX())));
     }
 

@@ -22,7 +22,7 @@ public class Point2DReward extends Point2D {
 
     public double consumeReward(){
         double rewardToBeConsumed = this.reward;
-        resetReward();
+//        resetReward();
         return rewardToBeConsumed;
     }
 

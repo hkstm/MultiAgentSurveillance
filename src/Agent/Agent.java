@@ -357,28 +357,32 @@ public class Agent implements Runnable {
 //        Shape cone = Shape.intersect(circle, truncatedTriangle);
 ////        double[] collisionPoints = new double[(AMOUNT_OF_VISION_TENTACLES + 2) * 2];
 //        boolean obstructed = false;
-        double[] collisionPoints = new double[((AMOUNT_OF_VISION_TENTACLES) * 2) + 4];
-        for(int i = 0; i < AMOUNT_OF_VISION_TENTACLES; i++) {
+        double[] collisionPoints = new double[((AMOUNT_OF_VISION_TENTACLES) * 2)];
+        for(int i = 1; i < AMOUNT_OF_VISION_TENTACLES; i++) {
             tentacleincrementloop:
-            for(int j = 0; j < TENTACLE_INCREMENTS; j++) {
+            for(int j = 1; j < TENTACLE_INCREMENTS; j++) {
                 Line tentacle = new Line();
-                double xLeftTopLine = x + (visualRangeMax * (double)j/(TENTACLE_INCREMENTS-1) * Math.cos(Math.toRadians((direction - viewingAngle/2) + (viewingAngle/(AMOUNT_OF_VISION_TENTACLES-1))*i)));
-                double yLeftTopLine = y + (visualRangeMax * (double)j/(TENTACLE_INCREMENTS-1) * Math.sin(Math.toRadians((direction - viewingAngle/2) + (viewingAngle/(AMOUNT_OF_VISION_TENTACLES-1))*i)));
+                double xLeftBotLine = x;
+                double yLeftBotLine = y;
                 if(visualRangeMin != 0) {
-                    double xLeftBotLine = x + (visualRangeMin * Math.cos(Math.toRadians((direction - viewingAngle/2) + (viewingAngle/AMOUNT_OF_VISION_TENTACLES)*i)));
-                    double yLeftBotLine = y + (visualRangeMin * Math.sin(Math.toRadians((direction - viewingAngle/2) + (viewingAngle/AMOUNT_OF_VISION_TENTACLES)*i)));
+                    xLeftBotLine = x + (visualRangeMin * Math.cos(Math.toRadians((direction - viewingAngle/2) + (viewingAngle/AMOUNT_OF_VISION_TENTACLES)*i)));
+                    yLeftBotLine = y + (visualRangeMin * Math.sin(Math.toRadians((direction - viewingAngle/2) + (viewingAngle/AMOUNT_OF_VISION_TENTACLES)*i)));
                     tentacle.setStartX(xLeftBotLine);
                     tentacle.setStartY(yLeftBotLine);
                 } else {
                     tentacle.setStartX(x);
                     tentacle.setStartY(y);
                 }
+                double xLeftTopLine = x + (visualRangeMax * (double)j/(double)(TENTACLE_INCREMENTS-1) * Math.cos(Math.toRadians((direction - viewingAngle/2) + (viewingAngle/(AMOUNT_OF_VISION_TENTACLES-1))*i)));
+                double yLeftTopLine = y + (visualRangeMax * (double)j/(double)(TENTACLE_INCREMENTS-1) * Math.sin(Math.toRadians((direction - viewingAngle/2) + (viewingAngle/(AMOUNT_OF_VISION_TENTACLES-1))*i)));
+                xLeftTopLine = (Math.abs(x - xLeftTopLine) < Math.abs(x - xLeftBotLine)) ? xLeftBotLine : xLeftTopLine;
+                yLeftTopLine = (Math.abs(y - yLeftTopLine) < Math.abs(y - yLeftBotLine)) ? yLeftBotLine : yLeftTopLine;
                 tentacle.setEndX(xLeftTopLine);
                 tentacle.setEndY(yLeftTopLine);
                 if(worldMap.isVisionObscuring(worldMap.getWorldGrid()[locationToWorldgrid(yLeftTopLine)][locationToWorldgrid(xLeftTopLine)]) || j == TENTACLE_INCREMENTS-1) {
 //                    if(column != TENTACLE_INCREMENTS-1) obstructed = true;
-                    collisionPoints[(i*2)+0] = xLeftTopLine;
-                    collisionPoints[(i*2)+1] = yLeftTopLine;
+                    collisionPoints[((i-1)*2)+0] = xLeftTopLine; //(i-1 instead of i because outer for loop starts at 1)
+                    collisionPoints[((i-1)*2)+1] = yLeftTopLine;
                     knownTerrain[locationToWorldgrid(yLeftTopLine)][locationToWorldgrid(xLeftTopLine)] = worldMap.getWorldGrid()[locationToWorldgrid(yLeftTopLine)][locationToWorldgrid(xLeftTopLine)];
                     break tentacleincrementloop;
                 }
@@ -388,6 +392,7 @@ public class Agent implements Runnable {
         collisionPoints[collisionPoints.length-1] = y + (visualRangeMin * Math.sin(Math.toRadians(direction - viewingAngle/2)));
         collisionPoints[collisionPoints.length-4] = x + (visualRangeMin * Math.cos(Math.toRadians(direction + viewingAngle/2)));
         collisionPoints[collisionPoints.length-3] = y + (visualRangeMin * Math.sin(Math.toRadians(direction + viewingAngle/2)));
+
         Polygon cutout = new Polygon(collisionPoints);
 //        if(obstructed) cone = Shape.subtract(cone, cutout);
 //        cone = cutout;

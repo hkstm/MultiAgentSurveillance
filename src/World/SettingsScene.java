@@ -32,6 +32,7 @@ public class SettingsScene extends VBox {
     private Button startGameScene;
     private Button loadWorldMap;
     private ComboBox<String> sizeComboBox;
+    private File selectedFile;
 
     private static int worldSizeSelection;
     private static WorldMap worldMapSelection;
@@ -120,10 +121,11 @@ public class SettingsScene extends VBox {
             }
             FileChooser fileChooser = new FileChooser();
             fileChooser.setInitialDirectory(recordsDir);
-            fileChooser.setTitle("Open worldMap File");
+            fileChooser.setTitle("Open World Map File");
             //change this if you don't want to use dat files for some reason
             fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Text Files", "*.dat"));
-            File selectedFile = fileChooser.showOpenDialog(primaryStage);
+//            if(fileChooser.showOpenDialog(primaryStage) != null)
+                selectedFile = fileChooser.showOpenDialog(primaryStage);
             FileInputStream fileInputStream = null;
             try {
                 fileInputStream = new FileInputStream(selectedFile);
