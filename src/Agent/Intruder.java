@@ -58,13 +58,9 @@ public class Intruder extends Agent{
         return equals;
     }
 
-    /**
-     * A method for going through a window or door. It is important the the intruder is standing on the tile to be changed.
-     * The time taken is consistent (3 seconds for a window and 5 for a door), unless a door is to be opened quietly, in which case a normal distribution is used.
-     */
-
     public void run() {
-        previousTime = System.nanoTime(); //the first time step is reaallllyyyy small (maybe too small, might have to force it to wait)
+        exitThread = false;
+        previousTime = System.nanoTime();
         previousPosition = new Point2D(position.getX(), position.getY());
         while(!exitThread) {
             executeAgentLogic();
@@ -93,13 +89,12 @@ public class Intruder extends Agent{
     public void gameTreeIntruder(double timeStep)
     {
         //TODO fix corner issue
-        //TODO add blur
+        //TODO should just walk straight or stay still when blinded
         //TODO check for guards
         //TODO make noise
-        //TODO test doors and windows
         //TODO add weights to flags and other types of squares, try manually an possibly with a genetic algorithm
         //this createCone should be redundant but it resolves some errors due to not being able to properly access the cones
-        createCone();
+        //createCone();
         rePath = false;
         if(tempWalls.size() > 0)
         {
@@ -164,10 +159,9 @@ public class Intruder extends Agent{
             freezeTime = 0;
             if (!blind) {
                 updateKnownTerrain();
-                //System.out.println("nottttttttttttttttttttttttttttt blind");
             }
             else {
-                //System.out.println("blinnnnnnnnnnnnnnnnnnnnnnnnnnd");
+                //System.out.println("blind");
                 long nowMillis = System.currentTimeMillis();
                 int countSec = (int)((nowMillis - this.blindMillis) / 1000);
                 //System.out.println(countSec);
@@ -192,6 +186,12 @@ public class Intruder extends Agent{
             int[][] blocks = aStarTerrain(knownTerrain);
             Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks);
             List<Node> path = pathFinder.findPath();
+            if(path.size() == 0)
+            {
+                System.out.println("Target Reached");
+                exitThread = true;
+                return;
+            }
             if(!changed)
             {
                 tempGoal = new Point2D((path.get(path.size()-1).row*SCALING_FACTOR)+(SCALING_FACTOR/2), (path.get(path.size()-1).column*SCALING_FACTOR)+(SCALING_FACTOR/2));
