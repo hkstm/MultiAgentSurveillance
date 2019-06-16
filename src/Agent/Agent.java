@@ -40,6 +40,7 @@ public class Agent implements Runnable {
     public static final double MAX_TURNING_WHILE_SPRINTING = 10;
     public static final double TIME_BLINDED = 0.5;
     public static final double MIN_TIME_BEFORE_SHORT_DETECT_IN_DECREASEDVIS = 10;//seconds
+    public static final double DECREASE_IN_VISION = 0.5; //used for the 50% reduction in vision when seeing a decreased visibility location
     public static final double DISTANCE_TO_CATCH = 0.5; //meters
     public static final double BASE_SPEED = 1.4; //m/s
     public static final double SPRINT_SPEED = 3.0; //m/s
@@ -203,7 +204,7 @@ public class Agent implements Runnable {
      */
     public void updateDirection(double directionToGo) {
         if(!turnedMaxWhileSprinting) {
-            double maxTurn = MAX_TURNING_PER_SECOND * delta;
+            double maxTurn = 10* delta;
             double toTurn = Math.abs(directionToGo - direction);
             double turn = Math.min(maxTurn, toTurn);
             if(directionToGo > direction) {
@@ -361,7 +362,9 @@ public class Agent implements Runnable {
         double visualRangeMin = minVisRange * SCALING_FACTOR; //max visionRange
         double visualRangeMax = maxVisRange * SCALING_FACTOR; //max visionRange
         double[] collisionPoints = new double[((AMOUNT_OF_VISION_TENTACLES) * 2)];
+
         for(int i = 1; i < AMOUNT_OF_VISION_TENTACLES; i++) {
+            double decreaseInVision = 0;
             tentacleincrementloop:
             for(int j = 1; j < TENTACLE_INCREMENTS; j++) {
                 Line tentacle = new Line();
@@ -382,7 +385,10 @@ public class Agent implements Runnable {
                 yLeftTopLine = (Math.abs(y - yLeftTopLine) < Math.abs(y - yLeftBotLine)) ? yLeftBotLine : yLeftTopLine;
                 tentacle.setEndX(xLeftTopLine);
                 tentacle.setEndY(yLeftTopLine);
-                if(isVisionObscuring(worldMap.getWorldGrid()[locationToWorldgrid(yLeftTopLine)][locationToWorldgrid(xLeftTopLine)]) || j == TENTACLE_INCREMENTS-1) {
+                if(worldMap.checkTile(locationToWorldgrid(yLeftTopLine), locationToWorldgrid(xLeftTopLine), DECREASED_VIS_RANGE)) {
+                    decreaseInVision += (1*DECREASE_IN_VISION);
+                }
+                if(isVisionObscuring(worldMap.getWorldGrid()[locationToWorldgrid(yLeftTopLine)][locationToWorldgrid(xLeftTopLine)]) || j >= TENTACLE_INCREMENTS-(decreaseInVision)-1) {
                     collisionPoints[((i-1)*2)+0] = xLeftTopLine; //(i-1 instead of i because outer for loop starts at 1)
                     collisionPoints[((i-1)*2)+1] = yLeftTopLine;
                     knownTerrain[locationToWorldgrid(yLeftTopLine)][locationToWorldgrid(xLeftTopLine)] = worldMap.getWorldGrid()[locationToWorldgrid(yLeftTopLine)][locationToWorldgrid(xLeftTopLine)];
