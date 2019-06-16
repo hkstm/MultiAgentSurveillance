@@ -1,6 +1,7 @@
 package World;
 
 import javafx.animation.AnimationTimer;
+import javafx.application.Platform;
 import javafx.scene.CacheHint;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -19,13 +20,13 @@ import java.awt.*;
 import javafx.geometry.Point2D;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Random;
 import Agent.*;
 import Agent.Routine;
 
 
-import static Agent.Agent.SOUND_NOISE_STDEV;
-import static Agent.Agent.angleBetweenTwoPointsWithFixedPoint;
+import static Agent.Agent.*;
 import static World.StartWorldBuilder.WINDOW_SIZE;
 
 /**
@@ -82,13 +83,13 @@ public class GameScene extends BorderPane implements Runnable {
         this.startGameBut = new Button("Start/Stop Game"); //should stop and start game, not properly working atm
         Agent.worldMap = worldMap;
         Guard guard  = new Guard(new Point2D(200, 300), 70);
-        Intruder intruder = new Intruder(new Point2D(500, 500), 0);
-        AreaOptimizer areaOptimzer = new AreaOptimizer(new Point2D(500, 500), 0);
+        Intruder intruder = new Intruder(new Point2D(500, 900), 0);
+        AreaOptimizer areaOptimzer = new AreaOptimizer(new Point2D(500, 400), 0);
 //        worldMap.addAgent(guard);
-        worldMap.addAgent(intruder);
+//        worldMap.addAgent(intruder);
 //        worldMap.addOnlyAgent(guard);
-//        worldMap.addOnlyAgent(intruder);
-//        worldMap.addOnlyAgent(areaOptimzer);
+        worldMap.addOnlyAgent(intruder);
+        worldMap.addOnlyAgent(areaOptimzer);
         //Actual game "loop" in here
         startGameBut.setOnAction(e -> { //
             currentTimeCountDown = System.nanoTime();
@@ -101,26 +102,26 @@ public class GameScene extends BorderPane implements Runnable {
                     long previousTime = currentTimeCalc;
                     @Override
                     public void handle(long currentTime) {
-
-
+                        if(gameStarted){
 //                        long beforeUpdatingAgents = System.nanoTime();
-                        worldMap.forceUpdateAgents();
+                            worldMap.forceUpdateAgents();
 //                        long afterUpdatingAgents = System.nanoTime();
 //                        System.out.println("updating agentstook: " + ((afterUpdatingAgents-beforeUpdatingAgents)/1e9));
 
 //                        long beforeDrawingBoard = System.nanoTime();
-                        redrawBoard();
+                            redrawBoard();
 //                        long afterDrawingBoard = System.nanoTime();
 //                        System.out.println("redrawing board took: " + ((afterDrawingBoard-beforeDrawingBoard)/1e9));
 
 
-                        long delta = (currentTime - previousTime);
+                            long delta = (currentTime - previousTime);
 //                        System.out.println("drawing tick in: " + (delta/1e9));
-                        previousTime = currentTime;
-//                        generateRandomSound(delta);
-//                        haveGuardsCapturedIntruder(mode, delta);
-//                        haveIntrudersWon(mode, delta);
+                            previousTime = currentTime;
+                            generateRandomSound(delta);
+                            haveGuardsCapturedIntruder(mode, delta);
+                            haveIntrudersWon(mode, delta);
 //                        System.out.println();
+                        }
                     }
                 }.start();
             } else {
@@ -196,7 +197,6 @@ public class GameScene extends BorderPane implements Runnable {
 
     public void haveIntrudersWon(int mode, long delta) {
         boolean intrudersWon = false;
-        String winText = "";
         if(!countDown) {
             currentTimeCountDown = System.nanoTime();
         }
@@ -205,9 +205,8 @@ public class GameScene extends BorderPane implements Runnable {
                 firstVisitTime = System.nanoTime();
                 visitedTarget = true;
             }
-            if((System.nanoTime() - currentTimeCountDown) < (3*1e9)) {
+            if((System.nanoTime() - currentTimeCountDown) > (3*1e9)) {
                 intrudersWon = true;
-                winText = "INTRUDER has reached ";
             }
             countDown = true;
         } else {
@@ -217,14 +216,38 @@ public class GameScene extends BorderPane implements Runnable {
             intrudersWon = true;
         }
         if(intrudersWon) {
-            gameStarted = false;
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Game Finished");
-            alert.setHeaderText(null);
-            alert.setContentText("INTRUDER has reached TARGET");
-            alert.showAndWait();
-            goToMenuBut.fire();
+            createAlert("INTRUDER has reached TARGET");
         }
+    }
+
+    /**
+     * Checks if guard are in range to "capture" intruder and if so they have won the game, multiple modes need to be added
+     * e.g. if "all" intruders need to be caught or only 1
+     */
+    public void haveGuardsCapturedIntruder(int mode, long delta) {
+        Agent[] agentGuards = worldMap.getAgents().toArray(new Agent[worldMap.getAgents().size()]);
+        Agent[] agentIntruders = worldMap.getAgents().toArray(new Agent[worldMap.getAgents().size()]);
+        for(Agent agentGuard : agentGuards) {
+            if(agentGuard instanceof Guard) {
+                for(Agent agentIntruder : agentIntruders) {
+                    if(agentIntruder instanceof Intruder) {
+                        if(agentGuard.getPosition().distance(agentIntruder.getPosition()) < (DISTANCE_TO_CATCH * SCALING_FACTOR)) {
+                            createAlert("GUARDS have found INTRUDER");
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void createAlert(String s) {
+        gameStarted = false;
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Game Finished");
+        alert.setHeaderText(null);
+        alert.setContentText(s);
+        alert.show();
+        goToMenuBut.fire();
     }
 
     /**
@@ -245,41 +268,16 @@ public class GameScene extends BorderPane implements Runnable {
     }
 
     /**
-     * Checks if guard are in range to "capture" intruder and if so they have won the game, multiple modes need to be added
-     * e.g. if "all" intruders need to be caught or only 1
-     */
-    public void haveGuardsCapturedIntruder(int mode, long delta) {
-        for(Agent agentGuard : worldMap.getAgents()) {
-            if(agentGuard instanceof Guard) {
-                for(Agent agentIntruder : worldMap.getAgents()) {
-                    if(agentIntruder instanceof Intruder) {
-                        if(agentGuard.getPosition().distance(agentIntruder.getPosition()) < (0.5 * SCALING_FACTOR)) {
-                            gameStarted = false;
-                            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                            alert.setTitle("Game Finished");
-                            alert.setHeaderText(null);
-                            alert.setContentText("GUARDS have found INTRUDER");
-                            alert.showAndWait();
-                            goToMenuBut.fire();
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /**
      * Random sound according to sort of poisson process (more binomial with low probability which should approximate it probs&stat stuff
      */
     public void generateRandomSound(long delta){
         double occurenceRate = 0.1/1e9; //because delta is in nano seconds
-        occurenceRate *= 8; //map is 200 so 8 times as big as 25
+        occurenceRate *= (ASSUMED_WORLDSIZE/25); //map is ASSUMED_WORLDSIZE so ASSUMED_WORLDSIZE/25 times as big as 25
         if(random.nextDouble() < occurenceRate/(delta)) {
             Point2D randomNoiseLocation = new Point2D(random.nextInt(windowSize), random.nextInt(windowSize));
             for(Agent agent : worldMap.getAgents()) {
                 if(randomNoiseLocation.distance(agent.getPosition())/SCALING_FACTOR < 5) {
-                    Point2D tmpPoint = agent.getMove(1000, agent.getDirection());
-                    double angleBetweenPoints = angleBetweenTwoPointsWithFixedPoint(tmpPoint.getX(), tmpPoint.getY(), agent.getPosition().getX(), agent.getPosition().getY(), randomNoiseLocation.getX(), randomNoiseLocation.getY());
+                    double angleBetweenPoints = Math.toDegrees(Math.atan2((agent.getPosition().getY() - randomNoiseLocation.getY()), (agent.getPosition().getX() - randomNoiseLocation.getX())));
                     angleBetweenPoints += new Random().nextGaussian()*SOUND_NOISE_STDEV;
                     agent.getAudioLogs().add(new AudioLog(System.nanoTime(), angleBetweenPoints, new Point2D(agent.getPosition().getX(), agent.getPosition().getY())));
                     System.out.println("Agent heard sound");

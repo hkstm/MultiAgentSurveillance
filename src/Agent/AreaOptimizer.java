@@ -1,8 +1,10 @@
 package Agent;
 
 import javafx.geometry.Point2D;
+import javafx.scene.shape.Shape;
 
 import static World.GameScene.SCALING_FACTOR;
+import static World.WorldMap.isVisionObscuring;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -17,7 +19,9 @@ public class AreaOptimizer extends Guard {
 
     private Point2DReward[][] worldAreaReward;
     private double score;
-    public final double REWARD_FACTOR = 0.1;
+    public final double NOT_SEEN_REWARD = 100;
+    public final double INTRUDER_BONUS_REWARD = 10;
+    public final double RECENT_AREA_PENALTY = 0;
     private Point2D goalPosition;
 
     /**
@@ -34,71 +38,59 @@ public class AreaOptimizer extends Guard {
                 worldAreaReward[r][c] = new Point2DReward(c, r, 10);
             }
         }
-    }
-
-    /**
-     * Starts the thread and everything in the while loop will keep on executing untill you call worldMap.stopAgent(//this agent//)
-     */
-    public void run() {
-        previousTime = System.nanoTime();
-        previousPosition = new Point2D(position.getX(), position.getY());
-        goalPosition = new Point2D(200, 200);
-        //this loop will keep on getting executed as long as the correspond thread is running
-        while(!exitThread) {
-            executeAgentLogic();
-        }
-    }
-
-    /**
-     * Used instead of the run method if we want to manually control when the agent should update
-     */
-    public void forceUpdate() {
-        if(firstRun) {
-            previousTime = System.nanoTime();
-            previousPosition = new Point2D(position.getX(), position.getY());
-            firstRun = false;
-        }
-        executeAgentLogic();
+//        for(int r = 0; r < worldMap.getSize(); r++) {
+//            for(int c = 0; c < 10; c++) {
+//                //initializing reward array with fixed flat reward
+//                worldAreaReward[r][c] = new Point2DReward(c, r, 100);
+//            }
+//        }
     }
 
     /**
      * Logic that gets executed every tick
      */
     public void executeAgentLogic() {
-        currentTime = System.nanoTime();
-        delta = (currentTime - previousTime)/1e9; //makes it in seconds
-        previousTime = currentTime;
-        createCone();
-        updateKnownTerrain();
-//        update vision
-
         updateWorldAreaReward(delta);
+//        double previousWeight = 1;
+//        double newWeight = 5;
+//        double totalWeight = previousWeight + newWeight;
+//        updateDirection(((direction*previousWeight)+(getMoveDirection()*newWeight)/totalWeight));
         updateDirection(getMoveDirection());
-        currentSpeed = ((position.distance(previousPosition)/SCALING_FACTOR)/delta);
-        previousPosition= new Point2D(position.getX(), position.getY());
-        checkForAgentSound();
-
-
         double walkingDistance = (1.4 * SCALING_FACTOR) * (delta);
         if (legalMoveCheck(walkingDistance)) {
             move(walkingDistance);
         }
 //        move(walkingDistance);
-
+        updatePerformanceCriteria();
     }
 
     public void updateWorldAreaReward(double delta) {
+        Shape worldAreaCone = createCone(visualRange[0], visualRange[1]*5);
         for(int r = 0; r < worldAreaReward.length; r++) {
             for(int c = 0; c < worldAreaReward[0].length; c++) {
                 //check if middle of tile is in cone
-                if(viewingCone.contains(worldMap.convertArrayToWorld(c-1) + 1 * worldMap.convertArrayToWorld(1),
+                if(worldAreaCone.contains(worldMap.convertArrayToWorld(c-1) + 1 * worldMap.convertArrayToWorld(1),
                         worldMap.convertArrayToWorld(r-1) + 1 * worldMap.convertArrayToWorld(1))) {
+                    for(Agent agent : worldMap.getAgents()) {
+                        if(agent instanceof Intruder) {
+                            if((locationToWorldgrid(agent.getPosition().getX()) == c) && (locationToWorldgrid(agent.getPosition().getY()) == r)) {
+                                worldAreaReward[r][c].updateReward(INTRUDER_BONUS_REWARD * delta);
+                            }
+                        }
+                    }
                     score += worldAreaReward[r][c].consumeReward();
                     worldAreaReward[r][c].resetReward();
+//                    worldAreaReward[r][c].updateReward(RECENT_AREA_PENALTY * delta);
+//                    System.out.println("reward: " + worldAreaReward[r][c].getReward());
 //                    System.out.println("reward reset for r: " + r + " c: " + c);
+//                    System.out.println("viewingcone contains tile: " + worldMap.convertArrayToWorld(c-1) + 1 * worldMap.convertArrayToWorld(1) + " r/y: " + worldMap.convertArrayToWorld(r-1) + 1 * worldMap.convertArrayToWorld(1));
                 } else {
-                    worldAreaReward[r][c].updateReward (REWARD_FACTOR * delta);
+                    if(!isVisionObscuring(worldMap.getTileState(r, c))) {
+//                        System.out.println("rewardnotseen: " + worldAreaReward[r][c].getReward());
+                        worldAreaReward[r][c].updateReward(NOT_SEEN_REWARD * delta);
+                    }
                 }
+//                System.out.println("reward: " + worldAreaReward[r][c].getReward());
             }
         }
     }
@@ -108,6 +100,11 @@ public class AreaOptimizer extends Guard {
      * @return the angle between the best point to go and current position
      */
     public double getMoveDirection() {
+        for(Agent intruder : worldMap.getAgents()) {
+            if(intruder instanceof Intruder) {
+                if(viewingCone.contains(intruder.getPosition())) return Math.toDegrees(Math.atan2((intruder.getPosition().getY() - position.getY()), (intruder.getPosition().getX() - position.getX())));
+            }
+        }
         double x = 0;
         double y = 0;
         double totalReward = 0;
@@ -130,7 +127,7 @@ public class AreaOptimizer extends Guard {
         Point2D goal = new Point2D(x, y);
 //        System.out.println("x: " + x + " y: " + y);
 //        printWorldAreaReward();
-        System.out.println("goalpoint x: " + x + " y: " + y);
+//        System.out.println("goalpoint x: " + x + " y: " + y);
         return Math.toDegrees(Math.atan2((goal.getY() - position.getY()), (goal.getX() - position.getX())));
     }
 

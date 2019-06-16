@@ -15,16 +15,25 @@ public class Guard extends Agent {
 
     /**
      * A subclass of Agent for the Guards with an internal map containing the starting positions of other guards and the terrain across the map
-     * @author Benjamin, Thibaut
+     * @author Benjamin, Thibaut, Kailhan
      */
 
     Routine routine;
+    protected double timeCost; //time untill end in seconds
+    protected double distanceCost; //meters moved
+    protected double directCommsCost; //message size in "bytes"
+    protected double indirectCommsCost; //number of markers placed;
+
     public Guard(Point2D position, double direction) {
         super(position, direction);
+        this.timeCost = 0;
+        this.distanceCost = 0;
+        this.directCommsCost = 0;
+        this.indirectCommsCost = 0;
         this.viewingAngle = 45;
 //        this.viewingAngle = 60;
         this.visualRange[0] = 0;
-        this.visualRange[1] = 6;
+        this.visualRange[1] = 8;
 //        this.visualRange[1] = 20;
         this.color = Color.AZURE;
         Routine guard1 = Routines.sequence(
@@ -38,34 +47,16 @@ public class Guard extends Agent {
         //this.knownTerrain = worldMap.getWorldGrid();
     }
 
+    public void updatePerformanceCriteria() {
+        timeCost += delta;
+        distanceCost += previousPosition.distance(position);
+    }
+
     /**
-     * This should be the structure of any bot but Im not sure how this bot fits into it -kailhan
+     * put your agent specific logic in this
      */
-
-    public void run() {
-        previousTime = System.nanoTime();
-        previousPosition = new Point2D(position.getX(), position.getY());
-        while(!exitThread) {
-            executeAgentLogic();
-        }
-    }
-
-    public void forceUpdate() {
-        if(firstRun) {
-            previousTime = System.nanoTime();
-            previousPosition = new Point2D(position.getX(), position.getY());
-            firstRun = false;
-        }
-        executeAgentLogic();
-    }
-
     public void executeAgentLogic() {
-        currentTime = System.nanoTime();
-        delta = currentTime - previousTime;
-        delta /= 1e9; //makes it in seconds
-        createCone();
-        checkForAgentSound();
-        previousTime = currentTime;
+        updatePerformanceCriteria();
     }
 
     /**

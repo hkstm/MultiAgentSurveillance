@@ -4,6 +4,7 @@ import World.WorldMap;
 import javafx.geometry.Point2D;
 
 
+import static Agent.Agent.BASE_SPEED;
 import static World.GameScene.SCALING_FACTOR;
 /**
  * this routine makes the agent move from a point a to a target
@@ -56,9 +57,7 @@ public class MoveTo extends Routine {
 
 
             while(!exitThread) {
-
                 currentTime = System.nanoTime();
-                delta = (currentTime - previousTime)/1e9; //puts it in seconds
                 delta = currentTime - previousTime;
                 delta /= 1e9; //makes it in seconds
                 previousTime = currentTime;
@@ -66,13 +65,13 @@ public class MoveTo extends Routine {
                 //System.out.println("currentSpeed:" + currentSpeed);
                 previousPosition = new Point2D(guard.position.getX(), guard.position.getY());
                 guard.checkForAgentSound();
-                double walkingDistance = (1.4 * SCALING_FACTOR) * (delta);
+                double walkingDistance = (BASE_SPEED * SCALING_FACTOR) * (delta);
                 if(guard.legalMoveCheck(walkingDistance)) {
                     guard.move(walkingDistance);
 
                 } else {
-                    double turningAngle = Math.random() * 90 - 45;
-                    guard.turn(turningAngle);
+                    double turningAngle = Math.random() * 90 - 45; //should this not be Math.random() * 45 - 45, now it has the tendency to go clockwise I think
+                    guard.updateDirection(turningAngle);
 
                 }
 

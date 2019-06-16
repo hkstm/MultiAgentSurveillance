@@ -7,6 +7,7 @@ import java.util.Random;
 import java.util.ArrayList;
 import java.util.List;
 import static World.GameScene.SCALING_FACTOR;
+import static World.WorldMap.OPEN_DOOR;
 
 /**
  * A subclass of Agent for the Intruders
@@ -14,23 +15,21 @@ import static World.GameScene.SCALING_FACTOR;
  */
 
 public class Intruder extends Agent{
-    private boolean tired;
-    private double walkingSpeed = 1.4; //m/s
-    private double sprintSpeed = 3.0; //m/s
-    private double startTime = 0;
-    private static Point2D oldTempGoal;
-    private static Point2D tempGoal;
-    private static Point2D previousTempGoal;
-    private double freezeTime = 0;
-    private boolean frozen = false;
-    private static boolean changed = false;
-    private final long createdMillis = System.currentTimeMillis();
-    private long blindMillis = 0;
-    private int sprintCounter = 5;
-    private int walkCounter = 10; //check if this is right (might be 10 sec not 15)
-    private boolean blind = false;
-    private List<Point> tempWalls = new ArrayList<Point>();
-    private boolean rePath = false;
+    protected boolean tired;
+    protected double startTime = 0;
+    protected static Point2D oldTempGoal;
+    protected static Point2D tempGoal;
+    protected static Point2D previousTempGoal;
+    protected double freezeTime = 0;
+    protected boolean frozen = false;
+    protected static boolean changed = false;
+    protected final long createdMillis = System.currentTimeMillis();
+    protected long blindMillis = 0;
+    protected int sprintCounter = 5;
+    protected int walkCounter = 10; //check if this is right (might be 10 sec not 15)
+    protected boolean blind = false;
+    protected List<Point> tempWalls = new ArrayList<Point>();
+    protected boolean rePath = false;
 
 
     /**
@@ -58,43 +57,30 @@ public class Intruder extends Agent{
         return equals;
     }
 
-    public void run() {
-        exitThread = false;
-        previousTime = System.nanoTime();
-        previousPosition = new Point2D(position.getX(), position.getY());
-        while(!exitThread) {
-            executeAgentLogic();
-        }
-    }
-
-    public void forceUpdate() {
-        if(firstRun) {
-            previousTime = System.nanoTime();
-            previousPosition = new Point2D(position.getX(), position.getY());
-            firstRun = false;
-        }
-        executeAgentLogic();
-    }
+    /**
+     * A method for going through a window or door. It is important the the intruder is standing on the tile to be changed.
+     * The time taken is consistent (3 seconds for a window and 5 for a door), unless a door is to be opened quietly, in which case a normal distribution is used.
+     */
 
     public void executeAgentLogic() {
-        currentTime = System.nanoTime();
-        delta = currentTime - previousTime;
-        delta /= 1e9; //makes it in seconds
-        createCone();
-        gameTreeIntruder(delta);
-        checkForAgentSound();
-        previousTime = currentTime;
+        try {
+            gameTreeIntruder(delta);
+        }
+        catch(Exception e) {
+            System.out.println("pls fix when intruder is on target");
+        }
     }
 
     public void gameTreeIntruder(double timeStep)
     {
         //TODO fix corner issue
-        //TODO should just walk straight or stay still when blinded
+        //TODO add blur
         //TODO check for guards
         //TODO make noise
+        //TODO test doors and windows
         //TODO add weights to flags and other types of squares, try manually an possibly with a genetic algorithm
         //this createCone should be redundant but it resolves some errors due to not being able to properly access the cones
-        //createCone();
+        createCone();
         rePath = false;
         if(tempWalls.size() > 0)
         {
@@ -124,6 +110,8 @@ public class Intruder extends Agent{
             if(worldMap.worldGrid[(int)(position.getY()/SCALING_FACTOR)][(int)(position.getX()/SCALING_FACTOR)] == 2)
             {
                 worldMap.worldGrid[(int)(position.getY()/SCALING_FACTOR)][(int)(position.getX()/SCALING_FACTOR)] = 0;
+                worldMap.updateTile(locationToWorldgrid(position.getY()), locationToWorldgrid(position.getX()), OPEN_DOOR);
+
                 knownTerrain[(int)(position.getY()/SCALING_FACTOR)][(int)(position.getX()/SCALING_FACTOR)] = 0;
                 Random random = new Random();
                 startTime = System.currentTimeMillis();
@@ -159,9 +147,10 @@ public class Intruder extends Agent{
             freezeTime = 0;
             if (!blind) {
                 updateKnownTerrain();
+                //System.out.println("nottttttttttttttttttttttttttttt blind");
             }
             else {
-                //System.out.println("blind");
+                //System.out.println("blinnnnnnnnnnnnnnnnnnnnnnnnnnd");
                 long nowMillis = System.currentTimeMillis();
                 int countSec = (int)((nowMillis - this.blindMillis) / 1000);
                 //System.out.println(countSec);
@@ -186,12 +175,6 @@ public class Intruder extends Agent{
             int[][] blocks = aStarTerrain(knownTerrain);
             Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks);
             List<Node> path = pathFinder.findPath();
-            if(path.size() == 0)
-            {
-                System.out.println("Target Reached");
-                exitThread = true;
-                return;
-            }
             if(!changed)
             {
                 tempGoal = new Point2D((path.get(path.size()-1).row*SCALING_FACTOR)+(SCALING_FACTOR/2), (path.get(path.size()-1).column*SCALING_FACTOR)+(SCALING_FACTOR/2));
@@ -236,8 +219,8 @@ public class Intruder extends Agent{
             }
             double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.getX()-position.getX())/divisor));
             double previousAngle = Math.toDegrees(Math.atan(Math.abs(previousTempGoal.getX()-tempGoal.getX())/preDivisor));
-            double walkingDistance = (walkingSpeed*SCALING_FACTOR*timeStep);
-            double sprintingDistance = (sprintSpeed*SCALING_FACTOR*timeStep);
+            double walkingDistance = (BASE_SPEED *SCALING_FACTOR*timeStep);
+            double sprintingDistance = (SPRINT_SPEED *SCALING_FACTOR*timeStep);
             double finalAngle = previousAngle - turnAngle;
             if (finalAngle > 45 || finalAngle < -45){
                 //System.out.println(turnAngle);
