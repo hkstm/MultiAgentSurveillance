@@ -1,8 +1,11 @@
 package Agent;
 
+import World.Settings;
 import World.WorldMap;
+import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.geometry.Point2D;
+import javafx.scene.control.Button;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -13,11 +16,12 @@ import java.util.Random;
 
 import static Agent.Agent.DISTANCE_TO_CATCH;
 import static Agent.Agent.SOUND_NOISE_STDEV;
+import static World.GameScene.ASSUMED_WORLDSIZE;
+import static World.GameScene.SCALING_FACTOR;
 
 public class RunSimulation extends Application {
 
     public static Random random = new Random();
-    public static final double ASSUMED_WORLDSIZE = 200;
     private WorldMap worldMap;
     private boolean countDown;
     private long currentTimeCountDown;
@@ -57,7 +61,7 @@ public class RunSimulation extends Application {
             worldMap.addOnlyAgent(intruder);
             worldMap.addOnlyAgent(areaOptimzer);
             //Actual game "loop" in here
-
+            System.out.println("doing simulation");
             while(!gameEnded){
                 long currentTime = System.nanoTime();
                 worldMap.forceUpdateAgents();
@@ -65,9 +69,10 @@ public class RunSimulation extends Application {
                 previousTime = currentTime;
                 generateRandomSound(delta);
                 gameEnded = haveGuardsCapturedIntruder(mode, delta);
-                if(!gameEnded) haveIntrudersWon(mode, delta);
+                if(!gameEnded) gameEnded = haveIntrudersWon(mode, delta);
             }
         }
+        System.out.println("done");
     }
 
     public boolean haveIntrudersWon(int mode, long delta) {
@@ -105,7 +110,7 @@ public class RunSimulation extends Application {
             if(agentGuard instanceof Guard) {
                 for(Agent agentIntruder : agentIntruders) {
                     if(agentIntruder instanceof Intruder) {
-                        if(agentGuard.getPosition().distance(agentIntruder.getPosition()) < (DISTANCE_TO_CATCH)) {
+                        if(agentGuard.getPosition().distance(agentIntruder.getPosition()) < (DISTANCE_TO_CATCH * SCALING_FACTOR)) {
                             return true;
                         }
                     }
@@ -123,9 +128,9 @@ public class RunSimulation extends Application {
         double occurenceRate = 0.1/1e9; //because delta is in nano seconds
         occurenceRate *= (ASSUMED_WORLDSIZE/25); //map is ASSUMED_WORLDSIZE so ASSUMED_WORLDSIZE/25 times as big as 25
         if(random.nextDouble() < occurenceRate/(delta)) {
-            Point2D randomNoiseLocation = new Point2D(random.nextInt((int)ASSUMED_WORLDSIZE), random.nextInt((int)ASSUMED_WORLDSIZE));
+            Point2D randomNoiseLocation = new Point2D(random.nextInt((int)(ASSUMED_WORLDSIZE*SCALING_FACTOR)), random.nextInt((int)(ASSUMED_WORLDSIZE*SCALING_FACTOR))); //prolly not right
             for(Agent agent : worldMap.getAgents()) {
-                if(randomNoiseLocation.distance(agent.getPosition()) < 5) {
+                if(randomNoiseLocation.distance(agent.getPosition())/SCALING_FACTOR < 5) {
                     double angleBetweenPoints = Math.toDegrees(Math.atan2((agent.getPosition().getY() - randomNoiseLocation.getY()), (agent.getPosition().getX() - randomNoiseLocation.getX())));
                     angleBetweenPoints += new Random().nextGaussian()*SOUND_NOISE_STDEV;
                     agent.getAudioLogs().add(new AudioLog(System.nanoTime(), angleBetweenPoints, new Point2D(agent.getPosition().getX(), agent.getPosition().getY())));
