@@ -262,13 +262,27 @@ public class WorldMap implements Serializable {
      * @param toCheck the type of the tile you want to check
      * @return if it is vision obscuring or not
      */
-    public boolean isVisionObscuring(int toCheck) {
+    public static boolean isVisionObscuring(int toCheck) {
         if ((toCheck == STRUCTURE) || (toCheck == WALL) || (toCheck == DOOR) ||
                 (toCheck == WINDOW)) {
             return true;
         }
         else return false;
     }
+
+    /**
+     * Convenience method to check if a tile is part of structure
+     * @param toCheck the type of the tile you want to check
+     * @return if it is part of a structure
+     */
+    public static boolean isStructure(int toCheck) {
+        if ((toCheck == STRUCTURE) || (toCheck == OPEN_DOOR) || (toCheck == DOOR) || (toCheck == OPEN_WINDOW) ||
+                (toCheck == WINDOW)) {
+            return true;
+        }
+        else return false;
+    }
+
 
     /**
      * Creates cones for all agents and stores them in agentsCones array for access

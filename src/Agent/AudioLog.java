@@ -5,7 +5,7 @@ import javafx.geometry.Point2D;
 
 public class AudioLog {
     private long timeHeard;
-    private double direction;
+    private double direction; //in degrees
     private Point2D locationHeard;
 
     public AudioLog(long timeHeard, double direction, Point2D locationHeard){

@@ -26,8 +26,7 @@ import Agent.*;
 import Agent.Routine;
 
 
-import static Agent.Agent.SOUND_NOISE_STDEV;
-import static Agent.Agent.angleBetweenTwoPointsWithFixedPoint;
+import static Agent.Agent.*;
 import static World.StartWorldBuilder.WINDOW_SIZE;
 
 /**
@@ -84,8 +83,8 @@ public class GameScene extends BorderPane implements Runnable {
         this.startGameBut = new Button("Start/Stop Game"); //should stop and start game, not properly working atm
         Agent.worldMap = worldMap;
         Guard guard  = new Guard(new Point2D(200, 300), 70);
-        Intruder intruder = new Intruder(new Point2D(500, 505), 0);
-        AreaOptimizer areaOptimzer = new AreaOptimizer(new Point2D(500, 500), 0);
+        Intruder intruder = new Intruder(new Point2D(500, 900), 0);
+        AreaOptimizer areaOptimzer = new AreaOptimizer(new Point2D(500, 400), 0);
 //        worldMap.addAgent(guard);
 //        worldMap.addAgent(intruder);
 //        worldMap.addOnlyAgent(guard);
@@ -226,33 +225,14 @@ public class GameScene extends BorderPane implements Runnable {
      * e.g. if "all" intruders need to be caught or only 1
      */
     public void haveGuardsCapturedIntruder(int mode, long delta) {
-//        for(Iterator<Agent> agentGuards = worldMap.getAgents().iterator(); agentGuards.hasNext(); ) {
-//            Agent agentGuard = agentGuards.next();
-//            if(agentGuard instanceof Guard) {
-//                for(Iterator<Agent> agentIntruders = worldMap.getAgents().iterator(); agentIntruders.hasNext(); ) {
-//                    Agent agentIntruder = agentIntruders.next();
-//                    if(agentIntruder instanceof Intruder) {
-//                        if(agentGuard.getPosition().distance(agentIntruder.getPosition()) < (0.5 * SCALING_FACTOR)) {
-//                            createAlert("GUARDS have found INTRUDER");
-//                        }
-//                    }
-//                }
-//            }
-//        }
         Agent[] agentGuards = worldMap.getAgents().toArray(new Agent[worldMap.getAgents().size()]);
         Agent[] agentIntruders = worldMap.getAgents().toArray(new Agent[worldMap.getAgents().size()]);
         for(Agent agentGuard : agentGuards) {
             if(agentGuard instanceof Guard) {
                 for(Agent agentIntruder : agentIntruders) {
                     if(agentIntruder instanceof Intruder) {
-                        if(agentGuard.getPosition().distance(agentIntruder.getPosition()) < (0.5 * SCALING_FACTOR)) {
-                            gameStarted = false;
-                            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                            alert.setTitle("Game Finished");
-                            alert.setHeaderText(null);
-                            alert.setContentText("GUARDS have found INTRUDER");
-                            alert.show();
-                            goToMenuBut.fire();
+                        if(agentGuard.getPosition().distance(agentIntruder.getPosition()) < (DISTANCE_TO_CATCH * SCALING_FACTOR)) {
+                            createAlert("GUARDS have found INTRUDER");
                         }
                     }
                 }
@@ -266,7 +246,6 @@ public class GameScene extends BorderPane implements Runnable {
         alert.setTitle("Game Finished");
         alert.setHeaderText(null);
         alert.setContentText(s);
-        alert.setOnHidden(evt -> Platform.exit());
         alert.show();
         goToMenuBut.fire();
     }
@@ -293,13 +272,12 @@ public class GameScene extends BorderPane implements Runnable {
      */
     public void generateRandomSound(long delta){
         double occurenceRate = 0.1/1e9; //because delta is in nano seconds
-        occurenceRate *= 8; //map is 200 so 8 times as big as 25
+        occurenceRate *= (ASSUMED_WORLDSIZE/25); //map is ASSUMED_WORLDSIZE so ASSUMED_WORLDSIZE/25 times as big as 25
         if(random.nextDouble() < occurenceRate/(delta)) {
             Point2D randomNoiseLocation = new Point2D(random.nextInt(windowSize), random.nextInt(windowSize));
             for(Agent agent : worldMap.getAgents()) {
                 if(randomNoiseLocation.distance(agent.getPosition())/SCALING_FACTOR < 5) {
-                    Point2D tmpPoint = agent.getMove(1000, agent.getDirection());
-                    double angleBetweenPoints = angleBetweenTwoPointsWithFixedPoint(tmpPoint.getX(), tmpPoint.getY(), agent.getPosition().getX(), agent.getPosition().getY(), randomNoiseLocation.getX(), randomNoiseLocation.getY());
+                    double angleBetweenPoints = Math.toDegrees(Math.atan2((agent.getPosition().getY() - randomNoiseLocation.getY()), (agent.getPosition().getX() - randomNoiseLocation.getX())));
                     angleBetweenPoints += new Random().nextGaussian()*SOUND_NOISE_STDEV;
                     agent.getAudioLogs().add(new AudioLog(System.nanoTime(), angleBetweenPoints, new Point2D(agent.getPosition().getX(), agent.getPosition().getY())));
                     System.out.println("Agent heard sound");

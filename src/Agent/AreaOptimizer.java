@@ -1,8 +1,10 @@
 package Agent;
 
 import javafx.geometry.Point2D;
+import javafx.scene.shape.Shape;
 
 import static World.GameScene.SCALING_FACTOR;
+import static World.WorldMap.isVisionObscuring;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -49,6 +51,10 @@ public class AreaOptimizer extends Guard {
      */
     public void executeAgentLogic() {
         updateWorldAreaReward(delta);
+//        double previousWeight = 1;
+//        double newWeight = 5;
+//        double totalWeight = previousWeight + newWeight;
+//        updateDirection(((direction*previousWeight)+(getMoveDirection()*newWeight)/totalWeight));
         updateDirection(getMoveDirection());
         double walkingDistance = (1.4 * SCALING_FACTOR) * (delta);
         if (legalMoveCheck(walkingDistance)) {
@@ -59,14 +65,17 @@ public class AreaOptimizer extends Guard {
     }
 
     public void updateWorldAreaReward(double delta) {
+        Shape worldAreaCone = createCone(visualRange[0], visualRange[1]*5);
         for(int r = 0; r < worldAreaReward.length; r++) {
             for(int c = 0; c < worldAreaReward[0].length; c++) {
                 //check if middle of tile is in cone
-                if(viewingCone.contains(worldMap.convertArrayToWorld(c-1) + 1 * worldMap.convertArrayToWorld(1),
+                if(worldAreaCone.contains(worldMap.convertArrayToWorld(c-1) + 1 * worldMap.convertArrayToWorld(1),
                         worldMap.convertArrayToWorld(r-1) + 1 * worldMap.convertArrayToWorld(1))) {
                     for(Agent agent : worldMap.getAgents()) {
-                        if((locationToWorldgrid(agent.getPosition().getX()) == c) && (locationToWorldgrid(agent.getPosition().getY()) == r)) {
-                            worldAreaReward[r][c].updateReward(INTRUDER_BONUS_REWARD * delta);
+                        if(agent instanceof Intruder) {
+                            if((locationToWorldgrid(agent.getPosition().getX()) == c) && (locationToWorldgrid(agent.getPosition().getY()) == r)) {
+                                worldAreaReward[r][c].updateReward(INTRUDER_BONUS_REWARD * delta);
+                            }
                         }
                     }
                     score += worldAreaReward[r][c].consumeReward();
@@ -76,7 +85,7 @@ public class AreaOptimizer extends Guard {
 //                    System.out.println("reward reset for r: " + r + " c: " + c);
 //                    System.out.println("viewingcone contains tile: " + worldMap.convertArrayToWorld(c-1) + 1 * worldMap.convertArrayToWorld(1) + " r/y: " + worldMap.convertArrayToWorld(r-1) + 1 * worldMap.convertArrayToWorld(1));
                 } else {
-                    if(!worldMap.isVisionObscuring(worldMap.getTileState(r, c))) {
+                    if(!isVisionObscuring(worldMap.getTileState(r, c))) {
 //                        System.out.println("rewardnotseen: " + worldAreaReward[r][c].getReward());
                         worldAreaReward[r][c].updateReward(NOT_SEEN_REWARD * delta);
                     }
