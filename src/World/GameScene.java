@@ -240,6 +240,26 @@ public class GameScene extends BorderPane implements Runnable {
         }
     }
 
+
+    /**
+     * Random sound according to sort of poisson process (more binomial with low probability which should approximate it probs&stat stuff
+     */
+    public void generateRandomSound(long delta){
+        double occurenceRate = 0.1/1e9; //because delta is in nano seconds
+        occurenceRate *= (ASSUMED_WORLDSIZE/25); //map is ASSUMED_WORLDSIZE so ASSUMED_WORLDSIZE/25 times as big as 25
+        if(random.nextDouble() < occurenceRate/(delta)) {
+            Point2D randomNoiseLocation = new Point2D(random.nextInt(windowSize), random.nextInt(windowSize));
+            for(Agent agent : worldMap.getAgents()) {
+                if(randomNoiseLocation.distance(agent.getPosition())/SCALING_FACTOR < 5) {
+                    double angleBetweenPoints = Math.toDegrees(Math.atan2((agent.getPosition().getY() - randomNoiseLocation.getY()), (agent.getPosition().getX() - randomNoiseLocation.getX())));
+                    angleBetweenPoints += new Random().nextGaussian()*SOUND_NOISE_STDEV;
+                    agent.getAudioLogs().add(new AudioLog(System.nanoTime(), angleBetweenPoints, new Point2D(agent.getPosition().getX(), agent.getPosition().getY())));
+                    System.out.println("Agent heard sound");
+                }
+            }
+        }
+    }
+
     private void createAlert(String s) {
         gameStarted = false;
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -264,25 +284,6 @@ public class GameScene extends BorderPane implements Runnable {
             agentGroup.getChildren().add(circle);
             agentGroup.toFront();
             //System.out.println("proceeding after while loop, agent on seperate thread");
-        }
-    }
-
-    /**
-     * Random sound according to sort of poisson process (more binomial with low probability which should approximate it probs&stat stuff
-     */
-    public void generateRandomSound(long delta){
-        double occurenceRate = 0.1/1e9; //because delta is in nano seconds
-        occurenceRate *= (ASSUMED_WORLDSIZE/25); //map is ASSUMED_WORLDSIZE so ASSUMED_WORLDSIZE/25 times as big as 25
-        if(random.nextDouble() < occurenceRate/(delta)) {
-            Point2D randomNoiseLocation = new Point2D(random.nextInt(windowSize), random.nextInt(windowSize));
-            for(Agent agent : worldMap.getAgents()) {
-                if(randomNoiseLocation.distance(agent.getPosition())/SCALING_FACTOR < 5) {
-                    double angleBetweenPoints = Math.toDegrees(Math.atan2((agent.getPosition().getY() - randomNoiseLocation.getY()), (agent.getPosition().getX() - randomNoiseLocation.getX())));
-                    angleBetweenPoints += new Random().nextGaussian()*SOUND_NOISE_STDEV;
-                    agent.getAudioLogs().add(new AudioLog(System.nanoTime(), angleBetweenPoints, new Point2D(agent.getPosition().getX(), agent.getPosition().getY())));
-                    System.out.println("Agent heard sound");
-                }
-            }
         }
     }
 
