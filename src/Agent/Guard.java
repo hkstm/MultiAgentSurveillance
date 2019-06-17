@@ -3,12 +3,10 @@ import World.GameScene;
 import World.WorldMap;
 import javafx.scene.paint.Color;
 
-import java.awt.geom.Point2D;
-import java.awt.geom.RoundRectangle2D;
+import javafx.geometry.Point2D;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static World.GameScene.guard;
 import static World.WorldMap.SENTRY;
 import static World.WorldMap.TARGET;
 
@@ -17,15 +15,26 @@ public class Guard extends Agent {
 
     /**
      * A subclass of Agent for the Guards with an internal map containing the starting positions of other guards and the terrain across the map
-     * @author Benjamin, Thibaut
+     * @author Benjamin, Thibaut, Kailhan
      */
 
     Routine routine;
-    public Guard(Point2D.Double position, double direction) {
+    protected double timeCost; //time untill end in seconds
+    protected double distanceCost; //meters moved
+    protected double directCommsCost; //message size in "bytes"
+    protected double indirectCommsCost; //number of markers placed;
+
+    public Guard(Point2D position, double direction) {
         super(position, direction);
+        this.timeCost = 0;
+        this.distanceCost = 0;
+        this.directCommsCost = 0;
+        this.indirectCommsCost = 0;
         this.viewingAngle = 45;
+//        this.viewingAngle = 60;
         this.visualRange[0] = 0;
-        this.visualRange[1] = 6;
+        this.visualRange[1] = 8;
+//        this.visualRange[1] = 20;
         this.color = Color.AZURE;
         Routine guard1 = Routines.sequence(
                //Routines.moveTo(150,75)
@@ -38,6 +47,22 @@ public class Guard extends Agent {
         //this.knownTerrain = worldMap.getWorldGrid();
     }
 
+    public void updatePerformanceCriteria() {
+        timeCost += delta;
+        distanceCost += previousPosition.distance(position);
+    }
+
+    /**
+     * put your agent specific logic in this
+     */
+    public void executeAgentLogic() {
+        updatePerformanceCriteria();
+    }
+
+    /**
+     * ^^^
+     */
+
     public boolean equals(Object obj) {
         boolean equals = false;
         if (obj == null) return false;
@@ -48,7 +73,7 @@ public class Guard extends Agent {
         return equals;
     }
     public void updateVisualRange(){
-        if (worldMap.coordinatesToCell(position) == SENTRY) { // i.e. guard in on a tower
+        if (worldMap.coordinatesToCell(position) == SENTRY) { // row.e. guard in on a tower
            this.visualRange[0] = 2;
            this.visualRange[1] = 15;
            this.viewingAngle = 30;

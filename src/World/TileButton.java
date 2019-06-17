@@ -5,6 +5,12 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 
+/**
+ * The "tiles" that you see in when building the game (not running), Buttons with Images that explicitly store their position
+ * on the grid and what kinda tiles they are
+ * @author Kailhan
+ */
+
 public class TileButton extends Button {
     private int r;
     private int c;

@@ -2,18 +2,18 @@ package Agent;
 
 public class Node {
 
-    public int i,j;
+    public int row, column;
     public Node parent;
     public int heuristic;
     public int fCost;
     public boolean solution;
 
-    public Node(int i, int j){
-        this.i = i;
-        this.j = j;
+    public Node(int row, int column){
+        this.row = row;
+        this.column = column;
     }
 
     public String toString(){
-        return "[" + i + ", "+ j + "]";
+        return "[" + row + ", "+ column + "]";
     }
 }

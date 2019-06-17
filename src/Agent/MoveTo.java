@@ -1,9 +1,10 @@
 package Agent;
 
 import World.WorldMap;
+import javafx.geometry.Point2D;
 
-import java.awt.geom.Point2D;
 
+import static Agent.Agent.BASE_SPEED;
 import static World.GameScene.SCALING_FACTOR;
 /**
  * this routine makes the agent move from a point a to a target
@@ -17,8 +18,8 @@ public class MoveTo extends Routine {
     protected double delta;
     protected boolean exitThread;
     protected double previousTime;
-    protected Point2D.Double previousPosition;
-    protected volatile Point2D.Double goalPosition;
+    protected Point2D previousPosition;
+    protected volatile Point2D goalPosition;
     double currentSpeed;
 
     @Override
@@ -46,33 +47,31 @@ public class MoveTo extends Routine {
     private void Move(Guard guard) {
         while(!isAtDestination(guard)){
             previousTime = System.nanoTime();
-            previousPosition = new Point2D.Double(guard.position.getX(), guard.position.getY());
+            previousPosition = new Point2D(guard.position.getX(), guard.position.getY());
             /**
              * DONT REMOVE THIS GOALPOSITION THING IT IS NECESSARY FOR SOME REASON
              */
-            goalPosition = new Point2D.Double(destX, destY);
+            goalPosition = new Point2D(destX, destY);
             //goalPosition = new Point2D.Double(200, 200);
             // Intruder intruder = new Intruder(position, direction);
 
 
             while(!exitThread) {
-
                 currentTime = System.nanoTime();
-                delta = (currentTime - previousTime)/1e9; //puts it in seconds
                 delta = currentTime - previousTime;
                 delta /= 1e9; //makes it in seconds
                 previousTime = currentTime;
                 currentSpeed = ((guard.position.distance(previousPosition)/SCALING_FACTOR)/delta);
                 //System.out.println("currentSpeed:" + currentSpeed);
-                previousPosition.setLocation(guard.position.getX(), guard.position.getY());
+                previousPosition = new Point2D(guard.position.getX(), guard.position.getY());
                 guard.checkForAgentSound();
-                double walkingDistance = (1.4 * SCALING_FACTOR) * (delta);
+                double walkingDistance = (BASE_SPEED * SCALING_FACTOR) * (delta);
                 if(guard.legalMoveCheck(walkingDistance)) {
                     guard.move(walkingDistance);
 
                 } else {
-                    double turningAngle = Math.random() * 90 - 45;
-                    guard.turn(turningAngle);
+                    double turningAngle = Math.random() * 90 - 45; //should this not be Math.random() * 45 - 45, now it has the tendency to go clockwise I think
+                    guard.updateDirection(turningAngle);
 
                 }
 

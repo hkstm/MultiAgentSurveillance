@@ -38,8 +38,8 @@ public class WorldBuilder extends BorderPane {
     private int activeTile;
 
     private HashMap<String, Boolean> currentlyActiveKeys = new HashMap<>();
-    int qPressedRow;
-    int qPressedColumn;
+    private int qPressedRow;
+    private int qPressedColumn;
     private boolean selectingRegion;
 
     public WorldBuilder(Stage primaryStage, Settings settings) {
