@@ -264,7 +264,7 @@ public class WorldMap implements Serializable {
      */
     public static boolean isVisionObscuring(int toCheck) {
         if ((toCheck == STRUCTURE) || (toCheck == WALL) || (toCheck == DOOR) ||
-                (toCheck == WINDOW)) {
+                (toCheck == WINDOW) || (toCheck == SENTRY)) {
             return true;
         }
         else return false;

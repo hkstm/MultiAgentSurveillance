@@ -56,11 +56,11 @@ public class AreaOptimizer extends Guard {
 //        double totalWeight = previousWeight + newWeight;
 //        updateDirection(((direction*previousWeight)+(getMoveDirection()*newWeight)/totalWeight));
         updateDirection(getMoveDirection());
-        double walkingDistance = (1.4 * SCALING_FACTOR) * (delta);
-        if (legalMoveCheck(walkingDistance)) {
-            move(walkingDistance);
+        double walkingDistance = (BASE_SPEED * SCALING_FACTOR) * (delta);
+        Point2D newPosition = new Point2D((position.getX() + (walkingDistance * Math.cos(Math.toRadians(direction)))), (position.getY() + (walkingDistance * Math.sin(Math.toRadians(direction)))));
+        if(!isVisionObscuring(worldMap.getTileState(locationToWorldgrid(newPosition.getY()), locationToWorldgrid(newPosition.getX())))) {
+            position = newPosition;
         }
-//        move(walkingDistance);
         updatePerformanceCriteria();
     }
 

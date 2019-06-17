@@ -27,6 +27,7 @@ public class RunSimulation extends Application {
     private long currentTimeCountDown;
     private boolean visitedTarget;
     private long firstVisitTime;
+    private File worldFile;
 
     public static void main(String[] args) {
         launch(args);
@@ -34,12 +35,11 @@ public class RunSimulation extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("JavaFX App");
+        primaryStage.setTitle("Multi-Agent Surveillance - Simulation Only");
         int amountOfSims = 3;
-
+        worldFile = loadFile(primaryStage);
         for(int i = 0; i < amountOfSims; i++) {
-
-            worldMap = loadMap(primaryStage);
+            worldMap = loadMap(worldFile);
             Agent.worldMap = worldMap;
             int mode = 0;
 
@@ -71,6 +71,7 @@ public class RunSimulation extends Application {
                 gameEnded = haveGuardsCapturedIntruder(mode, delta);
                 if(!gameEnded) gameEnded = haveIntrudersWon(mode, delta);
             }
+            System.out.println("game ended");
         }
         System.out.println("done");
     }
@@ -140,7 +141,7 @@ public class RunSimulation extends Application {
         }
     }
 
-    public WorldMap loadMap(Stage primaryStage){
+    public File loadFile(Stage primaryStage){
         File recordsDir = new File(System.getProperty("user.home"), ".MultiAgentSurveillance/maps");
         if (!recordsDir.exists()) {
             recordsDir.mkdirs();
@@ -152,10 +153,14 @@ public class RunSimulation extends Application {
         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Text Files", "*.dat"));
 //            if(fileChooser.showOpenDialog(primaryStage) != null)
         File selectedFile = fileChooser.showOpenDialog(primaryStage);
+        return selectedFile;
+    }
+
+    public WorldMap loadMap(File worldFile) {
         FileInputStream fileInputStream = null;
         WorldMap worldMapSelection = null;
         try {
-            fileInputStream = new FileInputStream(selectedFile);
+            fileInputStream = new FileInputStream(worldFile);
             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
             worldMapSelection = (WorldMap) objectInputStream.readObject();
             objectInputStream.close();
