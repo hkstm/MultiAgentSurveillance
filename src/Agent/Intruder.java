@@ -61,6 +61,7 @@ public class Intruder extends Agent{
      */
 
     public void executeAgentLogic() {
+        System.out.print("check 2 ");
         try {
             gameTreeIntruder(delta);
         }
@@ -72,6 +73,9 @@ public class Intruder extends Agent{
 
     public void gameTreeIntruder(double timeStep)
     {
+        //System.out.println("2");
+        //System.out.println();
+        //printKnownTerrain();
         //TODO fix corner issue
         //TODO check for guards
         //TODO make noise
@@ -84,7 +88,6 @@ public class Intruder extends Agent{
             {
                 if(legalMoveCheck(sprintingDistance))
                 {
-                    System.out.println("blind and sprinting");
                     long nowMillis = System.currentTimeMillis();
                     int countSec = (int)((nowMillis - this.createdMillis) / 1000);
                     if (countSec != sprintCounter){
@@ -100,7 +103,6 @@ public class Intruder extends Agent{
             {
                 if(legalMoveCheck(walkingDistance))
                 {
-                    System.out.println("blind and walking");
                     long nowMillis = System.currentTimeMillis();
                     int countSec = (int)((nowMillis - this.createdMillis) / 1000);
                     if (countSec != walkCounter) {
@@ -183,18 +185,6 @@ public class Intruder extends Agent{
                 //    long nowMillis = System.currentTimeMillis();
                 //    int countSec = (int)((nowMillis - this.blindMillis) / 1000);
 
-                //prints the known terrain every iteration
-                //for(int i = 0; i < knownTerrain.length; i++)
-                //{
-                //    for(int j = 0; j < knownTerrain.length; j++)
-                //    {
-                //        System.out.print(knownTerrain[i][j]+" ");
-                //    }
-                //    System.out.println();
-                //}
-                //System.out.println();
-                //System.out.println();
-
                 oldTempGoal = tempGoal;
                 int[][] blocks = aStarTerrain(knownTerrain);
                 Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks);
@@ -227,8 +217,19 @@ public class Intruder extends Agent{
                                 previousTempGoal = tempGoal;
                             }
                         }
+                        //System.out.println("wall phase attempt detected, corrected to:");
+                        //System.out.println("position: "+position);
+                        //System.out.println("temporary goal: "+tempGoal);
+                        //System.out.println();
                     }
-                    cornerCorrection();
+                    else
+                    {
+                        cornerCorrection();
+                        //System.out.println("corner cut detected, corrected to:");
+                        //System.out.println("position "+position);
+                        //System.out.println("temporary goal: "+tempGoal);
+                        //System.out.println();
+                    }
                 }
                 double divisor = Math.abs(tempGoal.getY()-position.getY());
                 double preDivisor = Math.abs(previousTempGoal.getY()-tempGoal.getY());
@@ -265,7 +266,6 @@ public class Intruder extends Agent{
                 {
                     if(legalMoveCheck(sprintingDistance))
                     {
-                        System.out.println("able to see and sprinting");
                         long nowMillis = System.currentTimeMillis();
                         int countSec = (int)((nowMillis - this.createdMillis) / 1000);
                         if (countSec != sprintCounter){
@@ -281,7 +281,6 @@ public class Intruder extends Agent{
                 {
                     if(legalMoveCheck(walkingDistance))
                     {
-                        System.out.println("able to see and walking");
                         long nowMillis = System.currentTimeMillis();
                         int countSec = (int)((nowMillis - this.createdMillis) / 1000);
                         if (countSec != walkCounter) {
