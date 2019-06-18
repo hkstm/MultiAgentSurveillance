@@ -15,15 +15,15 @@ import static World.GameScene.SCALING_FACTOR;
  * @author Thibaut Donis
  */
 public class MoveTo extends Routine {
-     static double destX;
-     static double destY;
+    static double destX;
+    static double destY;
     public static WorldMap worldMap;
     protected double currentTime;
     protected double delta;
     protected double previousTime;
     private List<Shape> cones;
     private List<Agent> agents;
-    private  Guard guard;
+    private Guard guard;
     private Intruder intruder;
     double direction;
 
@@ -41,51 +41,51 @@ public class MoveTo extends Routine {
     public void reset() {
         start();
     }
+
     @Override
     public void act(Guard guard, WorldMap worldMap) {
-        if(isWalking()){
-            if(!isAtDestination(guard)){
+        if (isWalking()) {
+            if (!isAtDestination(guard)) {
                 Move(guard);
             }
         }
     }
 
-    public void Move(Guard guard){
+    public void Move(Guard guard) {
         //TODO add some logic for the move, better if use a*
-         delta = guard.delta;
-        if(!isAtDestination(guard)){
-            guard.gameTree(delta);
-            System.out.println("nique ta mere fdpppp");
-            if(seen()){
-                destX = intruder.getPosition().getX();
-                destY = intruder.getPosition().getY();
-                direction =  Math.toDegrees(Math.atan2((intruder.getPosition().getY() - guard.getPosition().getY()), (intruder.getPosition().getX() - guard.getPosition().getX())));
-                guard.updateDirection(direction);
-                guard.gameTree(delta);
+        delta = guard.delta;
+
+        guard.gameTree(delta);
+        System.out.println("nique ta mere fdpppp");
+        if (!guard.firstRun) {
+            if (seen(guard)) {
+                succeed();
+                    /*guard.updateDirection(direction);
+                    destX = intruder.getPosition().getX();
+                    destY = intruder.getPosition().getY();
+                    direction = Math.toDegrees(Math.atan2((intruder.getPosition().getY() - guard.getPosition().getY()), (intruder.getPosition().getX() - guard.getPosition().getX())));
+                    guard.gameTree(delta); */
             }
-
-            previousTime = currentTime;
-
         }
-        else{
-            succeed();
-        }
+
+        previousTime = currentTime;
     }
-    private boolean isAtDestination(Guard guard){
+
+    private boolean isAtDestination(Guard guard) {
         return destX == guard.getPosition().getX() && destY == guard.getPosition().getY();
     }
-    private boolean seen() {
 
+    private boolean seen(Guard guard) {
+        this.guard = guard;
+        //this.agents = guard.worldMap.getAgents();
+        this.cones = guard.worldMap.getAgentsCones();
+        // System.out.println("cone size: " + cones.size());
+        for (Agent intruder : guard.worldMap.getAgents()) {
+            if (intruder instanceof Intruder) {
+                if (cones.contains(intruder.getPosition())) return true;
 
-    //    this.agents = guard.worldMap.getAgents();
-    //    this.cones = guard.worldMap.getAgentsCones();
-    //    System.out.println("cone size: " + cones.size());
-     /*   for(Agent intruder : worldMap.getAgents()) {
-            if(intruder instanceof Intruder) {
-                if(guard.viewingCone.contains(intruder.getPosition())) return true;
             }
-        }*/
+        }
         return false;
     }
-
 }

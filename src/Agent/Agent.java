@@ -44,6 +44,15 @@ public class Agent implements Runnable {
     public static final double DISTANCE_TO_CATCH = 0.5; //meters
     public static final double BASE_SPEED = 1.4; //m/s
     public static final double SPRINT_SPEED = 3.0; //m/s
+    protected static Point2D oldTempGoal;
+    protected static Point2D tempGoal;
+    protected static Point2D previousTempGoal;
+    protected double freezeTime = 0;
+    protected boolean frozen = false;
+    protected static boolean changed = false;
+    protected List<Point> tempWalls = new ArrayList<Point>();
+    protected boolean blind = false;
+    protected boolean rePath = false;
 
     protected volatile Point2D position;
     protected double direction;
@@ -52,7 +61,7 @@ public class Agent implements Runnable {
     protected double currentSpeed;
     protected Color color;
 
-    protected Shape viewingCone;
+    protected static Shape viewingCone;
     protected double viewingAngle;
     protected double[] visualRange;
 
@@ -72,7 +81,6 @@ public class Agent implements Runnable {
 
     protected long startTimeFastTurn;
     protected double previousDirection;
-    protected boolean blind;
     protected boolean hiddenInDecreasedVis;
     protected boolean shortDetectionRange;
     protected long startTimeDecreasedVis;
@@ -525,5 +533,123 @@ public class Agent implements Runnable {
     public void blindCheck(){
 
     }
+    public void cornerCorrection()
+    {
+        if(oldTempGoal.getX()+10 == tempGoal.getX() && oldTempGoal.getY()-10 == tempGoal.getY())
+        {
+            if(isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()+10)/SCALING_FACTOR)))
+            {
+                tempGoal = new Point2D(oldTempGoal.getX(), oldTempGoal.getY()-10);
+                changed = true;
+            }
+            else if(isObstruction((int)((oldTempGoal.getY()-10)/SCALING_FACTOR), (int)(oldTempGoal.getX()/SCALING_FACTOR)))
+            {
+                tempGoal =  new Point2D(oldTempGoal.getX()+10, oldTempGoal.getY());
+                changed = true;
+            }
+        }
+        else if(oldTempGoal.getX()-10 == tempGoal.getX() && oldTempGoal.getY()+10 == tempGoal.getY())
+        {
+            if(isObstruction((int)((oldTempGoal.getY()+10)/SCALING_FACTOR), (int)(oldTempGoal.getX()/SCALING_FACTOR)))
+            {
+                tempGoal = new Point2D(oldTempGoal.getX()-10, oldTempGoal.getY());
+                changed = true;
+            }
+            else if(isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()-10)/SCALING_FACTOR)))
+            {
+                tempGoal = new Point2D(oldTempGoal.getX(), oldTempGoal.getY()+10);
+                changed = true;
+            }
+        }
+        else if(oldTempGoal.getX()+10 == tempGoal.getX() && oldTempGoal.getY()+10 == tempGoal.getY())
+        {
+            if(isObstruction((int)((oldTempGoal.getY()+10)/SCALING_FACTOR), (int)(oldTempGoal.getX()/SCALING_FACTOR)))
+            {
+                tempGoal = new Point2D(oldTempGoal.getX()+10, oldTempGoal.getY());
+                changed = true;
+            }
+            else if(isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()+10)/SCALING_FACTOR)))
+            {
+                tempGoal = new Point2D(oldTempGoal.getX(), oldTempGoal.getY()+10);
+                changed = true;
+            }
+        }
+        else if(oldTempGoal.getX()-10 == tempGoal.getX() && oldTempGoal.getY()-10 == tempGoal.getY())
+        {
+            if (isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()-10)/SCALING_FACTOR)))
+            {
+                tempGoal = new Point2D(oldTempGoal.getX(), oldTempGoal.getY()-10);
+                changed = true;
+            }
+            else if (isObstruction((int)((oldTempGoal.getY()-10)/SCALING_FACTOR), (int)(oldTempGoal.getX()/SCALING_FACTOR)))
+            {
+                tempGoal = new Point2D(oldTempGoal.getX()-10, oldTempGoal.getY());
+                changed = true;
+            }
+        }
+    }
 
+    public void wallPhaseDetection()
+    {
+        if(oldTempGoal.getX()+10 == tempGoal.getX() && oldTempGoal.getY()-10 == tempGoal.getY() && isObstruction((int) (oldTempGoal.getY() / SCALING_FACTOR), (int) ((oldTempGoal.getX() + 10) / SCALING_FACTOR)) && isObstruction((int) ((oldTempGoal.getY() - 10) / SCALING_FACTOR), (int) (oldTempGoal.getX() / SCALING_FACTOR)))
+        {
+            Point tempWall = new Point((int) (tempGoal.getX() / SCALING_FACTOR), (int) (tempGoal.getY() / SCALING_FACTOR));
+            tempWalls.add(tempWall);
+            knownTerrain[(int) tempWall.getY()][(int) tempWall.getX()] = 7;
+            rePath = true;
+        }
+        else if(oldTempGoal.getX()-10 == tempGoal.getX() && oldTempGoal.getY()+10 == tempGoal.getY() && isObstruction((int)((oldTempGoal.getY()+10)/SCALING_FACTOR), (int)(oldTempGoal.getX()/SCALING_FACTOR)) && isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()-10)/SCALING_FACTOR)))
+        {
+            Point tempWall = new Point((int) (tempGoal.getX() / SCALING_FACTOR), (int) (tempGoal.getY() / SCALING_FACTOR));
+            tempWalls.add(tempWall);
+            knownTerrain[(int) tempWall.getY()][(int) tempWall.getX()] = 7;
+            rePath = true;
+        }
+        else if(oldTempGoal.getX()+10 == tempGoal.getX() && oldTempGoal.getY()+10 == tempGoal.getY() && isObstruction((int)((oldTempGoal.getY()+10)/SCALING_FACTOR), (int)(oldTempGoal.getX()/SCALING_FACTOR)) && isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()+10)/SCALING_FACTOR)))
+        {
+            Point tempWall = new Point((int)(tempGoal.getX() / SCALING_FACTOR), (int)(tempGoal.getY() / SCALING_FACTOR));
+            tempWalls.add(tempWall);
+            knownTerrain[(int)tempWall.getY()][(int)tempWall.getX()] = 7;
+            rePath = true;
+        }
+        else if(oldTempGoal.getX()-10 == tempGoal.getX() && oldTempGoal.getY()-10 == tempGoal.getY() && isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()-10)/SCALING_FACTOR)) && isObstruction((int)((oldTempGoal.getY()-10)/SCALING_FACTOR), (int)(oldTempGoal.getX()/SCALING_FACTOR)))
+        {
+            Point tempWall = new Point((int) (tempGoal.getX() / SCALING_FACTOR), (int) (tempGoal.getY() / SCALING_FACTOR));
+            tempWalls.add(tempWall);
+            knownTerrain[(int) tempWall.getY()][(int) tempWall.getX()] = 7;
+            rePath = true;
+        }
+    }
+
+    public void checkChangedStatus()
+    {
+        Point2D pointToCheck = new Point2D(tempGoal.getX(), tempGoal.getY());
+        Point2D currentPos = new Point2D(position.getX(), position.getY());
+        if(changed && checkApproximateEquality(currentPos, pointToCheck))
+        {
+            changed = false;
+        }
+    }
+
+    public boolean checkApproximateEquality(Point2D p1, Point2D p2)
+    {
+        if(p1.getX() <= p2.getX()+1 && p1.getX() >= p2.getX()-1 && p1.getY() <= p2.getY()+1 && p1.getY() >= p2.getY()-1)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public boolean isObstruction(int y, int x)
+    {
+        if(knownTerrain[y][x] == 1 || knownTerrain[y][x] == 5 || knownTerrain[y][x] == 7)
+        {
+            return true;
+        }
+        return false;
+    }
 }
+
