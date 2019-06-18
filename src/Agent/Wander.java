@@ -23,14 +23,17 @@ public class Wander extends Routine {
     }
 
     public void reset() {
-        this.moveTo = new MoveTo((Math.random() * 199) +1,(Math.random() * 199) +1);
+
     }
 
-    public Wander(WorldMap worldMap) {
+    public Wander(WorldMap worldMap,Guard guard) {
         super();
         this.worldMap = worldMap;
+        this.guard = guard;
+        /**
+         * logic for random move
+         */
 
-         this.moveTo = new MoveTo((Math.random() * 100) +1,(Math.random() * 100) +1);
          System.out.println(destX + "<-- x, y-->" + destY);
     }
 

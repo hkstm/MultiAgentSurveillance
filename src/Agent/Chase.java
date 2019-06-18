@@ -42,6 +42,7 @@ public class Chase extends Routine {
             System.out.println("start loop");
             if (agents.get(i) instanceof Intruder) {
                 System.out.println("there is an intruder");
+
                 if (cones.get(i).contains(intruder.getPosition().getX(), intruder.getPosition().getY())) { //problem comes from here
                     seen = true;
                     System.out.println("seen ");

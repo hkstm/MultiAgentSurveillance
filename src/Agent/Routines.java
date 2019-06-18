@@ -32,8 +32,8 @@ public class Routines {
         return new DoAgain(routine, times);
     }
 
-    public static Routine wander(WorldMap worldMap) {
-        return new Wander(worldMap);
+    public static Routine wander(WorldMap worldMap, Guard guard) {
+        return new Wander(worldMap, guard);
     }
 
     public static Routine chase(Guard guard, Intruder intruder) {return new Chase(guard,intruder);}

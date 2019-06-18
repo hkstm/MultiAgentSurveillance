@@ -58,7 +58,7 @@ public class Agent implements Runnable {
 
     public static WorldMap worldMap;
     protected double currentTime;
-    protected double delta;
+    double delta;
     protected boolean exitThread;
     protected double previousTime;
 

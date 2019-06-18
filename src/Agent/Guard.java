@@ -4,9 +4,15 @@ import World.WorldMap;
 import javafx.scene.paint.Color;
 
 import javafx.geometry.Point2D;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static Agent.MoveTo.destX;
+import static Agent.MoveTo.destY;
+import static World.GameScene.SCALING_FACTOR;
 import static World.WorldMap.SENTRY;
 import static World.WorldMap.TARGET;
 
@@ -17,6 +23,11 @@ public class Guard extends Agent {
      * A subclass of Agent for the Guards with an internal map containing the starting positions of other guards and the terrain across the map
      * @author Benjamin, Thibaut, Kailhan
      */
+    private static Point2D oldTempGoal;
+    private static Point2D tempGoal;
+    private static boolean changed = false;
+    private double walkingSpeed = 1.4; //m/s
+
 
     Routine routine;
     protected double timeCost; //time untill end in seconds
@@ -37,11 +48,12 @@ public class Guard extends Agent {
 //        this.visualRange[1] = 20;
         this.color = Color.AZURE;
         Routine guard1 = Routines.sequence(
-               //Routines.moveTo(150,75)
-                 //Routines.chase(guard, GameScene.intruder)
-               Routines.wander(worldMap)
+                Routines.moveTo(150,75)
+                //Routines.chase(guard, GameScene.intruder)
+                // Routines.wander(worldMap,this)
         );
         this.setRoutine(guard1);
+
 
 
         //this.knownTerrain = worldMap.getWorldGrid();
@@ -54,9 +66,48 @@ public class Guard extends Agent {
 
     /**
      * put your agent specific logic in this
+    /*
+     * This should be the structure of any bot but Im not sure how this bot fits into it -kailhan
+     */
+
+    public void run() {
+        previousTime = System.nanoTime();
+        previousPosition = new Point2D(position.getX(), position.getY());
+        while(!exitThread) {
+            executeAgentLogic();
+        }
+    }
+    /**
+     * Used instead of the run method if we want to manually control when the agent should update
+     */
+    public void forceUpdate() {
+        if(firstRun) {
+            previousTime = System.nanoTime();
+            previousPosition = new Point2D(position.getX(), position.getY());
+            routine.start();
+            firstRun = false;
+        }
+        executeAgentLogic();
+    }
+    /**
+     * Logic that gets executed every tick
      */
     public void executeAgentLogic() {
         updatePerformanceCriteria();
+        currentTime = System.nanoTime();
+        delta = currentTime - previousTime;
+        delta /= 1e9; //makes it in seconds
+        createCone();
+        checkForAgentSound();
+        previousTime = currentTime;
+        currentSpeed = ((position.distance(previousPosition) / SCALING_FACTOR) / delta);
+        System.out.println("x: " + getPosition().getX() + "y: " + getPosition().getY());
+        goalPosition = new Point2D(destX, destY);
+        previousPosition= new Point2D(position.getX(), position.getY());
+        update();
+
+
+
     }
 
     /**
@@ -116,6 +167,60 @@ public class Guard extends Agent {
 
     public void setRoutine(Routine routine) {
         this.routine = routine;
+    }
+    public void gameTree(double timeStep) {
+
+        int goal = 100;
+        int[][] blocks = aStarTerrain(worldMap.getWorldGrid());
+        Astar pathMaker = new Astar(knownTerrain[0].length, knownTerrain.length, locationToWorldgrid(position.getX()),
+                locationToWorldgrid(position.getY()), locationToWorldgrid(destX), locationToWorldgrid(destY), blocks);
+        List<Node> path = pathMaker.findPath();
+
+        System.out.println("destX : "+destX + " destY : " + destY);
+        if(!changed)
+        {
+            //System.out.println("not changed");
+
+            if(path.size() > 0) {
+                tempGoal = new Point2D(worldMap.convertArrayToWorld(path.get(path.size()-1).row) + worldMap.convertArrayToWorld(1)/2, worldMap.convertArrayToWorld(path.get(path.size()-1).column) + worldMap.convertArrayToWorld(1)/2);
+            } else {
+                System.out.println("path size: " + path.size() + "setting tempGoal to current position");
+                tempGoal = new Point2D(position.getX(), position.getY());
+            }
+        }
+        double divisor = Math.abs(tempGoal.getY()-position.getY());
+        if(divisor == 0)
+        {
+            divisor++;
+            System.out.println("divisor is zero");
+        }
+        double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.getX()-position.getX())/divisor));
+        double walkingDistance = (walkingSpeed*SCALING_FACTOR*timeStep);
+        /**
+         * logic for turning, call updateDirection() for proper turning
+         */
+        if(tempGoal.getX() >= position.getX() && tempGoal.getY() <= position.getY())
+        {
+            updateDirection(turnAngle);
+        }
+        else if(tempGoal.getX() >= position.getX() && tempGoal.getY() > position.getY())
+        {
+            updateDirection(180-turnAngle);
+        }
+        else if(tempGoal.getX() < position.getX() && tempGoal.getY() > position.getY())
+        {
+            updateDirection(180+turnAngle);
+        }
+        else if(tempGoal.getX() < position.getX() && tempGoal.getY() <= position.getY())
+        {
+            updateDirection(360-turnAngle);
+        }
+        if(legalMoveCheck(walkingDistance))
+        {
+            move(walkingDistance);
+
+
+        }
     }
 
 }
