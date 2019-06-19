@@ -153,6 +153,7 @@ public class Agent implements Runnable {
     }
 
     public void executeGeneralAgentLogic() {
+        System.out.print("check 1 ");
         currentTime = System.nanoTime();
         delta = currentTime - previousTime;
         delta /= 1e9; //makes it in seconds
@@ -167,6 +168,7 @@ public class Agent implements Runnable {
         /**
          * this is the point where the logic of your bot gets called
          */
+        //printKnownTerrain();
         executeAgentLogic();
         /**
          *
@@ -191,6 +193,7 @@ public class Agent implements Runnable {
         else shortDetectionRange = false;
         if(!hiddenInDecreasedVis) shortDetectionRange = false;
         currentSpeed = ((position.distance(previousPosition) / SCALING_FACTOR) / delta);
+        System.out.println("check 3");
     }
 
     /**
@@ -591,6 +594,21 @@ public class Agent implements Runnable {
         }
     }
 
+    public void printKnownTerrain()
+    {
+        for(int i = 0; i < knownTerrain.length; i++)
+        {
+            for(int j = 0; j < knownTerrain.length; j++)
+            {
+                System.out.print(knownTerrain[i][j]+" ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+        System.out.println();
+    }
+
+}
     public void wallPhaseDetection()
     {
         if(oldTempGoal.getX()+10 == tempGoal.getX() && oldTempGoal.getY()-10 == tempGoal.getY() && isObstruction((int) (oldTempGoal.getY() / SCALING_FACTOR), (int) ((oldTempGoal.getX() + 10) / SCALING_FACTOR)) && isObstruction((int) ((oldTempGoal.getY() - 10) / SCALING_FACTOR), (int) (oldTempGoal.getX() / SCALING_FACTOR)))
