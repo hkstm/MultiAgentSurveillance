@@ -143,6 +143,7 @@ public class Guard extends Agent {
             Timer timer = new Timer();
             TimerTask openTower = new OpenTower();
 
+
                 timer.schedule(openTower, 3000);
             timer.cancel();
         }
