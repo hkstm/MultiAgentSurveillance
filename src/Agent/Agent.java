@@ -82,7 +82,6 @@ public class Agent implements Runnable {
 
     protected long startTimeFastTurn;
     protected double previousDirection;
-    protected boolean blind;
     protected boolean hiddenInDecreasedVis;
     protected boolean shortDetectionRange;
     protected long startTimeDecreasedVis;
@@ -606,7 +605,6 @@ public class Agent implements Runnable {
         System.out.println();
     }
 
-}
     public void wallPhaseDetection()
     {
         if(oldTempGoal.getX()+10 == tempGoal.getX() && oldTempGoal.getY()-10 == tempGoal.getY() && isObstruction((int) (oldTempGoal.getY() / SCALING_FACTOR), (int) ((oldTempGoal.getX() + 10) / SCALING_FACTOR)) && isObstruction((int) ((oldTempGoal.getY() - 10) / SCALING_FACTOR), (int) (oldTempGoal.getX() / SCALING_FACTOR)))
