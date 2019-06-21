@@ -3,13 +3,13 @@ package Agent;
 /* This class is the blackboard class for the guard
  * share information about the any intruders found
  *
- * @author Olive
+ * @author Olive, Costi
  */
 public class Singleton
 {
     private static Singleton bir = null; // Singleton shared by all.
     private static boolean seenIntruder; // When true, all guards enter chase mode.
-    private static int[] coordinatesOfIntruder;
+    private static int[] coordinatesOfIntruder; //---> to get the intruders coords we just need to call Intruder.getPosition();
 
 
     private Singleton()
