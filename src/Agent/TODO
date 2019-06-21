@@ -1,0 +1,17 @@
+make blackboard
+    modify behaviour tree
+    modify A* to properly surround the intruder
+
+make pheromones
+    queue;
+    visualise()
+    check()
+    read()
+        what do if trail
+
+
+    have a trail of pheromones
+        linked list? queue? THINK OF THE COMPUTATION
+    have pheromones be recognisable
+        have a checkIntersection() of sorts
+    visualise the pheromones
