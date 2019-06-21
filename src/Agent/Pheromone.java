@@ -13,7 +13,7 @@ import javafx.geometry.Point2D;
  *
  * The most recent agent that traverses [x,y] leaves their pheromone there - not one-to-many.
  *
- * @author Olive
+ * @author Olive, Costi
  */
 public class Pheromone
 {
@@ -27,7 +27,15 @@ public class Pheromone
         coordinates = owner.position;
     }
 
-
+    public void createTrail(){
+       if ( Agent.getType() != intruder){
+           //create queue
+           //check()
+           // if false then
+           //colour the tile
+       }
+    }
+          
     /* Checks if an agents current coordinate intersects with any hormones
      * Implementation: hashmap or int list, idfk
      *
