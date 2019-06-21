@@ -33,6 +33,7 @@ public class Pheromone
            //check()
            // if false then
            //colour the tile
+           //add tile to queue
        }
     }
           
