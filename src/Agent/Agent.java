@@ -18,7 +18,7 @@ import static World.WorldMap.*;
 
 /**
  * This is the superclass of Intruder and Guard, which contains methods for actions
- * @author Benjamin, Kailhan
+ * @author Benjamin, Kailhan, Thibaut
  */
 
 public class Agent implements Runnable {
@@ -154,6 +154,7 @@ public class Agent implements Runnable {
     }
 
     public void executeGeneralAgentLogic() {
+        System.out.print("check 1 ");
         currentTime = System.nanoTime();
         delta = currentTime - previousTime;
         delta /= 1e9; //makes it in seconds
@@ -193,6 +194,7 @@ public class Agent implements Runnable {
         else shortDetectionRange = false;
         if(!hiddenInDecreasedVis) shortDetectionRange = false;
         currentSpeed = ((position.distance(previousPosition) / SCALING_FACTOR) / delta);
+        System.out.println("check 3");
     }
 
     /**
