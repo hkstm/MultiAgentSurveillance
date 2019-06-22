@@ -10,6 +10,7 @@ import javafx.scene.shape.Shape;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.LinkedList;
 import java.util.Random;
 
 import static World.GameScene.ASSUMED_WORLDSIZE;
@@ -18,7 +19,7 @@ import static World.WorldMap.*;
 
 /**
  * This is the superclass of Intruder and Guard, which contains methods for actions
- * @author Benjamin, Kailhan
+ * @author Benjamin, Kailhan, Thibaut, Olive
  */
 
 public class Agent implements Runnable {
@@ -93,13 +94,19 @@ public class Agent implements Runnable {
 
     private boolean goalSet = false;
 
+    protected LinkedList trail;
+    protected int trailLength;
+    protected int currentCoordinates;
+    protected Pheromone candidate; // just trust me on this guys.
+
     /**
      * Constructor for Agent
      * @param position is a point containing the coordinates of an Agent
      * @param direction is the angle which the agent is facing, this spans from -180 to 180 degrees
      */
 
-    public Agent(Point2D position, double direction) {
+    public Agent(Point2D position, double direction) 
+    {
         System.out.println("agent constructor called");
         this.position = position;
         this.direction = direction;
@@ -125,7 +132,19 @@ public class Agent implements Runnable {
                 knownTerrain[i][j] = UNEXPLORED;
             }
         }
+
+        // Pheromone shit
+        trail = new LinkedList();
+        currentCoordinates = worldMap.coordinatesToCell(position);
+        for (int i = 0; i <= trailLength; i++)
+        {
+            Pheromone nextInLine = new Pheromone(this);
+            if (candidate == null)
+                candidate = nextInLine;
+            trail.add(nextInLine);
+        }
     }
+
 
     /**
      * Default run method
@@ -154,6 +173,7 @@ public class Agent implements Runnable {
     }
 
     public void executeGeneralAgentLogic() {
+        System.out.print("check 1 ");
         currentTime = System.nanoTime();
         delta = currentTime - previousTime;
         delta /= 1e9; //makes it in seconds
@@ -165,9 +185,11 @@ public class Agent implements Runnable {
             createCone();
             updateKnownTerrain();
         }
+        
         /**
          * this is the point where the logic of your bot gets called
          */
+        trackCellChange();
         //printKnownTerrain();
         executeAgentLogic();
         /**
@@ -193,6 +215,7 @@ public class Agent implements Runnable {
         else shortDetectionRange = false;
         if(!hiddenInDecreasedVis) shortDetectionRange = false;
         currentSpeed = ((position.distance(previousPosition) / SCALING_FACTOR) / delta);
+        System.out.println("check 3");
     }
 
     /**
@@ -722,5 +745,25 @@ public class Agent implements Runnable {
             }
         }
     }
-}
 
+
+    /* Method for keeping the trail a fixed length behind the agent
+     *
+     * Is it convoluted? Sure. 
+     * Does it help save computation? Fuck yea it does.
+     * 
+     * Edit: these comments made a lot more sense when the code was badly written and I was being dumb.
+     */
+    public void trackCellChange()
+    {
+        if (currentCoords != worldMap.coordinatesToCell(position))
+        {
+            currentCoordinates = worldMap.coordinatesToCell(position);
+
+            trail.add(candidate);
+            candidate = trail.removeFirst();
+            candidate.setPCoordinates(currentCoordinates);
+        }
+            
+    }
+}

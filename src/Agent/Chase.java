@@ -31,29 +31,17 @@ public class Chase extends Routine {
         super();
         this.guard = guard;
         this.intruder = intruder;
+        guard.confirmVisual(true); // input is if intruder is in vision cone or guard in on trail
         chasing(guard);
+        
     }
     public void chasing(Guard guard) {
-        this.agents = guard.worldMap.getAgents();
-        this.cones = guard.worldMap.getAgentsCones();
-
-        System.out.println("cone size: "+ cones.size());
-        for (int i = 0; i < cones.size(); i++) {
-            System.out.println("start loop");
-            if (agents.get(i) instanceof Intruder) {
-                System.out.println("there is an intruder");
-                if (cones.get(i).contains(intruder.getPosition().getX(), intruder.getPosition().getY())) { //problem comes from here
-                    seen = true;
-                    System.out.println("seen ");
-                    this.moveTo = new MoveTo(intruder.position.getX(), intruder.position.getY());
-                }
-            }
-            else {
-
-                this.moveTo = new MoveTo(400,200);
-
-            }
-        }
+        destX = intruder.getPosition().getX();
+        destY = intruder.getPosition().getY();
+        guard.gameTree(guard.delta);
+        guard.updateBlackboard(destX, destY);
+        System.out.println("chasing");
+        
 
     }
 

@@ -21,20 +21,22 @@ public class Guard extends Agent {
 
     /**
      * A subclass of Agent for the Guards with an internal map containing the starting positions of other guards and the terrain across the map
-     * @author Benjamin, Thibaut, Kailhan
+     * @author Benjamin, Thibaut, Kailhan, Costi
      */
 
 
-    private double walkingSpeed = 1.4; //m/s
-
-
     Routine routine;
+    protected boolean tired;
+    protected final long createdMillis = System.currentTimeMillis();
     protected double timeCost; //time until end in seconds
     protected double distanceCost; //meters moved
     protected double directCommsCost; //message size in "bytes"
     protected double indirectCommsCost; //number of markers placed;
+    protected Intruder intruder;
+    private Blackboard blackboard;
 
-    public Guard(Point2D position, double direction) {
+    public Guard(Point2D position, double direction) 
+    {
         super(position, direction);
         this.timeCost = 0;
         this.distanceCost = 0;
@@ -47,13 +49,15 @@ public class Guard extends Agent {
 //        this.visualRange[1] = 20;
         this.color = Color.AZURE;
         Routine guard1 = Routines.sequence(
-                Routines.moveTo(500,300)
-                //Routines.chase(guard, GameScene.intruder)
+                Routines.moveTo(200,30)
+
                 // Routines.wander(worldMap,this)
         );
         this.setRoutine(guard1);
 
 
+        // Blackboard setup
+        blackboard = getBlackboard();
 
         //this.knownTerrain = worldMap.getWorldGrid();
     }
@@ -83,6 +87,7 @@ public class Guard extends Agent {
         if(firstRun) {
             previousTime = System.nanoTime();
             previousPosition = new Point2D(position.getX(), position.getY());
+
             routine.start();
             firstRun = false;
         }
@@ -91,13 +96,15 @@ public class Guard extends Agent {
     /**
      * Logic that gets executed every tick
      */
-    public void executeAgentLogic() {
-        updatePerformanceCriteria();
+    public void executeAgentLogic(){
         currentTime = System.nanoTime();
         delta = currentTime - previousTime;
         delta /= 1e9; //makes it in seconds
         System.out.println("x: " + getPosition().getX() + "y: " + getPosition().getY());
         update();
+        updatePerformanceCriteria();
+
+
 
 
 
@@ -162,90 +169,99 @@ public class Guard extends Agent {
     public void setRoutine(Routine routine) {
         this.routine = routine;
     }
-    public void gameTree(double timeStep) {
-        createCone();
-        rePath = false;
-        if (tempWalls.size() > 0) {
-            for (int i = 0; i < tempWalls.size(); i++) {
-                knownTerrain[tempWalls.get(i).y][tempWalls.get(i).x] = worldMap.getWorldGrid()[tempWalls.get(i).y][tempWalls.get(i).y];
-                int[][] phaseDetectionBlocks = aStarTerrain(knownTerrain);
-                Astar phaseDetectionPathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int) (position.getX() / SCALING_FACTOR), (int) (position.getY() / SCALING_FACTOR), (int) destX, (int) destY, phaseDetectionBlocks);
-                List<Node> phaseDetectionPath = phaseDetectionPathFinder.findPath();
-                for (int j = 0; j < phaseDetectionPath.size(); j++) {
-                    if (phaseDetectionPath.get(j).row == tempWalls.get(i).y && phaseDetectionPath.get(j).column == tempWalls.get(i).x) {
-                        knownTerrain[tempWalls.get(i).y][tempWalls.get(i).x] = 7;
-                    } else {
-                        tempWalls.remove(i);
-                        break;
-                    }
-                }
-            }
-        }
-        if (oldTempGoal != null) {
+
+    public void gameTree(double timeStep)
+    {
+
+        double walkingDistance = (BASE_SPEED *SCALING_FACTOR);
+        updateWalls();
+        if(oldTempGoal != null)
+        {
             checkChangedStatus();
         }
-        double elapsedTime = (System.currentTimeMillis() - startTime) / 1000;
-        if (elapsedTime > freezeTime) {
+        double elapsedTime = (System.currentTimeMillis()-startTime)/1000;
+        if(elapsedTime > freezeTime)
+        {
             frozen = false;
             startTime = 0;
             freezeTime = 0;
             oldTempGoal = tempGoal;
-            int[][] blocks = aStarTerrain(worldMap.getWorldGrid());
-            Astar pathMaker = new Astar(knownTerrain[0].length, knownTerrain.length, locationToWorldgrid(position.getX()),
-                    locationToWorldgrid(position.getY()), locationToWorldgrid(destX), locationToWorldgrid(destY), blocks);
+            int[][] blocks = aStarTerrain(knownTerrain);
+            Astar pathMaker = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR),
+                    (int)(position.getY()/SCALING_FACTOR), (int)destX, (int)destY, blocks);
             List<Node> path = pathMaker.findPath();
+            
+            if (path.size() <1)
+            {
+                //change directon
+                double divisor = Math.abs(tempGoal.getY()-position.getY());
+                double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.getX()-position.getX())/divisor));
+                turnToFace(turnAngle-90);
 
-            System.out.println("destX : " + destX + " destY : " + destY);
-            if (oldTempGoal != null) {
-                wallPhaseDetection();
-                if (rePath) {
-                    blocks = aStarTerrain(knownTerrain);
-                    pathMaker = new Astar(knownTerrain[0].length, knownTerrain.length, (int) (position.getX() / SCALING_FACTOR), (int) (position.getY() / SCALING_FACTOR), (int) destX, (int) destY, blocks);
-                    path = pathMaker.findPath();
-                }
-
-                if (!changed) {
-                    //System.out.println("not changed");
-
-                    if (path.size() > 0) {
-                        tempGoal = new Point2D(worldMap.convertArrayToWorld(path.get(path.size() - 1).row) + worldMap.convertArrayToWorld(1) / 2, worldMap.convertArrayToWorld(path.get(path.size() - 1).column) + worldMap.convertArrayToWorld(1) / 2);
-                    } else {
-                        System.out.println("path size: " + path.size() + "setting tempGoal to current position");
-                        tempGoal = new Point2D(position.getX(), position.getY());
-                    }
-                }
-               cornerCorrection();
+                return;
             }
-            double divisor = Math.abs(tempGoal.getY() - position.getY());
-            double preDivisor = Math.abs(previousTempGoal.getY() - tempGoal.getY());
-            if (divisor == 0) {
+            
+            if(!changed)
+            {
+                tempGoal = new Point2D((path.get(path.size()-1).row*SCALING_FACTOR)+(SCALING_FACTOR/2),
+                        (path.get(path.size()-1).column*SCALING_FACTOR)+(SCALING_FACTOR/2));
+                if (path.size() > 1) {
+                    previousTempGoal = new Point2D((path.get(path.size() - 2).row * SCALING_FACTOR) + (SCALING_FACTOR / 2),
+                            (path.get(path.size() - 2).column * SCALING_FACTOR) + (SCALING_FACTOR / 2));
+                }
+                else{
+                    previousTempGoal = tempGoal;
+                }
+            }
+        //    wallPhaseDetection();
+        //    cornerCorrection();
+            double divisor = Math.abs(tempGoal.getY()-position.getY());
+            double preDivisor = Math.abs(previousTempGoal.getY()-tempGoal.getY());
+            if(divisor == 0)
+            {
                 divisor++;
-                System.out.println("divisor is zero");
-            } else if (preDivisor == 0) {
+            }
+            else if (preDivisor == 0){
                 preDivisor++;
-                //System.out.println("preDivisor is zero");
             }
-            double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.getX() - position.getX()) / divisor));
-            double previousAngle = Math.toDegrees(Math.atan(Math.abs(previousTempGoal.getX() - tempGoal.getX()) / preDivisor));
-            double walkingDistance = (BASE_SPEED * SCALING_FACTOR * timeStep);
-
-            /**
-             * logic for turning, call updateDirection() for proper turning
-             */
-            if (tempGoal.getX() >= position.getX() && tempGoal.getY() <= position.getY()) {
-                updateDirection(turnAngle);
-            } else if (tempGoal.getX() >= position.getX() && tempGoal.getY() > position.getY()) {
-                updateDirection(180 - turnAngle);
-            } else if (tempGoal.getX() < position.getX() && tempGoal.getY() > position.getY()) {
-                updateDirection(180 + turnAngle);
-            } else if (tempGoal.getX() < position.getX() && tempGoal.getY() <= position.getY()) {
-                updateDirection(360 - turnAngle);
+            double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.getX()-position.getX())/divisor));
+            double previousAngle = Math.toDegrees(Math.atan(Math.abs(previousTempGoal.getX()-tempGoal.getX())/preDivisor));
+            double finalAngle = previousAngle - turnAngle;
+            if(tempGoal.getX() >= position.getX() && tempGoal.getY() <= position.getY())
+            {
+                turnToFace(turnAngle-90);
             }
-            if (legalMoveCheck(walkingDistance)) {
-                move(walkingDistance);
+            else if(tempGoal.getX() >= position.getX() && tempGoal.getY() > position.getY())
+            {
+                turnToFace(90-turnAngle);
+            }
+            else if(tempGoal.getX() < position.getX() && tempGoal.getY() > position.getY())
+            {
+                turnToFace(90+turnAngle);
+            }
+            else if(tempGoal.getX() < position.getX() && tempGoal.getY() <= position.getY())
+            {
+                turnToFace(270-turnAngle);
+            }
+                if(legalMoveCheck(walkingDistance))
+                {
+                    move(walkingDistance);
 
-
+                }
             }
         }
+
+
+        // When you find that damn intruder, tell the boys!
+        public void updateBlackboard(destX x, destY y)
+        {
+            blackboard.setCoordinates(x, y);
+        }
+
+        
+        // Can you still see the intruder?
+        public void confirmVisual(boolean eyesOnTarget)
+        {
+            blackboard.setSeen(eyesOnTarget);
+        }
     }
-}

@@ -17,14 +17,14 @@ import javafx.geometry.Point2D;
  */
 public class Pheromone
 {
-    public Agent owner; // derive type and coordinates from this
-    public Point2D coordinates;
+    private Agent owner; // derive type and coordinates from this
+    private int coordinates; // coords in terms of grid cells
 
 
     public Pheromone(Agent a)
     {
         owner = a;
-        coordinates = owner.position;
+        coordinates = owner.currentCoordinates;
     }
 
     public void createTrail(){
@@ -43,7 +43,7 @@ public class Pheromone
      * @params ccoords the current coordinates of an agent to be checked for intersection
      * @return true: pheromones are at ccords
      */
-    public boolean check()
+    public boolean checkForPheromones()
     {
         // Check for intersection
         
@@ -52,8 +52,13 @@ public class Pheromone
 
 
     // This method is called after check() somewhere in main.
-    public Agent identifyOwner()
+    public Agent getOwner()
     {
         return owner;
+    }
+
+    public setPCoordinates(int coords)
+    {
+        this.coordinates = coords;
     }
 }

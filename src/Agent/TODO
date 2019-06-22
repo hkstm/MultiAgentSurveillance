@@ -1,17 +1,32 @@
 make blackboard
-    modify behaviour tree
-    modify A* to properly surround the intruder
+    All guards have access to the black blackboard  
+    // make singleton class //
+    // have guards have reference to singleton //
+    the blackboard holds the coordinates of the intruder
+    // singleton class ¬¬ (needs proper data types)
+        can work with multiple intruders
+        // singleton class ¬¬
+    when a guard sees an intruder, he enters chase mode
+    // default //
+    chase mode involves updating the intruders coordinates to the blackboard
+    // change behaviour of chase ¬¬ issues with sighting intruder being updated, where to call, needs pheromone check)
+    all guards A* to the intruder
+    // default //
+        change A* tile weights to improve surround mechanism
+        // benbi needs to help with this
 
 make pheromones
-    queue;
-    visualise()
-    check()
-    read()
-        what do if trail
-
-
-    have a trail of pheromones
-        linked list? queue? THINK OF THE COMPUTATION
-    have pheromones be recognisable
-        have a checkIntersection() of sorts
-    visualise the pheromones
+    trail data structure (linkedlist)
+    // construct in agent //
+    when the agent moves, pheromone objects are updated along with their list
+    // agent tracks its own coordinate changes //
+    // if changeDetected == true , update(queue.inspect()); add(queue.pop);
+        pheromone tiles are visualised as well
+        // go into game scene, find agent rep and figure shit out
+    agents are able to check if their current coords holds a pheromone trail
+    // hashmap
+        if so, the agents grab the owner's type
+        // agent supermethod with helper submethods changed down the line
+            if guard grabs an intruder, grab coordinates and enter chase mode
+            if intruder grabs a guard, change A* tile weighting
+            if typeA grabs typeA, nothing
