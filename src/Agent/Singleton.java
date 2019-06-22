@@ -5,14 +5,14 @@ package Agent;
  *
  * @author Olive, Costi
  */
-public class Singleton
+public class Blackboard
 {
-    private static Singleton bir = null; // Singleton shared by all.
+    private static Blackboard bir = null; // Singleton shared by all.
     private static boolean seenIntruder; // When true, all guards enter chase mode.
     private static int[] coordinatesOfIntruder; //---> to get the intruders coords we just need to call Intruder.getPosition();
 
 
-    private Singleton()
+    private Blackboard()
     {
         seenIntruder = false;
         coordinatesOfIntruder = new int[2];
@@ -20,10 +20,10 @@ public class Singleton
 
 
     // Ensures that only one instance ever exists.
-    public static Singleton getSingleton()
+    public static Blackboard getBlackboard()
     {
         if (bir == null)
-            bir = new Singleton();
+            bir = new Blackboard();
 
         return bir;
     }
