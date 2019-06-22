@@ -46,6 +46,7 @@ public class Pheromone
     public boolean check()
     {
         // Check for intersection
+        
         return false;
     }
 
