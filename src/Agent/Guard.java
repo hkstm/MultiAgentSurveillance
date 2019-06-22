@@ -21,7 +21,7 @@ public class Guard extends Agent {
 
     /**
      * A subclass of Agent for the Guards with an internal map containing the starting positions of other guards and the terrain across the map
-     * @author Benjamin, Thibaut, Kailhan
+     * @author Benjamin, Thibaut, Kailhan, Costi
      */
 
 
@@ -169,7 +169,7 @@ public class Guard extends Agent {
     public void gameTree(double timeStep)
     {
 
-        double walkingDistance = (BASE_SPEED *SCALING_FACTOR*timeStep);
+        double walkingDistance = (BASE_SPEED *SCALING_FACTOR);
         updateWalls();
         if(oldTempGoal != null)
         {
@@ -186,6 +186,17 @@ public class Guard extends Agent {
             Astar pathMaker = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR),
                     (int)(position.getY()/SCALING_FACTOR), (int)destX, (int)destY, blocks);
             List<Node> path = pathMaker.findPath();
+            
+            if (path.size() <1)
+            {
+                //change directon
+                double divisor = Math.abs(tempGoal.getY()-position.getY());
+                double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.getX()-position.getX())/divisor));
+                turnToFace(turnAngle-90);
+
+                return;
+            }
+            
             if(!changed)
             {
                 tempGoal = new Point2D((path.get(path.size()-1).row*SCALING_FACTOR)+(SCALING_FACTOR/2),
