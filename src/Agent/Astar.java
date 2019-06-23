@@ -3,6 +3,7 @@ package Agent;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
 import static World.GameScene.ASSUMED_WORLDSIZE;
+import static World.WorldMap.UNEXPLORED;
 
 
 public class Astar {
@@ -245,7 +246,7 @@ public class Astar {
             //System.out.println("9");
             weightToAdd -= 10;
         }
-        else if(knownTerrain[row][column] == 8)
+        else if(knownTerrain[row][column] == UNEXPLORED)
         {
             //System.out.println("10");
             weightToAdd -= 1;

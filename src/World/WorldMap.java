@@ -21,7 +21,7 @@ public class WorldMap implements Serializable {
 
     public int[][] worldGrid;
     public static final int EMPTY = 0;
-    public static final int ENTRY_POINT = 99;
+
     public static final int STRUCTURE = 1;
     public static final int DOOR = 2;
     public static final int WINDOW = 3;
@@ -29,7 +29,10 @@ public class WorldMap implements Serializable {
     public static final int SENTRY = 5;
     public static final int DECREASED_VIS_RANGE = 6;
     public static final int WALL = 7;
-    public static final int UNEXPLORED = 8;
+    public static final int ENTRY_POINT = 8;
+    public static final int UNEXPLORED = 9;
+    public static final int OPEN_DOOR = 10;
+    public static final int OPEN_WINDOW = 11;
     public static final int MARKER_1 = 41;
     public static final int MARKER_2 = 42;
     public static final int MARKER_3 = 43;
