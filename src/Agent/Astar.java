@@ -1,12 +1,13 @@
 package Agent;
 
+import World.WorldMap;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
 import static World.GameScene.ASSUMED_WORLDSIZE;
 
-
 public class Astar {
 
+    public static WorldMap worldMap;
     public static final int diaCost = 14;
     public static final int vhCost = 10;
     private Node[][] grid;
@@ -14,6 +15,7 @@ public class Astar {
     private boolean[][]closeCell;
     private int si, sj;
     private int ei, ej;
+    private boolean cornered;
 
     public Astar(int width, int height, int si, int sj, int ei, int ej, int[][] blocks, Agent agent){
         this.si = si;
@@ -119,6 +121,7 @@ public class Astar {
     }
 
     public ArrayList<Node> findPath(){
+        cornered = false;
         updateNeighbour();
         ArrayList<Node> path = new ArrayList<Node>();
         if (closeCell[ei][ej]) {
@@ -130,6 +133,7 @@ public class Astar {
                 current = current.parent;
             }
         }
+        //return checkCornered(path);
         return path;
     }
 
@@ -275,5 +279,34 @@ public class Astar {
             return true;
         }
         return false;
+    }
+
+    public ArrayList<Node> checkCornered(ArrayList<Node> path)
+    {
+        System.out.println();
+        Node firstInPath = path.get(path.size()-1);
+        boolean lowest = true;
+        for(int i = firstInPath.row-2 ; i <= firstInPath.row+2 ; i++)
+        {
+            for(int j = firstInPath.column-2 ; j <= firstInPath.column+2 ; j++)
+            {
+                //trying to check the heuristic of walls here which is impossible!!
+                if((i >= 0 && j >= 0 && i < ASSUMED_WORLDSIZE && j < ASSUMED_WORLDSIZE) && (worldMap.worldGrid[i][j] != 1 || worldMap.worldGrid[i][j] != 5 || worldMap.worldGrid[i][j] != 7))
+                {
+                    if(firstInPath.heuristic > grid[i][j].heuristic)
+                    {
+                        lowest = false;
+                    }
+                }
+            }
+        }
+        if(lowest)
+        {
+            System.out.println("cornered");
+            firstInPath.heuristic--;
+            path.set(path.size()-1, firstInPath); //check mutability
+            checkCornered(path);
+        }
+        return path;
     }
 }
