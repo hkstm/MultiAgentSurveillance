@@ -194,8 +194,6 @@ public class WorldMap implements Serializable {
      */
     public void forceUpdateAgents() {
         for(Agent agent : agents) {
-            if(agent instanceof Guard) System.out.println("agent is guard");
-            System.out.println("calling forceUpdate per agent");
             agent.forceUpdate();
         }
     }
