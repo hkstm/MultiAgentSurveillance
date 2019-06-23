@@ -1,8 +1,11 @@
 package Agent;
 
 import javafx.geometry.Point2D;
-import java.util.ArrayList;
-import java.util.LinkedList;
+import javafx.scene.paint.Color;
+
+import java.util.List;
+
+import static Agent.Agent.locationToWorldgrid;
 
 /* This class serves as indirect (stigmergic) communication between agents.
  *
@@ -17,60 +20,112 @@ import java.util.LinkedList;
  *
  * @author Olive, Costi
  */
-public class Pheromone
-{
-    private Agent owner; // derive type and coordinates from this
-    private int coordinates; // coords in terms of grid cells
-    public static ArrayList<LinkedList> allTrails;
-    private Pheromone onPath;
+
+public class Pheromones {
+
+    private Pcell [][] mapPhero;
+    private List<Guard> guards;
+    private List<Intruder> intruders;
 
 
-    public Pheromone(Agent a)
-    {
-        owner = a;
-        coordinates = owner.currentCoordinates;
-        allTrails.add(owner.trail);
-        onPath = null;
+    public Pheromones(int w, int h){
+        mapPhero = new Pcell[w][h];
+
+        for (int i = 0; i < mapPhero.length; i++) {
+            for (int j = 0; j < mapPhero[0].length; j++) {
+                mapPhero[i][j] = new Pcell();
+            }
+        }
     }
 
-    public void createTrail(){
-       if ( Agent.getType() != intruder){
-           //create queue
-           //check()
-           // if false then
-           //colour the tile
-           //add tile to queue
-       }
+    public void update(){
+        colorTiles();
+        countManager();
+
     }
-          
-    /* Checks if an agents current coordinate intersects with any hormones
-     *
-     * @params ccoords the current coordinates of an agent to be checked for intersection
-     * @return true: pheromones are at ccords
-     */
-    public static Agent checkForPheromones(int ccoords)
-    {
-        // Check for intersection
-        for (int i = 0; i < allTrails.size(); i++)
-            for (int j = 0; j < allTrails.get(i).size(); j++)
-                if (ccoords == allTrails.get(i).get(j))
-                {
-                    return allTrails.get(i).get(j).owner; // maybe replace owner with getOwner() ?
+
+    private void countManager(){
+        for (int i = 0; i < mapPhero.length; i++) {
+            for (int j = 0; j < mapPhero[0].length; j++) {
+                if(mapPhero[i][j].count>0){
+                    mapPhero[i][j].count --;
                 }
 
-        return null;
+                if(mapPhero[i][j].count < 0){
+                    mapPhero[i][j].count = 0;
+                }
+            }
+        }
+    }
+
+    public void colorTiles(){
+        for (Guard g : guards){
+
+            System.out.println("og g x:" + g.getPosition().getX() + "og g y"+g.getPosition().getY());
+            Point2D gpos = coordinatesToCell(g.position);
+
+
+            System.out.println("g x:" + (int)gpos.getX() + "g y:" + (int)gpos.getY());
+            mapPhero[(int)gpos.getX()][(int)gpos.getY()] = new Pcell(Color.GREEN);
+        }
+
+        for (Intruder i : intruders){
+            System.out.println("og i x:" + i.getPosition().getX() + "og i y"+i.getPosition().getY());
+            Point2D ipos = coordinatesToCell(i.position);
+            System.out.println("i x:" + (int)ipos.getX() + "i y:" + (int)ipos.getY());
+            mapPhero[(int)ipos.getX()][(int)ipos.getY()] = new Pcell(Color.RED);
+        }
+    }
+
+    public void setAgents(List<Guard> guards,List<Intruder> intruders){
+        this.guards = guards;
+        this.intruders = intruders;
     }
 
 
-    // is this even needed?
-    public Agent getOwner()
-    {
-        return owner;
+    public Point2D coordinatesToCell(Point2D location) {
+        int rowIndex = locationToWorldgrid(location.getY());
+        int columnIndex = locationToWorldgrid(location.getX());
+        return new Point2D(rowIndex, columnIndex);
     }
 
+    public  int locationToWorldgrid(double toBeConverted) {
+        return (int)((toBeConverted * 100)/700);
+    }
 
-    public setPCoordinates(int coords)
-    {
-        this.coordinates = coords;
+    public Pcell[][] getMapPhero() {
+        return mapPhero;
+    }
+
+    public class Pcell{
+        private Color col;
+        private int count = 100; //frame counts for a pheromone to last
+
+        public Pcell(Color col) {
+            this.col = col;
+        }
+
+        public Pcell(){
+            this.col = Color.BLACK;
+        }
+
+        //getters and setters
+
+        public void setCol(Color col) {
+            this.col = col;
+        }
+
+        public void setCount(int count) {
+            this.count = count;
+        }
+
+        public Color getCol() {
+            return col;
+        }
+
+        public int getCount() {
+            return count;
+        }
     }
 }
+
