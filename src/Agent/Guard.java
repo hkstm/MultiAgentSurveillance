@@ -4,9 +4,15 @@ import World.WorldMap;
 import javafx.scene.paint.Color;
 
 import javafx.geometry.Point2D;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static Agent.MoveTo.destX;
+import static Agent.MoveTo.destY;
+import static World.GameScene.SCALING_FACTOR;
 import static World.WorldMap.SENTRY;
 import static World.WorldMap.TARGET;
 
@@ -15,14 +21,18 @@ public class Guard extends Agent {
 
     /**
      * A subclass of Agent for the Guards with an internal map containing the starting positions of other guards and the terrain across the map
-     * @author Benjamin, Thibaut, Kailhan
+     * @author Benjamin, Thibaut, Kailhan, Costi
      */
 
+
     Routine routine;
-    protected double timeCost; //time untill end in seconds
+    protected boolean tired;
+    protected final long createdMillis = System.currentTimeMillis();
+    protected double timeCost; //time until end in seconds
     protected double distanceCost; //meters moved
     protected double directCommsCost; //message size in "bytes"
     protected double indirectCommsCost; //number of markers placed;
+    protected Intruder intruder;
 
     public Guard(Point2D position, double direction) {
         super(position, direction);
@@ -37,9 +47,9 @@ public class Guard extends Agent {
 //        this.visualRange[1] = 20;
         this.color = Color.AZURE;
         Routine guard1 = Routines.sequence(
-               //Routines.moveTo(150,75)
-                 //Routines.chase(guard, GameScene.intruder)
-               Routines.wander(worldMap)
+                Routines.moveTo(200,30)
+
+                // Routines.wander(worldMap,this)
         );
         this.setRoutine(guard1);
 
@@ -54,9 +64,45 @@ public class Guard extends Agent {
 
     /**
      * put your agent specific logic in this
+    /*
+     * This should be the structure of any bot but Im not sure how this bot fits into it -kailhan
      */
-    public void executeAgentLogic() {
+
+    public void run() {
+        previousTime = System.nanoTime();
+        previousPosition = new Point2D(position.getX(), position.getY());
+        while(!exitThread) {
+            executeAgentLogic();
+        }
+    }
+    /**
+     * Used instead of the run method if we want to manually control when the agent should update
+     */
+    public void forceUpdate() {
+        if(firstRun) {
+            previousTime = System.nanoTime();
+            previousPosition = new Point2D(position.getX(), position.getY());
+
+            routine.start();
+            firstRun = false;
+        }
+        executeAgentLogic();
+    }
+    /**
+     * Logic that gets executed every tick
+     */
+    public void executeAgentLogic(){
+        currentTime = System.nanoTime();
+        delta = currentTime - previousTime;
+        delta /= 1e9; //makes it in seconds
+        System.out.println("x: " + getPosition().getX() + "y: " + getPosition().getY());
+        update();
         updatePerformanceCriteria();
+
+
+
+
+
     }
 
     /**
@@ -99,6 +145,7 @@ public class Guard extends Agent {
             Timer timer = new Timer();
             TimerTask openTower = new OpenTower();
 
+
                 timer.schedule(openTower, 3000);
             timer.cancel();
         }
@@ -118,4 +165,84 @@ public class Guard extends Agent {
         this.routine = routine;
     }
 
-}
+    public void gameTree(double timeStep)
+    {
+
+        double walkingDistance = (BASE_SPEED *SCALING_FACTOR);
+        updateWalls();
+        if(oldTempGoal != null)
+        {
+            checkChangedStatus();
+        }
+        double elapsedTime = (System.currentTimeMillis()-startTime)/1000;
+        if(elapsedTime > freezeTime)
+        {
+            frozen = false;
+            startTime = 0;
+            freezeTime = 0;
+            oldTempGoal = tempGoal;
+            int[][] blocks = aStarTerrain(knownTerrain);
+            Astar pathMaker = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR),
+                    (int)(position.getY()/SCALING_FACTOR), (int)destX, (int)destY, blocks, this);
+            List<Node> path = pathMaker.findPath();
+            
+            if (path.size() <1)
+            {
+                //change directon
+                double divisor = Math.abs(tempGoal.getY()-position.getY());
+                double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.getX()-position.getX())/divisor));
+                turnToFace(turnAngle-90);
+
+                return;
+            }
+            
+            if(!changed)
+            {
+                tempGoal = new Point2D((path.get(path.size()-1).row*SCALING_FACTOR)+(SCALING_FACTOR/2),
+                        (path.get(path.size()-1).column*SCALING_FACTOR)+(SCALING_FACTOR/2));
+                if (path.size() > 1) {
+                    previousTempGoal = new Point2D((path.get(path.size() - 2).row * SCALING_FACTOR) + (SCALING_FACTOR / 2),
+                            (path.get(path.size() - 2).column * SCALING_FACTOR) + (SCALING_FACTOR / 2));
+                }
+                else{
+                    previousTempGoal = tempGoal;
+                }
+            }
+        //    wallPhaseDetection();
+        //    cornerCorrection();
+            double divisor = Math.abs(tempGoal.getY()-position.getY());
+            double preDivisor = Math.abs(previousTempGoal.getY()-tempGoal.getY());
+            if(divisor == 0)
+            {
+                divisor++;
+            }
+            else if (preDivisor == 0){
+                preDivisor++;
+            }
+            double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.getX()-position.getX())/divisor));
+            double previousAngle = Math.toDegrees(Math.atan(Math.abs(previousTempGoal.getX()-tempGoal.getX())/preDivisor));
+            double finalAngle = previousAngle - turnAngle;
+            if(tempGoal.getX() >= position.getX() && tempGoal.getY() <= position.getY())
+            {
+                turnToFace(turnAngle-90);
+            }
+            else if(tempGoal.getX() >= position.getX() && tempGoal.getY() > position.getY())
+            {
+                turnToFace(90-turnAngle);
+            }
+            else if(tempGoal.getX() < position.getX() && tempGoal.getY() > position.getY())
+            {
+                turnToFace(90+turnAngle);
+            }
+            else if(tempGoal.getX() < position.getX() && tempGoal.getY() <= position.getY())
+            {
+                turnToFace(270-turnAngle);
+            }
+                if(legalMoveCheck(walkingDistance))
+                {
+                    move(walkingDistance);
+
+                }
+            }
+        }
+    }
