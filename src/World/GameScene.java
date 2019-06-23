@@ -11,6 +11,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
@@ -60,6 +61,8 @@ public class GameScene extends BorderPane implements Runnable {
     private boolean visitedTarget;
     private long firstVisitTime;
 
+    private boolean paused;
+
     public GameScene(Stage primaryStage, Settings settings) {
         this.grid = new GridPane(); //main grid that shows the tiles
         this.windowSize = WINDOW_SIZE;
@@ -78,13 +81,13 @@ public class GameScene extends BorderPane implements Runnable {
         initTileImgArray();
         initGoToMenuButton();
         initTiles();
-//        initRestartButton();
+        initRestartButton();
 
         this.startGameBut = new Button("Start/Stop Game"); //should stop and start game, not properly working atm
         Agent.worldMap = worldMap;
         Guard guard  = new Guard(new Point2D(200, 300), 70);
         Intruder intruder = new Intruder(new Point2D(500, 500), 0);
-        AreaOptimizer areaOptimzer = new AreaOptimizer(new Point2D(500, 400), 0);
+        AreaOptimizer areaOptimzer = new AreaOptimizer(new Point2D(520, 210), 0);
 //        worldMap.addAgent(guard);
 //        worldMap.addAgent(intruder);
         //worldMap.addOnlyAgent(guard);
@@ -103,7 +106,7 @@ public class GameScene extends BorderPane implements Runnable {
                     long previousTime = currentTimeCalc;
                     @Override
                     public void handle(long currentTime) {
-                        if(gameStarted){
+                        if(gameStarted && !paused){
 //                        long beforeUpdatingAgents = System.nanoTime();
                             worldMap.forceUpdateAgents();
 //                        long afterUpdatingAgents = System.nanoTime();
@@ -160,6 +163,15 @@ public class GameScene extends BorderPane implements Runnable {
 
     public void drawCones() {
         worldMap.createCones();
+//        Circle goal = new Circle(worldMap.getAgents().get(0).getGoalPosition().getX(), worldMap.getAgents().get(0).getGoalPosition().getY(), 10);
+//        goal.setFill(Color.CORNFLOWERBLUE);
+//        worldMap.getAgentsCones().add(goal);
+//        Circle goalPath = new Circle(worldMap.getAgents().get(0).getGoalPositionPath().getX(), worldMap.getAgents().get(0).getGoalPositionPath().getY(), 5);
+//        goal.setFill(Color.HOTPINK);
+//        worldMap.getAgentsCones().add(goalPath);
+//        Circle goalPrev = new Circle(worldMap.getAgents().get(0).getPrevGoalPosition().getX(), worldMap.getAgents().get(0).getPrevGoalPosition().getY(), 10);
+//        goal.setFill(Color.LIGHTSEAGREEN);
+//        worldMap.getAgentsCones().add(goalPrev);
         agentGroup.getChildren().addAll(worldMap.getAgentsCones());
     }
 
@@ -294,17 +306,20 @@ public class GameScene extends BorderPane implements Runnable {
     public void initFullScreen() {
         //setting box that contains buttons
         VBox vBox = new VBox();
+
         VBox.setVgrow(goToMenuBut, Priority.ALWAYS);
-        //VBox.setVgrow(restartGameBut, Priority.ALWAYS);
-        VBox.setVgrow(startGameBut, Priority.ALWAYS);
         goToMenuBut.setMaxHeight(Double.MAX_VALUE);
-        //restartGameBut.setMaxHeight(Double.MAX_VALUE);
-        startGameBut.setMaxHeight(Double.MAX_VALUE);
         goToMenuBut.setMaxWidth(Double.MAX_VALUE);
-        //restartGameBut.setMaxWidth(Double.MAX_VALUE);
+
+        VBox.setVgrow(restartGameBut, Priority.ALWAYS);
+        restartGameBut.setMaxHeight(Double.MAX_VALUE);
+        restartGameBut.setMaxWidth(Double.MAX_VALUE);
+
+        VBox.setVgrow(startGameBut, Priority.ALWAYS);
+        startGameBut.setMaxHeight(Double.MAX_VALUE);
         startGameBut.setMaxWidth(Double.MAX_VALUE);
-//        vBox.getChildren().addAll(goToMenuBut, restartGameBut, startGameBut);
-        vBox.getChildren().addAll(goToMenuBut, startGameBut);
+        vBox.getChildren().addAll(goToMenuBut, restartGameBut, startGameBut);
+//        vBox.getChildren().addAll(goToMenuBut, startGameBut);
 
 
         hBox = new HBox(); //container that stores the box containing buttons and the stackpane with the world and the agents drawn ontop of it
@@ -329,7 +344,10 @@ public class GameScene extends BorderPane implements Runnable {
         Image sentryTileImg = new Image(new File("src/Assets/sentryTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
         Image decreasedVisRangeTileImg = new Image(new File("src/Assets/decreasedVisRangeTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
         Image wallTileImg = new Image(new File("src/Assets/wallTile16.png").toURI().toString(), tileSize, tileSize, false, false, true);
-        this.tileImgArray = new Image[]{emptyTileImg, structureTileImg, doorTileImg, windowTileImg, targetTileImg, sentryTileImg, decreasedVisRangeTileImg, wallTileImg};
+        Image entryPointTileImg = new Image(new File("src/Assets/emptyTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        Image openDoorTileImg = new Image(new File("src/Assets/doorTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        Image openWindowTileImg = new Image(new File("src/Assets/windowTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        this.tileImgArray = new Image[]{emptyTileImg, structureTileImg, doorTileImg, windowTileImg, targetTileImg, sentryTileImg, decreasedVisRangeTileImg, wallTileImg, entryPointTileImg, openDoorTileImg, openWindowTileImg};
     }
 
     /**
@@ -351,12 +369,14 @@ public class GameScene extends BorderPane implements Runnable {
      * Inits button for restarting World Builder with the same settings
      */
     public void initRestartButton(){
-        this.restartGameBut = new Button("Restart Game");
+//        this.restartGameBut = new Button("Restart Game");
+        this.restartGameBut = new Button("Sort of pause");
         restartGameBut.setOnAction(e -> { // Create a new game with the same setings
-            WorldBuilder worldBuilder = new WorldBuilder(primaryStage, settings);
-            this.primaryStage.setTitle("Multi-Agent-Surveillance Game");
-            this.primaryStage.setScene(worldBuilder.getWorldBuilder());
-            this.primaryStage.show();
+//            WorldBuilder worldBuilder = new WorldBuilder(primaryStage, settings);
+//            this.primaryStage.setTitle("Multi-Agent-Surveillance Game");
+//            this.primaryStage.setScene(worldBuilder.getWorldBuilder());
+//            this.primaryStage.show();
+            paused = !paused;
         });
         this.restartGameBut.setWrapText(true);
     }

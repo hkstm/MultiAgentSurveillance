@@ -1,9 +1,11 @@
 package Agent;
 
 import javafx.geometry.Point2D;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Shape;
 
 import static World.GameScene.SCALING_FACTOR;
+import static World.GameScene.random;
 import static World.WorldMap.isVisionObscuring;
 
 import java.awt.Point;
@@ -22,7 +24,7 @@ public class AreaOptimizer extends Guard {
     public final double NOT_SEEN_REWARD = 100;
     public final double INTRUDER_BONUS_REWARD = 10;
     public final double RECENT_AREA_PENALTY = 0;
-    private Point2D goalPosition;
+
 
     /**
      * Calls normal Guard constructor and set rewards area
@@ -65,25 +67,35 @@ public class AreaOptimizer extends Guard {
     }
 
     public void updateWorldAreaReward(double delta) {
-        Shape worldAreaCone = createCone(visualRange[0], visualRange[1]*5);
+        Shape worldAreaCone = createCone(visualRange[0], visualRange[1]*10, viewingAngle*2);
+        Shape worldAreaConeTiny = createCone(visualRange[0], visualRange[1]*5, viewingAngle/4);
         for(int r = 0; r < worldAreaReward.length; r++) {
             for(int c = 0; c < worldAreaReward[0].length; c++) {
                 //check if middle of tile is in cone
-                if(worldAreaCone.contains(worldMap.convertArrayToWorld(c-1) + 1 * worldMap.convertArrayToWorld(1),
-                        worldMap.convertArrayToWorld(r-1) + 1 * worldMap.convertArrayToWorld(1))) {
-                    for(Agent agent : worldMap.getAgents()) {
-                        if(agent instanceof Intruder) {
-                            if((locationToWorldgrid(agent.getPosition().getX()) == c) && (locationToWorldgrid(agent.getPosition().getY()) == r)) {
+                if(worldAreaCone.contains(worldMap.convertArrayToWorld(c) + 0.5 * worldMap.convertArrayToWorld(1),
+                        worldMap.convertArrayToWorld(r) + 0.5 * worldMap.convertArrayToWorld(1))) {
+                    score += worldAreaReward[r][c].getReward();
+//                    worldAreaReward[r][c].resetReward();
+                    worldAreaReward[r][c].updateReward(-1 * NOT_SEEN_REWARD * delta);
+//                    System.out.println("reward seen: " + worldAreaReward[r][c] + worldAreaReward[r][c].getReward());
+                    for (Agent agent : worldMap.getAgents()) {
+                        if (agent instanceof Intruder) {
+                            if ((locationToWorldgrid(agent.getPosition().getX()) == c) && (locationToWorldgrid(agent.getPosition().getY()) == r)) {
                                 worldAreaReward[r][c].updateReward(INTRUDER_BONUS_REWARD * delta);
                             }
                         }
                     }
-                    score += worldAreaReward[r][c].consumeReward();
-                    worldAreaReward[r][c].resetReward();
 //                    worldAreaReward[r][c].updateReward(RECENT_AREA_PENALTY * delta);
 //                    System.out.println("reward: " + worldAreaReward[r][c].getReward());
 //                    System.out.println("reward reset for r: " + r + " c: " + c);
 //                    System.out.println("viewingcone contains tile: " + worldMap.convertArrayToWorld(c-1) + 1 * worldMap.convertArrayToWorld(1) + " r/y: " + worldMap.convertArrayToWorld(r-1) + 1 * worldMap.convertArrayToWorld(1));
+                } else if(worldAreaCone.contains(worldMap.convertArrayToWorld(c-1) + 1 * worldMap.convertArrayToWorld(1),
+                        worldMap.convertArrayToWorld(r-1) + 1 * worldMap.convertArrayToWorld(1))){
+//                        worldAreaReward[r][c].updateReward(-2*NOT_SEEN_REWARD * delta);
+
+                } else if(worldAreaConeTiny.contains(worldMap.convertArrayToWorld(c-1) + 1 * worldMap.convertArrayToWorld(1),
+                    worldMap.convertArrayToWorld(r-1) + 1 * worldMap.convertArrayToWorld(1))){
+//                    worldAreaReward[r][c].updateReward(2*NOT_SEEN_REWARD * delta);
                 } else {
                     if(!isVisionObscuring(worldMap.getTileState(r, c))) {
 //                        System.out.println("rewardnotseen: " + worldAreaReward[r][c].getReward());
@@ -119,16 +131,28 @@ public class AreaOptimizer extends Guard {
         y /= totalReward;
         x += worldMap.convertArrayToWorld(1)/2; //correction to middle of tile instead of left top
         y += worldMap.convertArrayToWorld(1)/2; //correction to middle of tile instead of left top
-//        int[][] blocks = aStarTerrain(knownTerrain);
-//        Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)(x/SCALING_FACTOR), (int)(y/SCALING_FACTOR), blocks);
-//        List<Node> path = new ArrayList<Node>();
-//        path = pathFinder.findPath();
-//        Point2D goal = new Point2D((path.get(path.size()-1).row*SCALING_FACTOR)+(SCALING_FACTOR/2), (path.get(path.size()-1).column*SCALING_FACTOR)+(SCALING_FACTOR/2));
-        Point2D goal = new Point2D(x, y);
-//        System.out.println("x: " + x + " y: " + y);
-//        printWorldAreaReward();
-//        System.out.println("goalpoint x: " + x + " y: " + y);
-        return Math.toDegrees(Math.atan2((goal.getY() - position.getY()), (goal.getX() - position.getX())));
+//        x = worldMap.convertArrayToWorld(worldAreaReward.length) - x;
+//        y = worldMap.convertArrayToWorld(worldAreaReward.length) - y;
+        goalPosition = new Point2D(x, y);
+
+        Point2D posFacing = new Point2D(position.getX() + (10 * Math.cos(Math.toRadians(direction))), position.getY() + (10 * Math.sin(Math.toRadians(direction))));
+        double result = Math.toDegrees(Math.atan2(goalPosition.getY() - position.getY(), goalPosition.getX() - position.getX()) - Math.atan2(posFacing.getY() - position.getY(), posFacing.getX() - position.getX()));
+
+        double result2 = ( result < 0) ? 360 + result : result;
+        System.out.println("result2: " + result + " ogresult: " + result2);
+        if(result <= 90 || prevGoalPosition == null) prevGoalPosition = new Point2D(goalPosition.getX(), goalPosition.getY());
+
+//        System.out.println("degrees: " + result);
+        int[][] blocks = aStarTerrain(knownTerrain);
+        Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, locationToWorldgrid(position.getX()), locationToWorldgrid(position.getY()),
+                locationToWorldgrid(prevGoalPosition.getX()), locationToWorldgrid(prevGoalPosition.getY()), blocks, this);
+        List<Node> path = pathFinder.findPath();
+        goalPositionPath = new Point2D((path.get(path.size()-1).row*SCALING_FACTOR)+(SCALING_FACTOR/2), (path.get(path.size()-1).column*SCALING_FACTOR)+(SCALING_FACTOR/2));
+
+        double angle = Math.toDegrees(Math.atan2(goalPositionPath.getY() - position.getY(), goalPositionPath.getX() - position.getX()) - Math.atan2(posFacing.getY() - position.getY(), posFacing.getX() - position.getX()));
+        angle = (angle > 180) ? angle - 360 : angle;
+        angle = (angle < -180) ? angle + 360 : angle;
+        return this.direction+angle;
     }
 
     /**
@@ -142,4 +166,6 @@ public class AreaOptimizer extends Guard {
             System.out.println();
         }
     }
+
+
 }
