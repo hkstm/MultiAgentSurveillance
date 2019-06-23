@@ -87,12 +87,12 @@ public class GameScene extends BorderPane implements Runnable {
         Agent.worldMap = worldMap;
         Guard guard  = new Guard(new Point2D(200, 300), 70);
         Intruder intruder = new Intruder(new Point2D(500, 500), 0);
-        AreaOptimizer areaOptimzer = new AreaOptimizer(new Point2D(520, 210), 0);
+        AreaOptimizer areaOptimizer = new AreaOptimizer(new Point2D(520, 210), 0);
 //        worldMap.addAgent(guard);
 //        worldMap.addAgent(intruder);
 //        worldMap.addOnlyAgent(guard);
 //        worldMap.addOnlyAgent(intruder);
-        worldMap.addOnlyAgent(areaOptimzer);
+        worldMap.addOnlyAgent(areaOptimizer);
 
         //Actual game "loop" in here
         startGameBut.setOnAction(e -> { //
@@ -153,7 +153,6 @@ public class GameScene extends BorderPane implements Runnable {
      * Updates tiles and general information displayed in the actual game screen
      */
     public void redrawBoard() {
-        System.out.println("redrawingboard");
         grid.getChildren().clear();
         createTiles();
         createAgents();
@@ -164,15 +163,15 @@ public class GameScene extends BorderPane implements Runnable {
 
     public void drawCones() {
         worldMap.createCones();
-//        Circle goal = new Circle(worldMap.getAgents().get(0).getGoalPosition().getX(), worldMap.getAgents().get(0).getGoalPosition().getY(), 10);
-//        goal.setFill(Color.CORNFLOWERBLUE);
-//        worldMap.getAgentsCones().add(goal);
-//        Circle goalPath = new Circle(worldMap.getAgents().get(0).getGoalPositionPath().getX(), worldMap.getAgents().get(0).getGoalPositionPath().getY(), 5);
-//        goal.setFill(Color.HOTPINK);
-//        worldMap.getAgentsCones().add(goalPath);
-//        Circle goalPrev = new Circle(worldMap.getAgents().get(0).getPrevGoalPosition().getX(), worldMap.getAgents().get(0).getPrevGoalPosition().getY(), 10);
-//        goal.setFill(Color.LIGHTSEAGREEN);
-//        worldMap.getAgentsCones().add(goalPrev);
+        Circle goal = new Circle(worldMap.getAgents().get(0).getGoalPosition().getX(), worldMap.getAgents().get(0).getGoalPosition().getY(), 10);
+        goal.setFill(Color.CORNFLOWERBLUE);
+        worldMap.getAgentsCones().add(goal);
+        Circle goalPath = new Circle(worldMap.getAgents().get(0).getGoalPositionPath().getX(), worldMap.getAgents().get(0).getGoalPositionPath().getY(), 5);
+        goal.setFill(Color.HOTPINK);
+        worldMap.getAgentsCones().add(goalPath);
+        Circle goalPrev = new Circle(worldMap.getAgents().get(0).getPrevGoalPosition().getX(), worldMap.getAgents().get(0).getPrevGoalPosition().getY(), 10);
+        goal.setFill(Color.LIGHTSEAGREEN);
+        worldMap.getAgentsCones().add(goalPrev);
         agentGroup.getChildren().addAll(worldMap.getAgentsCones());
     }
 
@@ -361,8 +360,8 @@ public class GameScene extends BorderPane implements Runnable {
         Image entryPointTileImg = new Image(new File("src/Assets/entryPointTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
         Image openDoorTileImg = new Image(new File("src/Assets/openDoorTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
         Image openWindowTileImg = new Image(new File("src/Assets/openWindowTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
-        Image marker1TileImg = new Image(new File("src/Assets/marker1.png").toURI().toString(), tileSize, tileSize, false, false, true);
-        Image marker2TileImg = new Image(new File("src/Assets/marker2.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        Image marker1TileImg = new Image(new File("src/Assets/redTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        Image marker2TileImg = new Image(new File("src/Assets/greenTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
         Image marker3TileImg = new Image(new File("src/Assets/marker3.png").toURI().toString(), tileSize, tileSize, false, false, true);
         Image marker4TileImg = new Image(new File("src/Assets/marker4.png").toURI().toString(), tileSize, tileSize, false, false, true);
         Image marker5TileImg = new Image(new File("src/Assets/marker5.png").toURI().toString(), tileSize, tileSize, false, false, true);

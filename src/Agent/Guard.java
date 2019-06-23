@@ -34,6 +34,8 @@ public class Guard extends Agent {
     protected double indirectCommsCost; //number of markers placed;
     protected Intruder intruder;
 
+    private boolean firstRunBehaviourTreeGuardLogic;
+
     public Guard(Point2D position, double direction) {
         super(position, direction);
         this.timeCost = 0;
@@ -46,6 +48,7 @@ public class Guard extends Agent {
         this.visualRange[1] = 8;
 //        this.visualRange[1] = 20;
         this.color = Color.AZURE;
+        this.firstRunBehaviourTreeGuardLogic = true;
         Routine guard1 = Routines.sequence(
                 Routines.moveTo(200,30)
 
@@ -63,51 +66,20 @@ public class Guard extends Agent {
     }
 
     /**
-     * put your agent specific logic in this
-    /*
-     * This should be the structure of any bot but Im not sure how this bot fits into it -kailhan
-     */
-
-    public void run() {
-        previousTime = System.nanoTime();
-        previousPosition = new Point2D(position.getX(), position.getY());
-        while(!exitThread) {
-            executeAgentLogic();
-        }
-    }
-    /**
-     * Used instead of the run method if we want to manually control when the agent should update
-     */
-    public void forceUpdate() {
-        if(firstRun) {
-            previousTime = System.nanoTime();
-            previousPosition = new Point2D(position.getX(), position.getY());
-
-            routine.start();
-            firstRun = false;
-        }
-        executeAgentLogic();
-    }
-    /**
      * Logic that gets executed every tick
      */
     public void executeAgentLogic(){
+        if(firstRunBehaviourTreeGuardLogic) {
+            routine.start();
+            firstRunBehaviourTreeGuardLogic = false;
+        }
         currentTime = System.nanoTime();
         delta = currentTime - previousTime;
         delta /= 1e9; //makes it in seconds
         System.out.println("x: " + getPosition().getX() + "y: " + getPosition().getY());
         update();
         updatePerformanceCriteria();
-
-
-
-
-
     }
-
-    /**
-     * ^^^
-     */
 
     public boolean equals(Object obj) {
         boolean equals = false;
