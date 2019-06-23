@@ -32,12 +32,12 @@ public class WorldMap implements Serializable {
     public static final int ENTRY_POINT = 8;
     public static final int OPEN_DOOR = 9;
     public static final int OPEN_WINDOW = 10;
-    public static final int UNEXPLORED = 11;
-    public static final int MARKER_1 = 41;
-    public static final int MARKER_2 = 42;
-    public static final int MARKER_3 = 43;
-    public static final int MARKER_4 = 44;
-    public static final int MARKER_5 = 45;
+    public static final int MARKER_1 = 11;
+    public static final int MARKER_2 = 12;
+    public static final int MARKER_3 = 13;
+    public static final int MARKER_4 = 14;
+    public static final int MARKER_5 = 15;
+    public static final int UNEXPLORED = 16;
     private List<Agent> agents = new ArrayList<>();
     private List<Thread> agentThreads = new ArrayList<>();
     private List<Shape> agentsCones = new ArrayList<>();
@@ -274,6 +274,15 @@ public class WorldMap implements Serializable {
 //        if ((toCheck == STRUCTURE) || (toCheck == DOOR) || (toCheck == WINDOW)) {
         if ((toCheck == STRUCTURE) || (toCheck == OPEN_DOOR) || (toCheck == DOOR) || (toCheck == OPEN_WINDOW) ||
                 (toCheck == WINDOW)) {
+            return true;
+        }
+        else return false;
+    }
+
+    public static boolean isEmpty(int toCheck) { //I think wall and sentry are missing from here but not sure :D
+//        if ((toCheck == STRUCTURE) || (toCheck == DOOR) || (toCheck == WINDOW)) {
+        if ((toCheck == EMPTY) || (toCheck == MARKER_1) || (toCheck == MARKER_2) || (toCheck == MARKER_3) ||
+                (toCheck == MARKER_4) || (toCheck == MARKER_5)) {
             return true;
         }
         else return false;

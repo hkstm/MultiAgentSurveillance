@@ -153,6 +153,7 @@ public class GameScene extends BorderPane implements Runnable {
      * Updates tiles and general information displayed in the actual game screen
      */
     public void redrawBoard() {
+        System.out.println("redrawingboard");
         grid.getChildren().clear();
         createTiles();
         createAgents();
@@ -360,7 +361,13 @@ public class GameScene extends BorderPane implements Runnable {
         Image entryPointTileImg = new Image(new File("src/Assets/entryPointTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
         Image openDoorTileImg = new Image(new File("src/Assets/openDoorTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
         Image openWindowTileImg = new Image(new File("src/Assets/openWindowTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
-        this.tileImgArray = new Image[]{emptyTileImg, structureTileImg, doorTileImg, windowTileImg, targetTileImg, sentryTileImg, decreasedVisRangeTileImg, wallTileImg, entryPointTileImg, openDoorTileImg, openWindowTileImg};
+        Image marker1TileImg = new Image(new File("src/Assets/marker1.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        Image marker2TileImg = new Image(new File("src/Assets/marker2.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        Image marker3TileImg = new Image(new File("src/Assets/marker3.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        Image marker4TileImg = new Image(new File("src/Assets/marker4.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        Image marker5TileImg = new Image(new File("src/Assets/marker5.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        this.tileImgArray = new Image[]{emptyTileImg, structureTileImg, doorTileImg, windowTileImg, targetTileImg, sentryTileImg, decreasedVisRangeTileImg, wallTileImg,
+                entryPointTileImg, openDoorTileImg, openWindowTileImg, marker1TileImg, marker2TileImg, marker3TileImg, marker4TileImg, marker5TileImg};
     }
 
     /**
