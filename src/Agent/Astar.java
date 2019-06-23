@@ -2,6 +2,8 @@ package Agent;
 
 import java.util.ArrayList;
 import java.util.PriorityQueue;
+import static World.GameScene.ASSUMED_WORLDSIZE;
+
 
 public class Astar {
 
@@ -13,30 +15,26 @@ public class Astar {
     private int si, sj;
     private int ei, ej;
 
-    public Astar(int width, int height, int si, int sj, int ei, int ej, int[][] blocks){
+    public Astar(int width, int height, int si, int sj, int ei, int ej, int[][] blocks, Agent agent){
         this.si = si;
         this.sj = sj;
         this.ei = ei;
         this.ej = ej;
         grid = new Node[width][height];
         closeCell = new boolean[width][height];
-        openCell = new PriorityQueue<>((Node n1, Node n2) ->{
-           return n1.fCost < n2.fCost ? -1 : n1.fCost > n2.fCost ? 1:0;
-        });
-
-       // Node startNode = new Node(si, sj);
-        //Node endNode = new Node(ei, ej);
-
+        openCell = new PriorityQueue<>((Node n1, Node n2) -> Double.compare(n1.fCost, n2.fCost));
         for (int i = 0; i < width ; i++) {
             for (int j = 0; j < height; j++) {
                 grid[i][j] = new Node(i, j);
                 grid[i][j].heuristic = Math.abs(i - ei) + Math.abs(j - ej);
                 grid[i][j].solution = false;
+                if(agent instanceof Intruder);
+                {
+                    grid[i][j].heuristic += addWeight(agent.getKnownTerrain(), j, i);
+                }
             }
         }
-
         grid[si][sj].fCost = 0;
-
         for (int i = 0; i < blocks.length; i++){
             addBlocks(blocks[i][0], blocks[i][1]);
         }
@@ -45,11 +43,11 @@ public class Astar {
         grid[i][j] = null;
     }
 
-    public void updateCost(Node current, Node next, int cost){
+    public void updateCost(Node current, Node next, double cost){
         if (next == null || closeCell[next.row][next.column]){
             return;
         }
-        int nextFinalCost = next.heuristic + cost;
+        double nextFinalCost = next.heuristic + cost;
         boolean inOpen = openCell.contains(next);
 
         if (!inOpen || nextFinalCost < next.fCost){
@@ -124,45 +122,19 @@ public class Astar {
         updateNeighbour();
         ArrayList<Node> path = new ArrayList<Node>();
         if (closeCell[ei][ej]) {
-            //System.out.println("path");
             Node current = grid[ei][ej];
-            //System.out.println(current);
             grid[current.row][current.column].solution = true;
             while (current.parent != null) {
                 path.add(current);
-                //System.out.println("->" + current.parent);
                 grid[current.parent.row][current.parent.column].solution = true;
                 current = current.parent;
-
-                //System.out.println(path);
-                //System.out.println("\n");
-
-                /*for (int row = 0; row < grid.length; row++) {
-                    for (int column = 0; column < grid[0].length; column++) {
-                        if (row == si && column == sj) {
-                            System.out.print("SO");
-                        } else if (row == ei && column == ej) {
-                            System.out.print("ED");
-                        } else if (grid[row][column] != null) {
-                            System.out.printf("%-3d", 0);
-                        } else {
-                            System.out.print("BL");
-                        }
-                    }
-                    System.out.println();
-                }*/
-                //System.out.println();
             }
         }
-        else{
-            //System.out.println("no path");
-            }
         return path;
     }
 
     public void display(){
         System.out.println("grid");
-
         for (int i = 0; i < grid.length; i++){
             for (int j = 0; j < grid[0].length; j++){
                 if (i == si && j == sj){
@@ -183,14 +155,125 @@ public class Astar {
         System.out.println();
     }
 
-    public static void main(String[] args){
-        int [][] blocks = {{0, 4}, {2, 2}, {3, 1}, {3, 3}, {2, 1}, {2, 3}};
-        Astar astar = new Astar(5, 5, 0, 0, 3, 2, blocks);
+    public double addWeight(int[][] knownTerrain, int row, int column)
+    {
+        double weightToAdd = 0;
+        if(coverCheck(knownTerrain, row+1, column-1))
+        {
+            //System.out.println("1");
+            weightToAdd -= 6;
+        }
+        if(coverCheck(knownTerrain, row+1, column))
+        {
+            //System.out.println("2");
+            weightToAdd -= 6;
+        }
+        if(coverCheck(knownTerrain, row, column-1))
+        {
+            //System.out.println("3");
+            weightToAdd -= 6;
+        }
+        if(coverCheck(knownTerrain, row-1, column-1))
+        {
+            //System.out.println("4");
+            weightToAdd -= 6;
+        }
+        if(coverCheck(knownTerrain, row-1, column))
+        {
+            //System.out.println("5");
+            weightToAdd -= 6;
+        }
+        if(coverCheck(knownTerrain, row-1, column+1))
+        {
+            //System.out.println("6");
+            weightToAdd -= 6;
+        }
+        if(coverCheck(knownTerrain, row, column+1))
+        {
+            //System.out.println("7");
+            weightToAdd -= 6;
+        }
+        if(coverCheck(knownTerrain, row+1, column+1))
+        {
+            //System.out.println("8");
+            weightToAdd -= 6;
+        }
 
-        //astar.display();
-        //astar.updateNeighbour();
-        astar.findPath();
+        for(int i = row ; i < row+16 ; i++)
+        {
+            for(int j = column ; j < column+16 ; j++)
+            {
+                if(i >= 0 && j >= 0 && i < ASSUMED_WORLDSIZE && j < ASSUMED_WORLDSIZE && knownTerrain[i][j] == 5)
+                {
+                    weightToAdd += 15;
+                }
+            }
+        }
+        for(int i = row ; i < row+16 ; i++)
+        {
+            for(int j = column ; j > column-16 ; j--)
+            {
+                if(i >= 0 && j >= 0 && i < ASSUMED_WORLDSIZE && j < ASSUMED_WORLDSIZE && knownTerrain[i][j] == 5)
+                {
+                    weightToAdd += 15;
+                }
+            }
+        }
+        for(int i = row ; i > row-16 ; i--)
+        {
+            for(int j = column ; j < column+16 ; j++)
+            {
+                if(i >= 0 && j >= 0 && i < ASSUMED_WORLDSIZE && j < ASSUMED_WORLDSIZE && knownTerrain[i][j] == 5)
+                {
+                    weightToAdd += 15;
+                }
+            }
+        }
+        for(int i = row ; i > row-16 ; i--)
+        {
+            for(int j = column ; j > column-16 ; j--)
+            {
+                if(i >= 0 && j >= 0 && i < ASSUMED_WORLDSIZE && j < ASSUMED_WORLDSIZE && knownTerrain[i][j] == 5)
+                {
+                    weightToAdd += 15;
+                }
+            }
+        }
+
+        if(knownTerrain[row][column] == 6)
+        {
+            //System.out.println("9");
+            weightToAdd -= 10;
+        }
+        else if(knownTerrain[row][column] == 8)
+        {
+            //System.out.println("10");
+            weightToAdd -= 1;
+        }
+        else if(knownTerrain[row][column] == 4)
+        {
+            //System.out.println("11");
+            weightToAdd -= 999;
+        }
+        else if(knownTerrain[row][column] == 2)
+        {
+            //System.out.println("13");
+            weightToAdd += 7;
+        }
+        else if(knownTerrain[row][column] == 3)
+        {
+            //System.out.println("14");
+            weightToAdd += 8;
+        }
+        return weightToAdd;
     }
 
-
+    public boolean coverCheck(int[][] knownTerrain, int row, int column)
+    {
+        if(row >= 0 && column >= 0 && row < ASSUMED_WORLDSIZE && column < ASSUMED_WORLDSIZE && (knownTerrain[row][column] == 1 || knownTerrain[row][column] == 2 || knownTerrain[row][column] == 3 || knownTerrain[row][column] == 7 || knownTerrain[row][column] == 5))
+        {
+            return true;
+        }
+        return false;
+    }
 }

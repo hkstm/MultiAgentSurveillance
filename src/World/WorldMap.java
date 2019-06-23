@@ -23,17 +23,12 @@ public class WorldMap implements Serializable {
     public static final int EMPTY = 0;
     public static final int STRUCTURE = 1;
     public static final int DOOR = 2;
-    public static final int OPEN_DOOR = 22;
     public static final int WINDOW = 3;
-    public static final int OPEN_WINDOW = 33;
     public static final int TARGET = 4;
     public static final int SENTRY = 5;
     public static final int DECREASED_VIS_RANGE = 6;
     public static final int WALL = 7;
     public static final int UNEXPLORED = 8;
-    public static final int GUARD = 9;
-    public static final int INTRUDER = 10;
-    public static final int SOUND = 11;
     public static final int MARKER_1 = 41;
     public static final int MARKER_2 = 42;
     public static final int MARKER_3 = 43;
@@ -45,10 +40,6 @@ public class WorldMap implements Serializable {
     private List<Shape> worldGridShapes = new ArrayList<>();
 
     private int size;
-
-    //public WorldMap() {
-    //    this(200);
-    //}
 
     public WorldMap(int size) {
         this(size, new ArrayList<Agent>());
@@ -275,9 +266,10 @@ public class WorldMap implements Serializable {
      * @param toCheck the type of the tile you want to check
      * @return if it is part of a structure
      */
-    public static boolean isStructure(int toCheck) {
-        if ((toCheck == STRUCTURE) || (toCheck == OPEN_DOOR) || (toCheck == DOOR) || (toCheck == OPEN_WINDOW) ||
-                (toCheck == WINDOW)) {
+    public static boolean isStructure(int toCheck) { //I think wall and sentry are missing from here but not sure :D
+        if ((toCheck == STRUCTURE) || (toCheck == DOOR) || (toCheck == WINDOW)) {
+        //if ((toCheck == STRUCTURE) || (toCheck == OPEN_DOOR) || (toCheck == DOOR) || (toCheck == OPEN_WINDOW) ||
+        //        (toCheck == WINDOW)) {
             return true;
         }
         else return false;

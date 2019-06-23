@@ -4,8 +4,8 @@ public class Node {
 
     public int row, column;
     public Node parent;
-    public int heuristic;
-    public int fCost;
+    public double heuristic;
+    public double fCost;
     public boolean solution;
 
     public Node(int row, int column){

@@ -103,7 +103,6 @@ public class Agent implements Runnable {
         System.out.println("agent constructor called");
         this.position = position;
         this.direction = direction;
-        this.goalPosition = position;
         this.color = Color.LIGHTSEAGREEN;
         this.knownTerrain = new int[worldMap.getSize()][worldMap.getSize()];
         for(int i = 0; i < knownTerrain[0].length; i++) {
@@ -117,7 +116,6 @@ public class Agent implements Runnable {
         if(goalSet == false) {
             System.out.println("No Target");
         }
-        //this.goalPosition = position;
         this.visualRange = new double[2];
         this.firstRun = true;
         for (int i = 0; i < knownTerrain.length; i++) {
@@ -154,7 +152,6 @@ public class Agent implements Runnable {
     }
 
     public void executeGeneralAgentLogic() {
-        System.out.print("check 1 ");
         currentTime = System.nanoTime();
         delta = currentTime - previousTime;
         delta /= 1e9; //makes it in seconds
@@ -194,7 +191,6 @@ public class Agent implements Runnable {
         else shortDetectionRange = false;
         if(!hiddenInDecreasedVis) shortDetectionRange = false;
         currentSpeed = ((position.distance(previousPosition) / SCALING_FACTOR) / delta);
-        System.out.println("check 3");
     }
 
     /**
@@ -313,8 +309,8 @@ public class Agent implements Runnable {
         for(int r = 0; r < worldMap.getSize(); r++) {
             for(int c = 0; c < worldMap.getSize(); c++){
                 if(isStructure(worldMap.getTileState(r, c))) {
-                    if(cone.contains(worldMap.convertArrayToWorld(c) + 0.5 * worldMap.convertArrayToWorld(1), //changed from *0.5 to *1
-                            worldMap.convertArrayToWorld(r) + 0.5 * worldMap.convertArrayToWorld(1))) { //changed from *0.5 to *1
+                    if(cone.contains(worldMap.convertArrayToWorld(c) + 0.5 * worldMap.convertArrayToWorld(1),
+                            worldMap.convertArrayToWorld(r) + 0.5 * worldMap.convertArrayToWorld(1))) {
                         knownTerrain[r][c] = worldMap.getTileState(r,c);
                     }
                 } else if (tileType == SENTRY){
@@ -677,7 +673,7 @@ public class Agent implements Runnable {
     public void updatePath()
     {
         int[][] blocks = aStarTerrain(knownTerrain);
-        Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks);
+        Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks, this);
         List<Node> path = pathFinder.findPath();
         if(!changed)
         {
@@ -706,7 +702,7 @@ public class Agent implements Runnable {
                 reAdded = false;
                 knownTerrain[tempWalls.get(i).y][tempWalls.get(i).x] = worldMap.getWorldGrid()[tempWalls.get(i).y][tempWalls.get(i).y];
                 int[][] phaseDetectionBlocks = aStarTerrain(knownTerrain);
-                Astar phaseDetectionPathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), phaseDetectionBlocks);
+                Astar phaseDetectionPathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), phaseDetectionBlocks, this);
                 List<Node> phaseDetectionPath = phaseDetectionPathFinder.findPath();
                 for(int j = 0 ; j < phaseDetectionPath.size() ; j++)
                 {
@@ -723,6 +719,11 @@ public class Agent implements Runnable {
                 }
             }
         }
+    }
+
+    public int[][] getKnownTerrain()
+    {
+        return knownTerrain;
     }
 }
 
