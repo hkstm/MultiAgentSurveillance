@@ -3,7 +3,7 @@ make blackboard
     // make singleton class //
     // have guards have reference to singleton //
     the blackboard holds the coordinates of the intruder
-    // singleton class ¬¬ (needs proper data types)
+    // singleton class //
         can work with multiple intruders
         // singleton class ¬¬
     when a guard sees an intruder, he enters chase mode
@@ -24,8 +24,11 @@ make pheromones
         pheromone tiles are visualised as well
         // go into game scene, find agent rep and figure shit out
     agents are able to check if their current coords holds a pheromone trail
-    // hashmap
+    // make intersect for currentCoords and all phermone trails //
+    // add in reaction behaviour //
+
         if so, the agents grab the owner's type
+        // implement type identifier
         // agent supermethod with helper submethods changed down the line
             if guard grabs an intruder, grab coordinates and enter chase mode
             if intruder grabs a guard, change A* tile weighting

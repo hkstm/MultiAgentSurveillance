@@ -190,6 +190,7 @@ public class Agent implements Runnable {
          * this is the point where the logic of your bot gets called
          */
         trackCellChange();
+        checkForTrail();
         //printKnownTerrain();
         executeAgentLogic();
         /**
@@ -765,5 +766,25 @@ public class Agent implements Runnable {
             candidate.setPCoordinates(currentCoordinates);
         }
             
+    }
+
+
+    public void checkForTrail()
+    {
+        Agent myMan = Pheromone.checkForPheromones(currentCoordinates);
+        if (myMan != null)
+        {
+            boolean own = this instanceof Guard;
+            boolean other = myMan instanceof Guard;
+            if (own != other)
+                react();
+        }
+            checkForClass(myMan);
+    }
+
+    
+    public void react()
+    {
+       // override me please daddy.
     }
 }

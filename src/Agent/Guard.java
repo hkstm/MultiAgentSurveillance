@@ -264,4 +264,15 @@ public class Guard extends Agent {
         {
             blackboard.setSeen(eyesOnTarget);
         }
+
+
+        @Override // chase that bitch down
+        public void react()
+        {
+            // Update blackboard.
+            updateBlackboard(myMan.getPosition());
+
+            // Chase time!
+            
+        }
     }

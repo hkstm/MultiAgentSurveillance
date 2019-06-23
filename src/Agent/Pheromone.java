@@ -1,6 +1,8 @@
 package Agent;
 
 import javafx.geometry.Point2D;
+import java.util.ArrayList;
+import java.util.LinkedList;
 
 /* This class serves as indirect (stigmergic) communication between agents.
  *
@@ -19,12 +21,16 @@ public class Pheromone
 {
     private Agent owner; // derive type and coordinates from this
     private int coordinates; // coords in terms of grid cells
+    public static ArrayList<LinkedList> allTrails;
+    private Pheromone onPath;
 
 
     public Pheromone(Agent a)
     {
         owner = a;
         coordinates = owner.currentCoordinates;
+        allTrails.add(owner.trail);
+        onPath = null;
     }
 
     public void createTrail(){
@@ -38,24 +44,30 @@ public class Pheromone
     }
           
     /* Checks if an agents current coordinate intersects with any hormones
-     * Implementation: hashmap or int list, idfk
      *
      * @params ccoords the current coordinates of an agent to be checked for intersection
      * @return true: pheromones are at ccords
      */
-    public boolean checkForPheromones()
+    public static Agent checkForPheromones(int ccoords)
     {
         // Check for intersection
-        
-        return false;
+        for (int i = 0; i < allTrails.size(); i++)
+            for (int j = 0; j < allTrails.get(i).size(); j++)
+                if (ccoords == allTrails.get(i).get(j))
+                {
+                    return allTrails.get(i).get(j).owner; // maybe replace owner with getOwner() ?
+                }
+
+        return null;
     }
 
 
-    // This method is called after check() somewhere in main.
+    // is this even needed?
     public Agent getOwner()
     {
         return owner;
     }
+
 
     public setPCoordinates(int coords)
     {

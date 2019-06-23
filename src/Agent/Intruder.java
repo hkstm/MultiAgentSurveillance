@@ -191,4 +191,11 @@ public class Intruder extends Agent{
             frozen = true;
         }
     }
+
+
+    @Override // run Forest, run!
+        public void react()
+        {
+            // Change A* tile weighting to avoid the guards coordinates, field of viws --> general area
+        }
 }

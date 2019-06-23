@@ -10,14 +10,13 @@ public class Blackboard
     private static Blackboard bir = null; // Singleton shared by all.
 
     private static boolean seenIntruder; // When true, all guards enter chase mode.
-    private static int[] coordinatesOfIntruder; //---> to get the intruders coords we just need to call Intruder.getPosition();
+    private static Point2D posOfIntruder; //---> to get the intruders coords we just need to call Intruder.getPosition();
 
 
 
     private Blackboard()
     {
         seenIntruder = false;
-        coordinatesOfIntruder = new int[2];
     }
 
 
@@ -35,10 +34,6 @@ public class Blackboard
     public boolean getSeen()   {   return seenIntruder;    }
     public void setSeen(boolean status)   {   seenIntruder = status;    }
 
-    public int[] getCoords()   {   return coordinatesOfIntruder;    }
-    public void setCoords(int x, int y)
-    {
-        coordinatesOfIntruder[0] = x;
-        coordinatesOfIntruder[1] = y;
-    }
+    public Point2D getCoords()   {   return coordinatesOfIntruder;    }
+    public void setCoords(Point2D intruderPos)    {    posOfIntruder = intruderPos;    }
 }
