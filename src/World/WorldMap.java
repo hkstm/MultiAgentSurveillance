@@ -230,8 +230,8 @@ public class WorldMap implements Serializable {
      * @param tileStatus the type of tile you want to set for the area
      */
     public void fillWorldArray(int topLeftRow, int topLeftCol, int botRightRow, int botRightCol, int tileStatus) {
-        for(int i = topLeftRow; i < botRightRow; i++) {
-            for(int j = topLeftCol; j < botRightCol; j++) {
+        for(int i = topLeftRow; i < botRightRow + 1; i++) {
+            for(int j = topLeftCol; j < botRightCol + 1; j++) {
                 worldGrid[i][j] = tileStatus;
             }
         }
