@@ -20,8 +20,8 @@ import static World.GameScene.SCALING_FACTOR;
 public class WorldMap implements Serializable {
 
     public int[][] worldGrid;
-    public static final int EMPTY = 0;
 
+    public static final int EMPTY = 0;
     public static final int STRUCTURE = 1;
     public static final int DOOR = 2;
     public static final int WINDOW = 3;
