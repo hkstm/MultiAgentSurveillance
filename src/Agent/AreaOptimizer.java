@@ -139,7 +139,6 @@ public class AreaOptimizer extends Guard {
         double result = Math.toDegrees(Math.atan2(goalPosition.getY() - position.getY(), goalPosition.getX() - position.getX()) - Math.atan2(posFacing.getY() - position.getY(), posFacing.getX() - position.getX()));
 
         double result2 = ( result < 0) ? 360 + result : result;
-        System.out.println("result2: " + result + " ogresult: " + result2);
         if(result <= 90 || prevGoalPosition == null) prevGoalPosition = new Point2D(goalPosition.getX(), goalPosition.getY());
 
 //        System.out.println("degrees: " + result);

@@ -20,8 +20,8 @@ import static World.GameScene.SCALING_FACTOR;
 public class WorldMap implements Serializable {
 
     public int[][] worldGrid;
-    public static final int EMPTY = 0;
 
+    public static final int EMPTY = 0;
     public static final int STRUCTURE = 1;
     public static final int DOOR = 2;
     public static final int WINDOW = 3;
@@ -30,9 +30,9 @@ public class WorldMap implements Serializable {
     public static final int DECREASED_VIS_RANGE = 6;
     public static final int WALL = 7;
     public static final int ENTRY_POINT = 8;
-    public static final int OPEN_DOOR = 10;
-    public static final int OPEN_WINDOW = 11;
-    public static final int UNEXPLORED = 12;
+    public static final int OPEN_DOOR = 9;
+    public static final int OPEN_WINDOW = 10;
+    public static final int UNEXPLORED = 11;
     public static final int MARKER_1 = 41;
     public static final int MARKER_2 = 42;
     public static final int MARKER_3 = 43;
@@ -271,14 +271,13 @@ public class WorldMap implements Serializable {
      * @return if it is part of a structure
      */
     public static boolean isStructure(int toCheck) { //I think wall and sentry are missing from here but not sure :D
-        if ((toCheck == STRUCTURE) || (toCheck == DOOR) || (toCheck == WINDOW)) {
-        //if ((toCheck == STRUCTURE) || (toCheck == OPEN_DOOR) || (toCheck == DOOR) || (toCheck == OPEN_WINDOW) ||
-        //        (toCheck == WINDOW)) {
+//        if ((toCheck == STRUCTURE) || (toCheck == DOOR) || (toCheck == WINDOW)) {
+        if ((toCheck == STRUCTURE) || (toCheck == OPEN_DOOR) || (toCheck == DOOR) || (toCheck == OPEN_WINDOW) ||
+                (toCheck == WINDOW)) {
             return true;
         }
         else return false;
     }
-
 
     /**
      * Creates cones for all agents and stores them in agentsCones array for access

@@ -88,12 +88,12 @@ public class GameScene extends BorderPane implements Runnable {
         Guard guard  = new Guard(new Point2D(200, 300), 70);
         Intruder intruder = new Intruder(new Point2D(500, 500), 0);
         AreaOptimizer areaOptimzer = new AreaOptimizer(new Point2D(520, 210), 0);
-        //worldMap.addAgent(areaOptimzer);
-        //worldMap.addAgent(intruder);
+//        worldMap.addAgent(guard);
+//        worldMap.addAgent(intruder);
         //worldMap.addOnlyAgent(guard);
-        //worldMap.addOnlyAgent(intruder);
-        //worldMap.addOnlyAgent(areaOptimzer);
+//        worldMap.addOnlyAgent(intruder);
         worldMap.addOnlyAgent(areaOptimzer);
+
         //Actual game "loop" in here
         startGameBut.setOnAction(e -> { //
             currentTimeCountDown = System.nanoTime();
@@ -184,6 +184,8 @@ public class GameScene extends BorderPane implements Runnable {
         for (int r = 0; r < worldMap.getSize(); r++) {
             for (int c = 0; c < worldMap.getSize(); c++) {
                 TileView tmpView = new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c));
+                tmpView.setCache(true);
+                tmpView.setCacheHint(CacheHint.SPEED);
                 tileViews.add(c + (r * worldMap.getSize()), tmpView);
                 grid.add(tmpView, c, r);tileViews.set(c + (r * worldMap.getSize()),  new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c)));
             }
@@ -193,44 +195,55 @@ public class GameScene extends BorderPane implements Runnable {
     public void createTiles() {
         for (int r = 0; r < worldMap.getSize(); r++) {
             for (int c = 0; c < worldMap.getSize(); c++) {
+                TileView tmpView = null;
                 if(tileViews.get(c + (r * worldMap.getSize())).getState() != worldMap.getTileState(r, c)) {
-//                    tileViews.set(c + (r * worldMap.getSize()),  new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c)));
+                    tmpView = new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c));
+                    System.out.println("changed a tile");
+                } else {
+                    tmpView = tileViews.get(c + (r * worldMap.getSize()));
                 }
-                TileView tmpView = new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c));
+                tmpView.setCache(true);
+                tmpView.setCacheHint(CacheHint.SPEED);
                 tileViews.set(c + (r * worldMap.getSize()), tmpView);
                 grid.add(tmpView, c, r);
             }
         }
     }
 
-//   he intruder wins if he is 3 seconds in any of the target areas or vists the target area twice with a time
-//   difference of at least 3 seconds. The guards win if the intruder is no more than 0.5 meter away and in sight.
-//   All intruders need to complete their objective or any of them.
-//   If an intruder flees through the entry point before making the target it is a draw
-
+    /**
+     * Intruder wins if they are 3 seconds in any of the target areas or visit the target area twice with a time difference of at least 3 seconds
+     * @param mode might want to change logic depending on amount of targets and that could be switched using mode
+     * @param delta timestep to calculate if time thresholdis met
+     */
     public void haveIntrudersWon(int mode, long delta) {
-        boolean intrudersWon = false;
-        if(!countDown) {
-            currentTimeCountDown = System.nanoTime();
-        }
-        if(worldMap.intruderInTarget()) {
-            if(!visitedTarget) {
-                firstVisitTime = System.nanoTime();
-                visitedTarget = true;
+        if(mode == 0) {
+            boolean intrudersWon = false;
+            if(!countDown) {
+                currentTimeCountDown = System.nanoTime();
             }
-            if((System.nanoTime() - currentTimeCountDown) > (3*1e9)) {
+            if(worldMap.intruderInTarget()) {
+                if(!visitedTarget) {
+                    firstVisitTime = System.nanoTime();
+                    visitedTarget = true;
+                }
+                if((System.nanoTime() - currentTimeCountDown) > (3*1e9)) {
+                    intrudersWon = true;
+                }
+                countDown = true;
+            } else {
+                countDown = false;
+            }
+            if(visitedTarget && (System.nanoTime() - firstVisitTime) > (3*1e9)) {
                 intrudersWon = true;
             }
-            countDown = true;
+            if(intrudersWon) {
+                createAlert("INTRUDER has reached TARGET");
+            }
+
         } else {
-            countDown = false;
+            System.out.println("other modes have not been implemented intruders cannot win");
         }
-        if(visitedTarget && (System.nanoTime() - firstVisitTime) > (3*1e9)) {
-            intrudersWon = true;
-        }
-        if(intrudersWon) {
-            createAlert("INTRUDER has reached TARGET");
-        }
+
     }
 
     /**
