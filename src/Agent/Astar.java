@@ -16,12 +16,14 @@ public class Astar {
     private int si, sj;
     private int ei, ej;
     private boolean cornered;
+    private Agent agent;
 
     public Astar(int width, int height, int si, int sj, int ei, int ej, int[][] blocks, Agent agent){
         this.si = si;
         this.sj = sj;
         this.ei = ei;
         this.ej = ej;
+        this.agent = agent;
         grid = new Node[width][height];
         closeCell = new boolean[width][height];
         openCell = new PriorityQueue<>((Node n1, Node n2) -> Double.compare(n1.fCost, n2.fCost));
@@ -30,7 +32,7 @@ public class Astar {
                 grid[i][j] = new Node(i, j);
                 grid[i][j].heuristic = Math.abs(i - ei) + Math.abs(j - ej);
                 grid[i][j].solution = false;
-                if(agent instanceof Intruder);
+                if(agent.getClass() == Intruder.class)
                 {
                     grid[i][j].heuristic += addWeight(agent.getKnownTerrain(), j, i);
                 }
@@ -133,8 +135,14 @@ public class Astar {
                 current = current.parent;
             }
         }
-        return checkCornered(path);
-        //return path;
+        if(agent.getClass() == Intruder.class)
+        {
+            return checkCornered(path);
+        }
+        else
+        {
+            return path;
+        }
     }
 
     public void display(){
@@ -249,7 +257,7 @@ public class Astar {
             //System.out.println("9");
             weightToAdd -= 10;
         }
-        else if(knownTerrain[row][column] == 8)
+        else if(knownTerrain[row][column] == 12)
         {
             //System.out.println("10");
             weightToAdd -= 1;
@@ -283,22 +291,23 @@ public class Astar {
 
     public ArrayList<Node> checkCornered(ArrayList<Node> path)
     {
-        System.out.println();
         Node firstInPath = path.get(path.size()-1);
         boolean lowest = true;
         for(int i = firstInPath.row-2 ; i <= firstInPath.row+2 ; i++)
         {
             for(int j = firstInPath.column-2 ; j <= firstInPath.column+2 ; j++)
             {
-                //if(worldMap.worldGrid[i][j] != 1 || worldMap.worldGrid[i][j] != 5 || worldMap.worldGrid[i][j] != 7)
-                if(worldMap.worldGrid[i][j] != 1)// && worldMap.worldGrid[i][j] != 5 && worldMap.worldGrid[i][j] != 7)
+                if(i >= 0 && j >= 0 && i < ASSUMED_WORLDSIZE && j < ASSUMED_WORLDSIZE && agent.getWorldGrid()[j][i] != 1 && agent.getWorldGrid()[j][i] != 5 && agent.getWorldGrid()[j][i] != 7)
                 {
-                    System.out.println("here");
-                }
-                if((i >= 0 && j >= 0 && i < ASSUMED_WORLDSIZE && j < ASSUMED_WORLDSIZE) && (worldMap.worldGrid[i][j] != 1 || worldMap.worldGrid[i][j] != 5 || worldMap.worldGrid[i][j] != 7))
-                {
-                    if(firstInPath.heuristic > grid[i][j].heuristic)
+                    //System.out.println("terrain at problem tile "+agent.getWorldGrid()[69][47]);
+                    //System.out.println("row "+i+" column "+j);
+                    //System.out.println("from path "+firstInPath.heuristic);
+                    //System.out.println("from grid "+grid[i][j].heuristic);
+                    //System.out.println();
+                    //System.out.println("row "+j+" column "+i);
+                    if(firstInPath.heuristic > grid[j][i].heuristic) //switched i and j here and in the conditional above
                     {
+                        //System.out.println("here");
                         lowest = false;
                     }
                 }
@@ -306,11 +315,16 @@ public class Astar {
         }
         if(lowest)
         {
-            System.out.println("cornered");
-            firstInPath.heuristic--;
-            path.set(path.size()-1, firstInPath); //check mutability
-            checkCornered(path);
+            //System.out.println("cornered");
+            //firstInPath.heuristic -= 100;
+            //path.set(path.size()-1, firstInPath); //check mutability
+            //checkCornered(path);
         }
+        else
+        {
+            //System.out.println("not cornered");
+        }
+        //System.out.println();
         return path;
     }
 }
