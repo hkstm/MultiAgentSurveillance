@@ -31,7 +31,7 @@ import static World.StartWorldBuilder.WINDOW_SIZE;
 
 /**
  * Main in game screen
- * @author Kailhan
+ * @author Kailhan, Costi
  */
 public class GameScene extends BorderPane implements Runnable {
 
@@ -60,6 +60,9 @@ public class GameScene extends BorderPane implements Runnable {
     private boolean visitedTarget;
     private long firstVisitTime;
 
+    private Pheromones pher;
+    private boolean pherActive = true;
+    
     public GameScene(Stage primaryStage, Settings settings) {
         this.grid = new GridPane(); //main grid that shows the tiles
         this.windowSize = WINDOW_SIZE;
@@ -87,9 +90,20 @@ public class GameScene extends BorderPane implements Runnable {
         AreaOptimizer areaOptimzer = new AreaOptimizer(new Point2D(500, 400), 0);
 //        worldMap.addAgent(guard);
 //        worldMap.addAgent(intruder);
-        //worldMap.addOnlyAgent(guard);
+        worldMap.addOnlyAgent(guard);
         worldMap.addOnlyAgent(intruder);
         //worldMap.addOnlyAgent(areaOptimzer);
+        
+         ArrayList<Guard> guards = new ArrayList<Guard>();
+        ArrayList<Intruder> intruders = new ArrayList<Intruder>();
+
+        guards.add(guard);
+        intruders.add(intruder);
+
+        this.pher = new Pheromones(windowSize, windowSize);
+        pher.setAgents(guards,intruders);
+
+       
         //Actual game "loop" in here
         startGameBut.setOnAction(e -> { //
             currentTimeCountDown = System.nanoTime();
@@ -107,7 +121,7 @@ public class GameScene extends BorderPane implements Runnable {
                             worldMap.forceUpdateAgents();
 //                        long afterUpdatingAgents = System.nanoTime();
 //                        System.out.println("updating agentstook: " + ((afterUpdatingAgents-beforeUpdatingAgents)/1e9));
-
+                            pher.update();
 //                        long beforeDrawingBoard = System.nanoTime();
                             redrawBoard();
 //                        long afterDrawingBoard = System.nanoTime();
@@ -177,19 +191,40 @@ public class GameScene extends BorderPane implements Runnable {
         }
     }
 
-    public void createTiles() {
-        for (int r = 0; r < worldMap.getSize(); r++) {
-            for (int c = 0; c < worldMap.getSize(); c++) {
-                if(tileViews.get(c + (r * worldMap.getSize())).getState() != worldMap.getTileState(r, c)) {
+     public void createTiles() {
+        if(!pherActive){
+            for (int r = 0; r < worldMap.getSize(); r++) {
+                for (int c = 0; c < worldMap.getSize(); c++) {
+                    if(tileViews.get(c + (r * worldMap.getSize())).getState() != worldMap.getTileState(r, c)) {
 //                    tileViews.set(c + (r * worldMap.getSize()),  new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c)));
+                    }
+                    TileView tmpView = new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c));
+                    tileViews.set(c + (r * worldMap.getSize()), tmpView);
+                    grid.add(tmpView, c, r);
                 }
-                TileView tmpView = new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c));
-                tileViews.set(c + (r * worldMap.getSize()), tmpView);
-                grid.add(tmpView, c, r);
+            }
+        }else{
+            for (int r = 0; r < worldMap.getSize(); r++) {
+                for (int c = 0; c < worldMap.getSize(); c++) {
+
+                    TileView tmpView = new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c));
+
+                    if (pher.getMapPhero()[r][c].getCol() == Color.GREEN) {
+                        tmpView = new TileView(tileImgArray[8], r, c, worldMap.getTileState(r, c));
+
+                    }else if(pher.getMapPhero()[r][c].getCol() == Color.RED) {
+                        tmpView = new TileView(tileImgArray[9], r, c, worldMap.getTileState(r, c));
+
+
+                    }
+
+                    tileViews.set(c + (r * worldMap.getSize()), tmpView);
+                    grid.add(tmpView, c, r);
+                }
             }
         }
-    }
 
+    }
 //   he intruder wins if he is 3 seconds in any of the target areas or vists the target area twice with a time
 //   difference of at least 3 seconds. The guards win if the intruder is no more than 0.5 meter away and in sight.
 //   All intruders need to complete their objective or any of them.
@@ -328,8 +363,11 @@ public class GameScene extends BorderPane implements Runnable {
         Image sentryTileImg = new Image(new File("src/Assets/sentryTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
         Image decreasedVisRangeTileImg = new Image(new File("src/Assets/decreasedVisRangeTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
         Image wallTileImg = new Image(new File("src/Assets/wallTile16.png").toURI().toString(), tileSize, tileSize, false, false, true);
-        this.tileImgArray = new Image[]{emptyTileImg, structureTileImg, doorTileImg, windowTileImg, targetTileImg, sentryTileImg, decreasedVisRangeTileImg, wallTileImg};
+        Image guardPTileImg = new Image(new File("src/Assets/greenTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        Image intruderPTileImg = new Image(new File("src/Assets/redTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        this.tileImgArray = new Image[]{emptyTileImg, structureTileImg, doorTileImg, windowTileImg, targetTileImg, sentryTileImg, decreasedVisRangeTileImg, wallTileImg, guardPTileImg, intruderPTileImg};
     }
+
 
     /**
      * Inits button for going back to main menu where you can pick to start a world builder again, load custom map and simulate/play
