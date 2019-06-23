@@ -118,6 +118,7 @@ public class AreaOptimizer extends Guard {
             }
         }
         updateWorldAreaRewardPOI(delta);
+        updateWorldAreaRewardAudio(delta);
     }
 
     public void updateWorldAreaRewardAudio(double delta) {
