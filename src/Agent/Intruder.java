@@ -61,7 +61,7 @@ public class Intruder extends Agent{
      */
 
     public void executeAgentLogic() {
-        System.out.print("check 2 ");
+        System.out.print("check intruder");
         try {
             gameTreeIntruder(delta);
         }

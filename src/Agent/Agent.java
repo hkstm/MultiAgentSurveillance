@@ -64,6 +64,8 @@ public class Agent implements Runnable {
 
     protected Point2D previousPosition;
     protected volatile Point2D goalPosition;
+    protected Point2D prevGoalPosition;
+    protected Point2D goalPositionPath;
 
     protected boolean firstRun;
 
@@ -143,7 +145,6 @@ public class Agent implements Runnable {
     }
 
     public void executeGeneralAgentLogic() {
-        System.out.print("check 1 ");
         currentTime = System.nanoTime();
         delta = currentTime - previousTime;
         delta /= 1e9; //makes it in seconds
@@ -183,7 +184,6 @@ public class Agent implements Runnable {
         else shortDetectionRange = false;
         if(!hiddenInDecreasedVis) shortDetectionRange = false;
         currentSpeed = ((position.distance(previousPosition) / SCALING_FACTOR) / delta);
-        System.out.println("check 3");
     }
 
     /**
@@ -207,7 +207,7 @@ public class Agent implements Runnable {
      */
     public void updateDirection(double directionToGo) {
         if(!turnedMaxWhileSprinting) {
-            double maxTurn = 10* delta;
+            double maxTurn = MAX_TURNING_WHILE_SPRINTING * delta;
             double toTurn = Math.abs(directionToGo - direction);
             double turn = Math.min(maxTurn, toTurn);
             if(directionToGo > direction) {
@@ -216,7 +216,7 @@ public class Agent implements Runnable {
                 direction -= turn;
             }
         } else {
-            System.out.println("you have turned to match while sprinting");
+            System.out.println("you have turned to much while sprinting");
         }
     }
 
@@ -360,6 +360,10 @@ public class Agent implements Runnable {
     }
 
     public Shape createCone(double minVisRange, double maxVisRange) {
+        return createCone(minVisRange, maxVisRange, this.viewingAngle);
+    }
+
+    public Shape createCone(double minVisRange, double maxVisRange, double viewingAngle) {
         double x = position.getX();
         double y = position.getY();
         double visualRangeMin = minVisRange * SCALING_FACTOR; //max visionRange
@@ -541,6 +545,15 @@ public class Agent implements Runnable {
         }
         System.out.println();
         System.out.println();
+    }
+
+
+    public Point2D getGoalPositionPath() {
+        return goalPositionPath;
+    }
+
+    public Point2D getPrevGoalPosition() {
+        return prevGoalPosition;
     }
 
 }
