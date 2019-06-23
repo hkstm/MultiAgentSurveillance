@@ -91,9 +91,9 @@ public class GameScene extends BorderPane implements Runnable {
 //        worldMap.addAgent(guard);
 //        worldMap.addAgent(intruder);
         //worldMap.addOnlyAgent(guard);
-        worldMap.addOnlyAgent(intruder);
-        //worldMap.addOnlyAgent(areaOptimzer);
-        //worldMap.addOnlyAgent(areaOptimzer);
+//        worldMap.addOnlyAgent(intruder);
+        worldMap.addOnlyAgent(areaOptimzer);
+
         //Actual game "loop" in here
         startGameBut.setOnAction(e -> { //
             currentTimeCountDown = System.nanoTime();
@@ -184,6 +184,8 @@ public class GameScene extends BorderPane implements Runnable {
         for (int r = 0; r < worldMap.getSize(); r++) {
             for (int c = 0; c < worldMap.getSize(); c++) {
                 TileView tmpView = new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c));
+                tmpView.setCache(true);
+                tmpView.setCacheHint(CacheHint.SPEED);
                 tileViews.add(c + (r * worldMap.getSize()), tmpView);
                 grid.add(tmpView, c, r);tileViews.set(c + (r * worldMap.getSize()),  new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c)));
             }
@@ -196,9 +198,12 @@ public class GameScene extends BorderPane implements Runnable {
                 TileView tmpView = null;
                 if(tileViews.get(c + (r * worldMap.getSize())).getState() != worldMap.getTileState(r, c)) {
                     tmpView = new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c));
+                    System.out.println("changed a tile");
                 } else {
                     tmpView = tileViews.get(c + (r * worldMap.getSize()));
                 }
+                tmpView.setCache(true);
+                tmpView.setCacheHint(CacheHint.SPEED);
                 tileViews.set(c + (r * worldMap.getSize()), tmpView);
                 grid.add(tmpView, c, r);
             }

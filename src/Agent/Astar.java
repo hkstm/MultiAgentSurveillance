@@ -22,6 +22,7 @@ public class Astar {
         this.sj = sj;
         this.ei = ei;
         this.ej = ej;
+        this.worldMap = agent.worldMap;
         grid = new Node[width][height];
         closeCell = new boolean[width][height];
         openCell = new PriorityQueue<>((Node n1, Node n2) -> Double.compare(n1.fCost, n2.fCost));

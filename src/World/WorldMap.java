@@ -30,9 +30,9 @@ public class WorldMap implements Serializable {
     public static final int DECREASED_VIS_RANGE = 6;
     public static final int WALL = 7;
     public static final int ENTRY_POINT = 8;
-    public static final int OPEN_DOOR = 10;
-    public static final int OPEN_WINDOW = 11;
-    public static final int UNEXPLORED = 12;
+    public static final int OPEN_DOOR = 9;
+    public static final int OPEN_WINDOW = 10;
+    public static final int UNEXPLORED = 11;
     public static final int MARKER_1 = 41;
     public static final int MARKER_2 = 42;
     public static final int MARKER_3 = 43;
