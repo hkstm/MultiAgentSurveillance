@@ -1,3 +1,15 @@
+Final TODOs for Ver 1
+    blackboard
+        handle multiple intruders and coordination for who chases who
+        change A* to have guards avoid each other nearer the intruder
+    pheromone
+        visualise the hormones
+        add in reaction behaviour when type A spots type behaviour
+            Guard: trigger chase  
+            Intruder: A* tile change
+
+
+
 make blackboard
     All guards have access to the black blackboard  
     // make singleton class //
@@ -21,7 +33,7 @@ make pheromones
     when the agent moves, pheromone objects are updated along with their list
     // agent tracks its own coordinate changes //
     // if changeDetected == true , update(queue.inspect()); add(queue.pop);
-        pheromone tiles are visualised as well
+        pheromone tiles are visualised as well ¬¬
         // go into game scene, find agent rep and figure shit out
     agents are able to check if their current coords holds a pheromone trail
     // make intersect for currentCoords and all phermone trails //
