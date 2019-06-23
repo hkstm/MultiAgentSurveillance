@@ -740,4 +740,9 @@ public class Agent implements Runnable {
     {
         return knownTerrain;
     }
+
+    public int[][] getWorldGrid()
+    {
+        return worldMap.worldGrid;
+    }
 }
