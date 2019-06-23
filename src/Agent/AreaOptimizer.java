@@ -22,12 +22,13 @@ public class AreaOptimizer extends Guard {
 
     private Point2DReward[][] worldAreaReward;
     private double score;
-    public final double NOT_SEEN_REWARD = 100;
-    public final double INTRUDER_BONUS_REWARD = 10;
-    public final double RECENT_AREA_PENALTY = 0;
-    public final double MED_INTEREST = 2;
-    public final double HIGH_INTEREST = 8;
-    public final double MAX_INTEREST = 64;
+    public static final double NOT_SEEN_REWARD = 100;
+    public static final double INTRUDER_BONUS_REWARD = 10;
+    public static final double RECENT_AREA_PENALTY = 0;
+    public static final double MED_INTEREST = 2;
+    public static final double HIGH_INTEREST = 8;
+    public static final double MAX_INTEREST = 64;
+    public static final double AUDIO_REWARD = 8;
     private double explorationFactor = 1;
     private ArrayList<PointOfInterest> pointsOfInterest;
 
@@ -117,6 +118,24 @@ public class AreaOptimizer extends Guard {
             }
         }
         updateWorldAreaRewardPOI(delta);
+    }
+
+    public void updateWorldAreaRewardAudio(double delta) {
+        while(audioLogs.size() > 0) {
+            Shape audioCone = createCone(visualRange[0], visualRange[1]*10,10, audioLogs.get(0).getDirection());
+            for(int r = 0; r < worldAreaReward.length; r++) {
+                for(int c = 0; c < worldAreaReward[0].length; c++) {
+                    //check if middle of tile is in cone
+                    if(audioCone.contains(worldMap.convertArrayToWorld(c) + 0.5 * worldMap.convertArrayToWorld(1),
+                            worldMap.convertArrayToWorld(r) + 0.5 * worldMap.convertArrayToWorld(1))) {
+                        worldAreaReward[r][c].updateReward(AUDIO_REWARD * delta);
+                    }
+                }
+//                System.out.println("reward: " + worldAreaReward[r][c].getReward());
+            }
+            audioLogs.remove(0);
+
+        }
     }
 
     /**
