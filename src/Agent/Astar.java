@@ -4,7 +4,6 @@ import World.WorldMap;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
 import static World.GameScene.ASSUMED_WORLDSIZE;
-import static World.WorldMap.UNEXPLORED;
 
 public class Astar {
 
@@ -134,8 +133,8 @@ public class Astar {
                 current = current.parent;
             }
         }
-        //return checkCornered(path);
-        return path;
+        return checkCornered(path);
+        //return path;
     }
 
     public void display(){
@@ -250,7 +249,7 @@ public class Astar {
             //System.out.println("9");
             weightToAdd -= 10;
         }
-        else if(knownTerrain[row][column] == UNEXPLORED)
+        else if(knownTerrain[row][column] == 8)
         {
             //System.out.println("10");
             weightToAdd -= 1;
@@ -263,12 +262,12 @@ public class Astar {
         else if(knownTerrain[row][column] == 2)
         {
             //System.out.println("13");
-            weightToAdd += 7;
+            weightToAdd += 2;
         }
         else if(knownTerrain[row][column] == 3)
         {
             //System.out.println("14");
-            weightToAdd += 8;
+            weightToAdd += 3;
         }
         return weightToAdd;
     }
@@ -291,7 +290,11 @@ public class Astar {
         {
             for(int j = firstInPath.column-2 ; j <= firstInPath.column+2 ; j++)
             {
-                //trying to check the heuristic of walls here which is impossible!!
+                //if(worldMap.worldGrid[i][j] != 1 || worldMap.worldGrid[i][j] != 5 || worldMap.worldGrid[i][j] != 7)
+                if(worldMap.worldGrid[i][j] != 1)// && worldMap.worldGrid[i][j] != 5 && worldMap.worldGrid[i][j] != 7)
+                {
+                    System.out.println("here");
+                }
                 if((i >= 0 && j >= 0 && i < ASSUMED_WORLDSIZE && j < ASSUMED_WORLDSIZE) && (worldMap.worldGrid[i][j] != 1 || worldMap.worldGrid[i][j] != 5 || worldMap.worldGrid[i][j] != 7))
                 {
                     if(firstInPath.heuristic > grid[i][j].heuristic)
