@@ -271,14 +271,13 @@ public class WorldMap implements Serializable {
      * @return if it is part of a structure
      */
     public static boolean isStructure(int toCheck) { //I think wall and sentry are missing from here but not sure :D
-        if ((toCheck == STRUCTURE) || (toCheck == DOOR) || (toCheck == WINDOW)) {
-        //if ((toCheck == STRUCTURE) || (toCheck == OPEN_DOOR) || (toCheck == DOOR) || (toCheck == OPEN_WINDOW) ||
-        //        (toCheck == WINDOW)) {
+//        if ((toCheck == STRUCTURE) || (toCheck == DOOR) || (toCheck == WINDOW)) {
+        if ((toCheck == STRUCTURE) || (toCheck == OPEN_DOOR) || (toCheck == DOOR) || (toCheck == OPEN_WINDOW) ||
+                (toCheck == WINDOW)) {
             return true;
         }
         else return false;
     }
-
 
     /**
      * Creates cones for all agents and stores them in agentsCones array for access
