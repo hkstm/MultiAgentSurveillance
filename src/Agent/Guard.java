@@ -33,6 +33,7 @@ public class Guard extends Agent {
     protected double directCommsCost; //message size in "bytes"
     protected double indirectCommsCost; //number of markers placed;
     protected Intruder intruder;
+    protected boolean chasing;
 
     private boolean firstRunBehaviourTreeGuardLogic;
 
@@ -46,6 +47,7 @@ public class Guard extends Agent {
 //        this.viewingAngle = 60;
         this.visualRange[0] = 0;
         this.visualRange[1] = 8;
+        this.chasing = false;
 //        this.visualRange[1] = 20;
         this.color = Color.AZURE;
         this.firstRunBehaviourTreeGuardLogic = true;

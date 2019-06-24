@@ -56,7 +56,8 @@ public class StraightLiner extends Intruder{
             freezeTime = 0;
             oldTempGoal = tempGoal;
             int[][] blocks = aStarTerrain(knownTerrain);
-            Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks, this, false);
+            Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, locationToWorldgrid(position.getX()), locationToWorldgrid(position.getY())
+                    , locationToWorldgrid(goalPosition.getX()), locationToWorldgrid(goalPosition.getY()), blocks, this, false);
             List<Node> path = pathFinder.findPath();
             if(!changed)
             {
