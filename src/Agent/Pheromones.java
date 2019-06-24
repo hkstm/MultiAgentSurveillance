@@ -83,7 +83,7 @@ public class Pheromones {
             for (int j = 0; j < mapPhero[0].length ; j++) {
                 if(mapPhero[i][j] != null) {
                     mapPhero[i][j].updateLifetime(delta);
-                    System.out.println("lifetime: "+mapPhero[i][j].getLifetime());
+//                    System.out.println("lifetime: "+mapPhero[i][j].getLifetime());
                     if(mapPhero[i][j].getLifetime() < 0) mapPhero[i][j] = null;
                 }
             }

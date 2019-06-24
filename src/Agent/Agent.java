@@ -603,8 +603,7 @@ public class Agent implements Runnable {
         return false;
     }
 
-    public void cornerCorrection()
-    {
+    public void cornerCorrection() {
         if(oldTempGoal.getX()+10 == tempGoal.getX() && oldTempGoal.getY()-10 == tempGoal.getY())
         {
             if(isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()+10)/SCALING_FACTOR)))

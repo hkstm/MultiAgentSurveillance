@@ -142,8 +142,7 @@ public class Guard extends Agent {
 
         double walkingDistance = (BASE_SPEED *SCALING_FACTOR);
         updateWalls();
-        if(oldTempGoal != null)
-        {
+        if(oldTempGoal != null) {
             checkChangedStatus();
         }
 //        double elapsedTime = (System.currentTimeMillis()-startTime)/1000;
@@ -158,8 +157,7 @@ public class Guard extends Agent {
                     (int)(position.getY()/SCALING_FACTOR), (int)destY, (int)destX, blocks, this,false);
             List<Node> path = pathMaker.findPath();
             
-            if (path.size() <1 && "sss" != "chase")
-            {
+            if (path.size() <1 && "sss" != "chase") {
                 //find a way to keep destx and desty in bounds
                 //change directon
                 double changedestX = (locationToWorldgrid(100)*(-1));
