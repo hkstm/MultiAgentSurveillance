@@ -20,7 +20,7 @@ import static World.GameScene.SCALING_FACTOR;
 public class WorldMap implements Serializable {
 
     public int[][] worldGrid;
-    public int[][] worldGridNoPhero;
+    public int[][] worldGridWithPhero;
 
     public static final int EMPTY = 0;
     public static final int STRUCTURE = 1;
@@ -53,28 +53,26 @@ public class WorldMap implements Serializable {
     public WorldMap(int size, ArrayList<Agent> agents) {
         this.size = size;
         this.worldGrid = new int[size][size];
-        this.worldGridNoPhero = new int[size][size];
+        this.worldGridWithPhero = new int[size][size];
         this.agents = agents;
         for(int i = 0; i < size; i++) {
-            worldGrid[0][i] = WALL;
-            worldGrid[i][0] = WALL;
-            worldGrid[size-1][i] = WALL;
-            worldGrid[i][size-1] = WALL;
+            updateTile(0, i , WALL);
+            updateTile(i, 0 , WALL);
+            updateTile(i, size-1 , WALL);
+            updateTile(size-1, i , WALL);
         }
-        updatePhero(worldGrid);
     }
 
     public WorldMap(WorldMap worldMap) {
         this.size = worldMap.getSize();
         this.worldGrid = new int[size][size];
-        this.worldGridNoPhero = new int[size][size];
+        this.worldGridWithPhero = new int[size][size];
         this.agents = worldMap.getAgents();
         for(int r = 0; r < size; r++) {
             for(int c = 0; c < size; c++) {
-                this.worldGrid[r][c] = worldMap.getWorldGrid()[r][c];
+                updateTile(r, c, worldMap.getTileState(r, c));
             }
         }
-        updatePhero(worldGrid);
     }
 
     /**
@@ -83,7 +81,7 @@ public class WorldMap implements Serializable {
     public void displayWorldGrid() {
         for(int r = 0; r < size; r++) {
             for(int c = 0; c < size; c++) {
-                System.out.printf("%3d", worldGrid[r][c]);
+                System.out.printf("%3d", getTileState(r, c));
             }
             System.out.println();
         }
@@ -111,20 +109,16 @@ public class WorldMap implements Serializable {
      * @param state state to compare to
      */
     public void updateTile(int r, int c, int state) {
-        worldGrid[r][c] = state;
-        if(!isMarker(state)) worldGridNoPhero[r][c] = state;
-    }
-
-    public void updatePhero(int[][] worldGrid) {
-        for(int r = 0; r < worldGrid.length; r++) {
-            for(int c = 0; c < worldGrid.length; c++) {
-                if(!isMarker(worldGrid[r][c])) worldGridNoPhero[r][c] = worldGrid[r][c];
-            }
-        }
+        worldGridWithPhero[r][c] = state;
+        if(!isMarker(state)) worldGrid[r][c] = state;
     }
 
     public int getTileState(int r, int c) {
          return worldGrid[r][c];
+    }
+
+    public int getTileStatePhero(int r, int c) {
+        return worldGridWithPhero[r][c];
     }
 
     /**
@@ -236,7 +230,7 @@ public class WorldMap implements Serializable {
     public int coordinatesToCell(Point2D location) {
         int rowIndex = locationToWorldgrid(location.getY());
         int columnIndex = locationToWorldgrid(location.getX());
-        return worldGrid[rowIndex][columnIndex];
+        return getTileState(rowIndex, columnIndex);
     }
 
     /**
@@ -250,7 +244,7 @@ public class WorldMap implements Serializable {
     public void fillWorldArray(int topLeftRow, int topLeftCol, int botRightRow, int botRightCol, int tileStatus) {
         for(int i = topLeftRow; i < botRightRow + 1; i++) {
             for(int j = topLeftCol; j < botRightCol + 1; j++) {
-                worldGrid[i][j] = tileStatus;
+                updateTile(i, j, tileStatus);
             }
         }
     }
@@ -328,7 +322,7 @@ public class WorldMap implements Serializable {
         worldGridShapes.clear();
         for(int r = 0; r < worldGrid.length; r++) {
             for( int c = 0; c < worldGrid[0].length; c++) {
-                if(isVisionObscuring(worldGrid[r][c])) {
+                if(isVisionObscuring(getTileState(r, c))) {
                     Rectangle tile = new Rectangle();
                     tile.setX(convertArrayToWorld(c));
                     tile.setY(convertArrayToWorld(r));

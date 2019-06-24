@@ -27,7 +27,7 @@ public class StupidGuard extends Guard{
         double walkingDistance = (BASE_SPEED * SCALING_FACTOR) * (delta);
         chasing = false;
         for(Agent agent: worldMap.getAgents()){
-            if(agent instanceof Intruder && viewingCone.contains(agent.getPosition())) {
+            if(agent instanceof Intruder && this.inVision(agent.getPosition())) {
                 Point2D posFacing = new Point2D(position.getX() + (10 * Math.cos(Math.toRadians(direction))), position.getY() + (10 * Math.sin(Math.toRadians(direction))));
 //        System.out.println("degrees: " + result);
                 int[][] blocks = aStarTerrain(knownTerrain);

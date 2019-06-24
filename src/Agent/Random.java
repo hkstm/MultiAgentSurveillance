@@ -47,7 +47,7 @@ public class Random extends Agent{
                 }
             }
         }
-        else if (viewingCone.contains(goalPosition) && !tired){
+        else if (this.inVision(goalPosition) && !tired){
             move(walkingDistance);
         }
         else {

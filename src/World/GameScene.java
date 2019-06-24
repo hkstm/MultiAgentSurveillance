@@ -92,10 +92,12 @@ public class GameScene extends BorderPane implements Runnable {
         Intruder intruder = new Intruder(new Point2D(500, 520), 0);
         AreaOptimizer areaOptimizer = new AreaOptimizer(new Point2D(500, 400), 0);
         Guard stupidGuard = new StupidGuard(new Point2D(500, 500), 90);
+        StraightLiner straightLiner = new StraightLiner(new Point2D(500, 520), 0);
 //        worldMap.addAgent(guard);
-        worldMap.addOnlyAgent(intruder);
-        worldMap.addOnlyAgent(areaOptimizer);
-//        worldMap.addOnlyAgent(stupidGuard);
+//        worldMap.addOnlyAgent(intruder);
+//        worldMap.addOnlyAgent(areaOptimizer);
+        worldMap.addOnlyAgent(stupidGuard);
+        worldMap.addOnlyAgent(straightLiner);
         this.pher = new Pheromones(worldMap);
 
         //worldMap.addOnlyAgent(areaOptimzer);
@@ -189,11 +191,12 @@ public class GameScene extends BorderPane implements Runnable {
     public void initTiles() {
         for (int r = 0; r < worldMap.getSize(); r++) {
             for (int c = 0; c < worldMap.getSize(); c++) {
-                TileView tmpView = new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c));
+                TileView tmpView = new TileView(tileImgArray[worldMap.getTileStatePhero(r, c)], r, c, worldMap.getTileStatePhero(r, c));
                 tmpView.setCache(true);
                 tmpView.setCacheHint(CacheHint.SPEED);
                 tileViews.add(c + (r * worldMap.getSize()), tmpView);
-                grid.add(tmpView, c, r);tileViews.set(c + (r * worldMap.getSize()),  new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c)));
+                grid.add(tmpView, c, r);
+                tileViews.set(c + (r * worldMap.getSize()),  new TileView(tileImgArray[worldMap.getTileStatePhero(r, c)], r, c, worldMap.getTileStatePhero(r, c)));
             }
         }
     }
@@ -202,8 +205,8 @@ public class GameScene extends BorderPane implements Runnable {
         for (int r = 0; r < worldMap.getSize(); r++) {
             for (int c = 0; c < worldMap.getSize(); c++) {
                 TileView tmpView = null;
-                if(tileViews.get(c + (r * worldMap.getSize())).getState() != worldMap.getTileState(r, c)) {
-                    tmpView = new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c));
+                if(tileViews.get(c + (r * worldMap.getSize())).getState() != worldMap.getTileStatePhero(r, c)) {
+                    tmpView = new TileView(tileImgArray[worldMap.getTileStatePhero(r, c)], r, c, worldMap.getTileStatePhero(r, c));
                 } else {
                     tmpView = tileViews.get(c + (r * worldMap.getSize()));
                 }
@@ -227,6 +230,7 @@ public class GameScene extends BorderPane implements Runnable {
                 currentTimeCountDown = System.nanoTime();
             }
             if(worldMap.intruderInTarget()) {
+                System.out.println("intruder in target");
                 if(!visitedTarget) {
                     firstVisitTime = System.nanoTime();
                     visitedTarget = true;
@@ -270,7 +274,6 @@ public class GameScene extends BorderPane implements Runnable {
             }
         }
     }
-
 
     /**
      * Random sound according to sort of poisson process (more binomial with low probability which should approximate it probs&stat stuff

@@ -91,7 +91,7 @@ public class MoveTo extends Routine {
 //        }
         for(Agent intruder : guard.worldMap.getAgents()) {
             if(intruder instanceof Intruder) {
-                if(guard.viewingCone.contains(intruder.getPosition())){
+                if(guard.inVision(intruder.getPosition())){
                     destX = locationToWorldgrid(intruder.getPosition().getY());
                     destY = locationToWorldgrid(intruder.getPosition().getX());
                     return true;

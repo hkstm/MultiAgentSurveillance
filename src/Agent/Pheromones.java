@@ -13,7 +13,7 @@ import static World.GameScene.SCALING_FACTOR;
 import static World.WorldMap.*;
 
 public class Pheromones {
-    private Pcell [][] mapPhero;
+    private Pcell[][] mapPhero;
     private WorldMap worldMap;
 
 
@@ -53,7 +53,7 @@ public class Pheromones {
                         worldMap.updateTile(r, c, MARKER_2);
                     }
                 } else {
-                    worldMap.updateTile(r, c, worldMap.worldGridNoPhero[r][c]);
+                    worldMap.updateTile(r, c, worldMap.getTileState(r, c));
                 }
             }
         }

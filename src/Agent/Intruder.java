@@ -166,7 +166,7 @@ public class Intruder extends Agent{
             //  System.out.println("wall cout" + wallCount);
 //            System.out.println("sprint percent" + sprintPercent);
             for (Agent agent : worldMap.getAgents()) {
-                if (agent instanceof Guard && viewingCone.contains(agent.getPosition()) && !tired) {
+                if (agent instanceof Guard && this.inVision(agent.getPosition()) && !tired) {
                     updateDirection(direction + 180);
                     if (legalMoveCheck(sprintingDistance)) {
                         runTime -= timeStep;
@@ -177,7 +177,7 @@ public class Intruder extends Agent{
                         }
                     }
                 }
-                else if (agent instanceof Guard && viewingCone.contains(agent.getPosition()) && tired){
+                else if (agent instanceof Guard && this.inVision(agent.getPosition()) && tired){
                     updateDirection(direction + 180);
                     if (legalMoveCheck(walkingDistance)){
                         walkTime -= timeStep;
@@ -210,7 +210,7 @@ public class Intruder extends Agent{
                             walkTime = 10;
                         }
                     }
-                } else if (viewingCone.contains(goalPosition) && !tired) {
+                } else if (this.inVision(goalPosition) && !tired) {
                     move(walkingDistance);
                 } else {
                     if (legalMoveCheck(walkingDistance)) {

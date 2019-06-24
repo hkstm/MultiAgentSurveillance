@@ -217,8 +217,16 @@ public class Agent implements Runnable {
      * @param directionToGo direction you are trying to face (in degrees 0 - 360, I think)
      */
     public void updateDirection(double directionToGo) {
+        updateDirectionGeneral(directionToGo, MAX_TURNING_PER_SECOND);
+    }
+
+    public void updateDirectionNoBlind(double directionToGo) {
+        updateDirectionGeneral(directionToGo, MAX_NONBLIND_TURNING_PER_SECOND);
+    }
+
+    private void updateDirectionGeneral(double directionToGo, double maxNonblindTurningPerSecond) {
         if(!turnedMaxWhileSprinting) {
-            double maxTurn = MAX_TURNING_WHILE_SPRINTING * delta;
+            double maxTurn = maxNonblindTurningPerSecond * delta;
             double angle = directionToGo - direction;
             angle = (angle > 180) ? angle - 360 : angle;
             angle = (angle < -180) ? angle + 360 : angle;
@@ -287,7 +295,7 @@ public class Agent implements Runnable {
     public void updateKnownTerrain(){
         for(int r = 0; r < worldMap.getSize(); r++) {
             for(int c = 0; c < worldMap.getSize(); c++){
-                if(viewingCone.contains(worldMap.convertArrayToWorld(c) + 0.5 * worldMap.convertArrayToWorld(1), //changed from *0.5 to *1
+                if(this.inVision(worldMap.convertArrayToWorld(c) + 0.5 * worldMap.convertArrayToWorld(1), //changed from *0.5 to *1
                         worldMap.convertArrayToWorld(r) + 0.5 * worldMap.convertArrayToWorld(1))) { //changed from *0.5 to *1
                     knownTerrain[r][c] = worldMap.getTileState(r, c);
                     //System.out.println("r: "+r+" c: "+c);
@@ -358,7 +366,7 @@ public class Agent implements Runnable {
     }
 
     public boolean sees(int r, int c) {
-        return viewingCone.contains((c*(ASSUMED_WORLDSIZE/(double)worldMap.getSize())*SCALING_FACTOR), (r*(ASSUMED_WORLDSIZE/(double)worldMap.getSize())*SCALING_FACTOR));
+        return this.inVision((c*(ASSUMED_WORLDSIZE/(double)worldMap.getSize())*SCALING_FACTOR), (r*(ASSUMED_WORLDSIZE/(double)worldMap.getSize())*SCALING_FACTOR));
     }
 
     /**
@@ -763,5 +771,15 @@ public class Agent implements Runnable {
         {
             turnToFace(270-turnAngle);
         }
+    }
+
+    public boolean inVision(Point2D location) {
+        if(blind) return false;
+        else return viewingCone.contains(location);
+    }
+
+    public boolean inVision(double x, double y) {
+        if(blind) return false;
+        else return viewingCone.contains(x, y);
     }
 }
