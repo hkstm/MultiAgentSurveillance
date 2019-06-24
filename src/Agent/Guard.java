@@ -199,24 +199,7 @@ public class Guard extends Agent {
                 preDivisor++;
             }
             double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.getX()-position.getX())/divisor));
-            double previousAngle = Math.toDegrees(Math.atan(Math.abs(previousTempGoal.getX()-tempGoal.getX())/preDivisor));
-            double finalAngle = previousAngle - turnAngle;
-            if(tempGoal.getX() >= position.getX() && tempGoal.getY() <= position.getY())
-            {
-                turnToFace(turnAngle-90);
-            }
-            else if(tempGoal.getX() >= position.getX() && tempGoal.getY() > position.getY())
-            {
-                turnToFace(90-turnAngle);
-            }
-            else if(tempGoal.getX() < position.getX() && tempGoal.getY() > position.getY())
-            {
-                turnToFace(90+turnAngle);
-            }
-            else if(tempGoal.getX() < position.getX() && tempGoal.getY() <= position.getY())
-            {
-                turnToFace(270-turnAngle);
-            }
+            performTurn(turnAngle);
                 if(legalMoveCheck(walkingDistance))
                 {
                     move(walkingDistance);

@@ -513,7 +513,6 @@ public class Agent implements Runnable {
         this.color = color;
     }
 
-
     public void turnToFace(double angle)
     {
         direction = angle;
@@ -746,5 +745,25 @@ public class Agent implements Runnable {
     public int[][] getWorldGrid()
     {
         return worldMap.worldGrid;
+    }
+
+    public void performTurn(double turnAngle)
+    {
+        if(tempGoal.getX() >= position.getX() && tempGoal.getY() <= position.getY())
+        {
+            turnToFace(turnAngle-90);
+        }
+        else if(tempGoal.getX() >= position.getX() && tempGoal.getY() > position.getY())
+        {
+            turnToFace(90-turnAngle);
+        }
+        else if(tempGoal.getX() < position.getX() && tempGoal.getY() > position.getY())
+        {
+            turnToFace(90+turnAngle);
+        }
+        else if(tempGoal.getX() < position.getX() && tempGoal.getY() <= position.getY())
+        {
+            turnToFace(270-turnAngle);
+        }
     }
 }
