@@ -35,10 +35,18 @@ public class Chase extends Routine {
     }
     public void chasing(Guard guard) {
 
-        guard.gameTree(guard.delta);
-        System.out.println("destX: " + destY + " destY: " + destX);
-        System.out.println("chasing");
+        if(!isAtDestination(guard)) {
+            guard.gameTree(guard.delta);
+            System.out.println("destX: " + destY + " destY: " + destX);
+            System.out.println("posX: " + guard.getPosition().getX() + "posY: " + guard.getPosition().getY());
+            System.out.println("chasing");
+        }
+        else{
+            System.out.println("caught");
+            System.out.println("posX: " + guard.getPosition().getX() + "posY: " + guard.getPosition().getY());
 
+            succeed();
+        }
     }
 
 
@@ -52,7 +60,8 @@ public class Chase extends Routine {
 
     }
         private boolean isAtDestination(Guard guard){
-        return destX == guard.getPosition().getX() && destY == guard.getPosition().getY();}
+        return destX == locationToWorldgrid(guard.getPosition().getX()) &&
+                destY == locationToWorldgrid(guard.getPosition().getY());}
 
  /*   public void patrol(Guard guard){
         double fromX = 50.0;

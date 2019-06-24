@@ -87,18 +87,24 @@ public class GameScene extends BorderPane implements Runnable {
 
         this.startGameBut = new Button("Start/Stop Game"); //should stop and start game, not properly working atm
         Agent.worldMap = worldMap;
-//        Guard guard1  = new Guard(new Point2D(200, 300), 70);
+        Guard guard1  = new Guard(new Point2D(200, 450), 70);
+        Guard guard2  = new Guard(new Point2D(500, 400), 100);
+        Intruder intruder = new Intruder(new Point2D(500, 500), 0);
+        AreaOptimizer areaOptimzer = new AreaOptimizer(new Point2D(500, 400), 0);
+ //       Guard guard1  = new Guard(new Point2D(200, 300), 70);
 //        Guard guard2  = new Guard(new Point2D(500, 100), 100);
         Intruder intruder = new Intruder(new Point2D(500, 500), 0);
         AreaOptimizer areaOptimizer = new AreaOptimizer(new Point2D(500, 400), 0);
         Guard stupidGuard = new StupidGuard(new Point2D(800, 300), 315);
         StraightLiner straightLiner = new StraightLiner(new Point2D(800, 300), -45);
 //        worldMap.addAgent(guard);
-//        worldMap.addOnlyAgent(intruder);
+        worldMap.addOnlyAgent(intruder);
+        worldMap.addOnlyAgent(guard1);
 //        worldMap.addOnlyAgent(areaOptimizer);
         worldMap.addOnlyAgent(stupidGuard);
 //        worldMap.addOnlyAgent(straightLiner);
         this.pher = new Pheromones(worldMap);
+       // pher.setAgents(guards,intruders);
 
         //worldMap.addOnlyAgent(areaOptimzer);
         //Actual game "loop" in here
@@ -266,7 +272,9 @@ public class GameScene extends BorderPane implements Runnable {
             if(agentGuard instanceof Guard) {
                 for(Agent agentIntruder : agentIntruders) {
                     if(agentIntruder instanceof Intruder) {
-                        if(agentGuard.getPosition().distance(agentIntruder.getPosition()) < (DISTANCE_TO_CATCH * SCALING_FACTOR)) {
+                        System.out.println("found guard and intruder");
+                        System.out.println(DISTANCE_TO_CATCH * SCALING_FACTOR*1.60);
+                        if(agentGuard.getPosition().distance(agentIntruder.getPosition()) < (DISTANCE_TO_CATCH * SCALING_FACTOR*1.60)){
                             createAlert("GUARDS have found INTRUDER");
                         }
                     }
@@ -274,6 +282,7 @@ public class GameScene extends BorderPane implements Runnable {
             }
         }
     }
+
 
     /**
      * Random sound according to sort of poisson process (more binomial with low probability which should approximate it probs&stat stuff
