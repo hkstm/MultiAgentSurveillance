@@ -183,7 +183,7 @@ public class Guard extends Agent {
             oldTempGoal = tempGoal;
             int[][] blocks = aStarTerrain(knownTerrain);
             Astar pathMaker = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR),
-                    (int)(position.getY()/SCALING_FACTOR), (int)destX, (int)destY, blocks, this);
+                    (int)(position.getY()/SCALING_FACTOR), (int)destX, (int)destY, blocks, this, false);
             List<Node> path = pathMaker.findPath();
             
             if (path.size() <1)

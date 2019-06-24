@@ -20,6 +20,11 @@ public class Intruder extends Agent{
     protected int sprintCounter = 5;
     protected int walkCounter = 10; //check if this is right (might be 10 sec not 15)
     protected List<Point> tempWalls = new ArrayList<Point>();
+    private Point tempOldPos = null;
+    private Point oldPos = null;
+    private boolean first;
+    private int alternatingCounter;
+    private boolean modify;
 
 
     /**
@@ -85,7 +90,7 @@ public class Intruder extends Agent{
             freezeTime = 0;
             oldTempGoal = tempGoal;
             int[][] blocks = aStarTerrain(knownTerrain);
-            Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks, this);
+            Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks, this, modify);
             List<Node> path = pathFinder.findPath();
             if(!changed)
             {
@@ -127,6 +132,16 @@ public class Intruder extends Agent{
             {
                 turnToFace(270-turnAngle);
             }
+            if(oldPos == null)
+            {
+                tempOldPos = new Point((int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR));
+                first = true;
+            }
+            else
+            {
+                tempOldPos = new Point((int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR));
+                first = false;
+            }
             if(!tired)
             {
                 if(legalMoveCheck(sprintingDistance))
@@ -157,6 +172,26 @@ public class Intruder extends Agent{
                     }
                 }
             }
+            modify = false;
+            if(tempOldPos.x != (int)(position.getX()/SCALING_FACTOR) || tempOldPos.y != (int)(position.getY()/SCALING_FACTOR)) //new cell entered
+            {
+                if(!first && oldPos.x == (int)(position.getX()/SCALING_FACTOR) && oldPos.y == (int)(position.getY()/SCALING_FACTOR))
+                {
+                    alternatingCounter++;
+                }
+                else
+                {
+                    alternatingCounter = 0;
+                }
+            }
+            if(alternatingCounter == 6)
+            {
+                alternatingCounter = 0;
+                modify = true;
+                points[0] = oldPos;
+                points[1] = tempOldPos;
+            }
+            oldPos = tempOldPos;
         }
     }
 
@@ -190,5 +225,10 @@ public class Intruder extends Agent{
             freezeTime = 3;
             frozen = true;
         }
+    }
+
+    public Point[] getPoints()
+    {
+        return points;
     }
 }

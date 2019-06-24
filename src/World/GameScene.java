@@ -89,10 +89,11 @@ public class GameScene extends BorderPane implements Runnable {
         Intruder intruder = new Intruder(new Point2D(500, 500), 0);
         AreaOptimizer areaOptimzer = new AreaOptimizer(new Point2D(520, 210), 0);
 //        worldMap.addAgent(guard);
-//        worldMap.addAgent(intruder);
+        worldMap.addAgent(intruder);
+//        worldMap.addAgent(areaOptimzer);
 //        worldMap.addOnlyAgent(guard);
 //        worldMap.addOnlyAgent(intruder);
-        worldMap.addOnlyAgent(areaOptimzer);
+//        worldMap.addOnlyAgent(areaOptimzer);
 
         //Actual game "loop" in here
         startGameBut.setOnAction(e -> { //

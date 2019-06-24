@@ -94,6 +94,8 @@ public class Agent implements Runnable {
     protected double turningLeft;
 
     private boolean goalSet = false;
+    private int alternatingCounter = 0;
+    protected Point[] points = new Point[2];
 
     /**
      * Constructor for Agent
@@ -688,7 +690,7 @@ public class Agent implements Runnable {
     public void updatePath()
     {
         int[][] blocks = aStarTerrain(knownTerrain);
-        Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks, this);
+        Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks, this, false);
         List<Node> path = pathFinder.findPath();
         if(!changed)
         {
@@ -717,7 +719,7 @@ public class Agent implements Runnable {
                 reAdded = false;
                 knownTerrain[tempWalls.get(i).y][tempWalls.get(i).x] = worldMap.getWorldGrid()[tempWalls.get(i).y][tempWalls.get(i).y];
                 int[][] phaseDetectionBlocks = aStarTerrain(knownTerrain);
-                Astar phaseDetectionPathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), phaseDetectionBlocks, this);
+                Astar phaseDetectionPathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), phaseDetectionBlocks, this, false);
                 List<Node> phaseDetectionPath = phaseDetectionPathFinder.findPath();
                 for(int j = 0 ; j < phaseDetectionPath.size() ; j++)
                 {

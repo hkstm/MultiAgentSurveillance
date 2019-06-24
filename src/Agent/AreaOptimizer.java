@@ -144,7 +144,7 @@ public class AreaOptimizer extends Guard {
 //        System.out.println("degrees: " + result);
         int[][] blocks = aStarTerrain(knownTerrain);
         Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, locationToWorldgrid(position.getX()), locationToWorldgrid(position.getY()),
-                locationToWorldgrid(prevGoalPosition.getX()), locationToWorldgrid(prevGoalPosition.getY()), blocks, this);
+                locationToWorldgrid(prevGoalPosition.getX()), locationToWorldgrid(prevGoalPosition.getY()), blocks, this, false);
         List<Node> path = pathFinder.findPath();
         goalPositionPath = new Point2D((path.get(path.size()-1).row*SCALING_FACTOR)+(SCALING_FACTOR/2), (path.get(path.size()-1).column*SCALING_FACTOR)+(SCALING_FACTOR/2));
 
