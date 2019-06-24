@@ -5,10 +5,7 @@ import javafx.scene.paint.Color;
 
 import javafx.geometry.Point2D;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 import static Agent.MoveTo.destX;
 import static Agent.MoveTo.destY;
@@ -21,7 +18,7 @@ public class Guard extends Agent {
 
     /**
      * A subclass of Agent for the Guards with an internal map containing the starting positions of other guards and the terrain across the map
-     * @author Benjamin, Thibaut, Kailhan
+     * @author Benjamin, Thibaut, Kailhan, Costi
      */
 
 
@@ -33,9 +30,16 @@ public class Guard extends Agent {
     protected double directCommsCost; //message size in "bytes"
     protected double indirectCommsCost; //number of markers placed;
     protected Intruder intruder;
+    protected Pheromones pher;
+    private Blackboard blackboard;
+    private Random random;
+
+
+    private boolean firstRunBehaviourTreeGuardLogic;
 
     public Guard(Point2D position, double direction) {
         super(position, direction);
+        this.pher = new Pheromones(worldMap);
         this.timeCost = 0;
         this.distanceCost = 0;
         this.directCommsCost = 0;
@@ -46,14 +50,15 @@ public class Guard extends Agent {
         this.visualRange[1] = 8;
 //        this.visualRange[1] = 20;
         this.color = Color.AZURE;
+        this.firstRunBehaviourTreeGuardLogic = true;
         Routine guard1 = Routines.sequence(
-                Routines.moveTo(locationToWorldgrid(600),locationToWorldgrid(400))
+                Routines.moveTo(locationToWorldgrid(500.0),locationToWorldgrid(600.0))
 
                 // Routines.wander(worldMap,this)
         );
         this.setRoutine(guard1);
-
-
+        blackboard = Blackboard.getBlackboard();
+        random = new Random();
 
         //this.knownTerrain = worldMap.getWorldGrid();
     }
@@ -64,48 +69,20 @@ public class Guard extends Agent {
     }
 
     /**
-     * put your agent specific logic in this
-    /*
-     * This should be the structure of any bot but Im not sure how this bot fits into it -kailhan
-     */
-
-    public void run() {
-        previousTime = System.nanoTime();
-        previousPosition = new Point2D(position.getX(), position.getY());
-        while(!exitThread) {
-            executeAgentLogic();
-        }
-    }
-    /**
-     * Used instead of the run method if we want to manually control when the agent should update
-     */
-    public void forceUpdate() {
-        if(firstRun) {
-            previousTime = System.nanoTime();
-            previousPosition = new Point2D(position.getX(), position.getY());
-
-            routine.start();
-            firstRun = false;
-        }
-        executeAgentLogic();
-    }
-    /**
      * Logic that gets executed every tick
      */
     public void executeAgentLogic(){
+        if(firstRunBehaviourTreeGuardLogic) {
+            routine.start();
+            firstRunBehaviourTreeGuardLogic = false;
+        }
         currentTime = System.nanoTime();
         delta = currentTime - previousTime;
         delta /= 1e9; //makes it in seconds
-        System.out.println("x: " + getPosition().getX() + "y: " + getPosition().getY());
-        System.out.println("delta" + delta);
+        System.out.println("y: " + locationToWorldgrid( getPosition().getX() )+ "x: " + locationToWorldgrid( getPosition().getY()));
         update();
         updatePerformanceCriteria();
-
     }
-
-    /**
-     * ^^^
-     */
 
     public boolean equals(Object obj) {
         boolean equals = false;
@@ -155,8 +132,8 @@ public class Guard extends Agent {
         }
         routine.act(this, worldMap);
     }
-    public Routine getRoutine() {
-        return routine;
+    public String getRoutine() {
+        return routine.getClass().getSimpleName();
     }
 
     public void setRoutine(Routine routine) {
@@ -166,12 +143,9 @@ public class Guard extends Agent {
     public void gameTree(double timeStep)
     {
 
-        double walkingDistance = (BASE_SPEED *SCALING_FACTOR);
-        System.out.println("time step" + timeStep);
-
+        double walkingDistance = (BASE_SPEED * SCALING_FACTOR);
         updateWalls();
-        if(oldTempGoal != null)
-        {
+        if(oldTempGoal != null) {
             checkChangedStatus();
         }
 //        double elapsedTime = (System.currentTimeMillis()-startTime)/1000;
@@ -183,25 +157,38 @@ public class Guard extends Agent {
             oldTempGoal = tempGoal;
             int[][] blocks = aStarTerrain(knownTerrain);
             Astar pathMaker = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR),
-                    (int)(position.getY()/SCALING_FACTOR), (int)destX, (int)destY, blocks);
+                    (int)(position.getY()/SCALING_FACTOR), (int)destY, (int)destX, blocks, this,false);
             List<Node> path = pathMaker.findPath();
+//
+//             Pheromones.Pcell[][] mapP = pher.getMapPhero();
+//             int y = locationToWorldgrid(position.getY());
+//             int x = locationToWorldgrid(position.getX());
+//
+//            if (mapP[y][x].getCol() == Color.RED){
+//                System.out.println("intruder's phero");
+//
+//                 routine.act(this, worldMap);
+//            }
 
-            if (path.size() < 1){
-
+            if (path.size() <2 ) {
+                //find a way to keep destx and desty in bounds
                 //change directon
-                destX += locationToWorldgrid(100)*(-1);
-                destY += locationToWorldgrid(100)*(-1);
+                double changedestX = (locationToWorldgrid(random.nextDouble()*100));
+                double changedestY = (locationToWorldgrid(random.nextDouble()*100));
+                System.out.println("changedestX: "+ changedestX + "changedestY: "+ changedestY );
+                destX += changedestX;
+                destY += changedestY;
+                double divisor = Math.abs(tempGoal.getY()-position.getY());
+                double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.getX()-position.getX())/divisor));
+                turnToFace(turnAngle-90);
+                updatePath();
 
                 updateDirection(direction+90);
 
                 updatePath();
-
-
                 return;
-
-
             }
-
+            
             if(!changed)
             {
                 tempGoal = new Point2D((path.get(path.size()-1).row*SCALING_FACTOR)+(SCALING_FACTOR/2),
@@ -215,7 +202,7 @@ public class Guard extends Agent {
                 }
             }
         //    wallPhaseDetection();
-           cornerCorrection();
+            cornerCorrection();
             double divisor = Math.abs(tempGoal.getY()-position.getY());
             double preDivisor = Math.abs(previousTempGoal.getY()-tempGoal.getY());
             if(divisor == 0)
@@ -228,10 +215,6 @@ public class Guard extends Agent {
             double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.getX()-position.getX())/divisor));
             double previousAngle = Math.toDegrees(Math.atan(Math.abs(previousTempGoal.getX()-tempGoal.getX())/preDivisor));
             double finalAngle = previousAngle - turnAngle;
-
-
-
-
             if(tempGoal.getX() >= position.getX() && tempGoal.getY() <= position.getY())
             {
                 turnToFace(turnAngle-90);
@@ -251,7 +234,8 @@ public class Guard extends Agent {
                 if(legalMoveCheck(walkingDistance))
                 {
                     move(walkingDistance);
+
                 }
-            //}
+        //    }
         }
     }
