@@ -95,17 +95,7 @@ public class GameScene extends BorderPane implements Runnable {
 //        worldMap.addAgent(intruder);
         worldMap.addOnlyAgent(guard1);
         worldMap.addOnlyAgent(guard2);
-        worldMap.addOnlyAgent(intruder);
-
-        ArrayList<Guard> guards = new ArrayList<Guard>();
-        ArrayList<Intruder> intruders = new ArrayList<Intruder>();
-
-        guards.add(guard1);
-        guards.add(guard2);
-        intruders.add(intruder);
-
         this.pher = new Pheromones(worldMap);
-        pher.setAgents(guards,intruders);
 
         //worldMap.addOnlyAgent(areaOptimzer);
         //Actual game "loop" in here

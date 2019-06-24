@@ -15,8 +15,6 @@ import static World.WorldMap.*;
 public class Pheromones {
 
     private Pcell [][] mapPhero;
-    private List<Guard> guards;
-    private List<Intruder> intruders;
     private WorldMap worldMap;
 
 
@@ -38,16 +36,9 @@ public class Pheromones {
 
 
     public void colorTiles(){
-        for (Guard g : guards){
-            mapPhero[locationToWorldgrid(g.getPosition().getY())][locationToWorldgrid(g.getPosition().getX())] = new Pcell(Color.GREEN);
-            //mapPhero[(int)gpos.getX()][(int)gpos.getY()] = new Pcell(Color.GREEN);
-        }
-
-        for (Intruder i : intruders){
-            //System.out.println("og i x:" + i.getPosition().getX() + "og i y"+i.getPosition().getY());
-            mapPhero[locationToWorldgrid(i.getPosition().getY())][locationToWorldgrid(i.getPosition().getX())] = new Pcell(Color.RED);
-           // System.out.println("i x:" + (int)ipos.getX() + "i y:" + (int)ipos.getY());
-            //mapPhero[(int)ipos.getX()][(int)ipos.getY()] = new Pcell(Color.RED);
+        for(Agent agent: worldMap.getAgents() ) {
+            if(agent instanceof Guard) mapPhero[locationToWorldgrid(agent.getPosition().getY())][locationToWorldgrid(agent.getPosition().getX())] = new Pcell(Color.GREEN);
+            if(agent instanceof Intruder) mapPhero[locationToWorldgrid(agent.getPosition().getY())][locationToWorldgrid(agent.getPosition().getX())] = new Pcell(Color.RED);
         }
         updateWorldMap();
     }
@@ -67,11 +58,6 @@ public class Pheromones {
                 }
             }
         }
-    }
-
-    public void setAgents(List<Guard> guards,List<Intruder> intruders){
-        this.guards = guards;
-        this.intruders = intruders;
     }
 
     public  int locationToWorldgrid(double toBeConverted) {
