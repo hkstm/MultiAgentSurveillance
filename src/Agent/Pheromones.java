@@ -49,11 +49,11 @@ public class Pheromones {
                     if (mapPhero[r][c].getCol() == Color.RED) {
                         worldMap.updateTile(r, c, MARKER_1);
 
-                    }else if(mapPhero[r][c].getCol() == Color.GREEN) {
+                    } else if(mapPhero[r][c].getCol() == Color.GREEN) {
                         worldMap.updateTile(r, c, MARKER_2);
                     }
                 } else {
-                    if(worldMap.getTileState(r,c) == MARKER_1 || worldMap.getTileState(r, c) == MARKER_2) worldMap.updateTile(r, c, EMPTY);
+                    worldMap.updateTile(r, c, worldMap.worldGridNoPhero[r][c]);
                 }
             }
         }

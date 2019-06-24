@@ -20,6 +20,7 @@ import static World.GameScene.SCALING_FACTOR;
 public class WorldMap implements Serializable {
 
     public int[][] worldGrid;
+    public int[][] worldGridNoPhero;
 
     public static final int EMPTY = 0;
     public static final int STRUCTURE = 1;
@@ -52,6 +53,7 @@ public class WorldMap implements Serializable {
     public WorldMap(int size, ArrayList<Agent> agents) {
         this.size = size;
         this.worldGrid = new int[size][size];
+        this.worldGridNoPhero = new int[size][size];
         this.agents = agents;
         for(int i = 0; i < size; i++) {
             worldGrid[0][i] = WALL;
@@ -59,17 +61,20 @@ public class WorldMap implements Serializable {
             worldGrid[size-1][i] = WALL;
             worldGrid[i][size-1] = WALL;
         }
+        updatePhero(worldGrid);
     }
 
     public WorldMap(WorldMap worldMap) {
         this.size = worldMap.getSize();
         this.worldGrid = new int[size][size];
+        this.worldGridNoPhero = new int[size][size];
         this.agents = worldMap.getAgents();
         for(int r = 0; r < size; r++) {
             for(int c = 0; c < size; c++) {
                 this.worldGrid[r][c] = worldMap.getWorldGrid()[r][c];
             }
         }
+        updatePhero(worldGrid);
     }
 
     /**
@@ -107,6 +112,15 @@ public class WorldMap implements Serializable {
      */
     public void updateTile(int r, int c, int state) {
         worldGrid[r][c] = state;
+        if(!isMarker(state)) worldGridNoPhero[r][c] = state;
+    }
+
+    public void updatePhero(int[][] worldGrid) {
+        for(int r = 0; r < worldGrid.length; r++) {
+            for(int c = 0; c < worldGrid.length; c++) {
+                if(!isMarker(worldGrid[r][c])) worldGridNoPhero[r][c] = worldGrid[r][c];
+            }
+        }
     }
 
     public int getTileState(int r, int c) {
@@ -279,10 +293,18 @@ public class WorldMap implements Serializable {
         else return false;
     }
 
-    public static boolean isEmpty(int toCheck) { //I think wall and sentry are missing from here but not sure :D
+    public static boolean isEmpty(int toCheck) {
 //        if ((toCheck == STRUCTURE) || (toCheck == DOOR) || (toCheck == WINDOW)) {
         if ((toCheck == EMPTY) || (toCheck == MARKER_1) || (toCheck == MARKER_2) || (toCheck == MARKER_3) ||
-                (toCheck == MARKER_4) || (toCheck == MARKER_5)) {
+                (toCheck == MARKER_4) || (toCheck == MARKER_5) || (toCheck == OPEN_DOOR) || (toCheck == OPEN_WINDOW) || (toCheck == DECREASED_VIS_RANGE || (toCheck == TARGET))){
+            return true;
+        }
+        else return false;
+    }
+
+    public static boolean isMarker(int toCheck){
+            if((toCheck == MARKER_1) || (toCheck == MARKER_2) || (toCheck == MARKER_3) ||
+                (toCheck == MARKER_4) || (toCheck == MARKER_5)){
             return true;
         }
         else return false;

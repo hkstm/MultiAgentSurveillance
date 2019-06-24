@@ -203,7 +203,7 @@ public class Agent implements Runnable {
     public void executeAgentLogic() {
         double walkingDistance = (BASE_SPEED * SCALING_FACTOR) * (delta);
         Point2D newPosition = new Point2D((position.getX() + (walkingDistance * Math.cos(Math.toRadians(direction)))), (position.getY() + (walkingDistance * Math.sin(Math.toRadians(direction)))));
-        if(!isVisionObscuring(worldMap.getTileState(locationToWorldgrid(newPosition.getY()), locationToWorldgrid(newPosition.getX())))) {
+        if(isEmpty(worldMap.getTileState(locationToWorldgrid(newPosition.getY()), locationToWorldgrid(newPosition.getX())))) {
             position = newPosition;
         } else {
             updateDirection(Math.random() * 360);
@@ -219,15 +219,13 @@ public class Agent implements Runnable {
     public void updateDirection(double directionToGo) {
         if(!turnedMaxWhileSprinting) {
             double maxTurn = MAX_TURNING_WHILE_SPRINTING * delta;
-            double toTurn = Math.abs(directionToGo - direction);
-            double turn = Math.min(maxTurn, toTurn);
-            if(directionToGo > direction) {
-                direction += turn;
-            } else {
-                direction -= turn;
-            }
-        } else {
-            System.out.println("you have turned to much while sprinting");
+            double angle = directionToGo - direction;
+            angle = (angle > 180) ? angle - 360 : angle;
+            angle = (angle < -180) ? angle + 360 : angle;
+            if(Math.abs(angle) > maxTurn) {
+                if(angle < 0) direction -= maxTurn;
+                else direction += maxTurn;
+            } else this.direction += angle;
         }
     }
 

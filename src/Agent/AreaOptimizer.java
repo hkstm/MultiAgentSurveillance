@@ -73,7 +73,7 @@ public class AreaOptimizer extends Guard {
         updateDirection(getMoveDirection());
         double walkingDistance = (BASE_SPEED * SCALING_FACTOR) * (delta);
         Point2D newPosition = new Point2D((position.getX() + (walkingDistance * Math.cos(Math.toRadians(direction)))), (position.getY() + (walkingDistance * Math.sin(Math.toRadians(direction)))));
-        if(!isVisionObscuring(worldMap.getTileState(locationToWorldgrid(newPosition.getY()), locationToWorldgrid(newPosition.getX())))) {
+        if(isEmpty(worldMap.getTileState(locationToWorldgrid(newPosition.getY()), locationToWorldgrid(newPosition.getX())))) {
             position = newPosition;
         }
         updatePerformanceCriteria();
@@ -114,7 +114,7 @@ public class AreaOptimizer extends Guard {
                     worldMap.convertArrayToWorld(r-1) + 1 * worldMap.convertArrayToWorld(1))){
 //                    worldAreaReward[r][c].updateReward(2*NOT_SEEN_REWARD * delta);
                 } else {
-                    if(!isVisionObscuring(worldMap.getTileState(r, c))) {
+                    if(isEmpty(worldMap.getTileState(r, c))) {
 //                        System.out.println("rewardnotseen: " + worldAreaReward[r][c].getReward());
                         worldAreaReward[r][c].updateReward(NOT_SEEN_REWARD * delta);
                     }
