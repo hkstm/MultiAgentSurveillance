@@ -13,4 +13,16 @@ public class AudioLog {
         this.direction = direction;
         this.locationHeard = locationHeard;
     }
+
+    public double getDirection() {
+        return direction;
+    }
+
+    public long getTimeHeard() {
+        return timeHeard;
+    }
+
+    public Point2D getLocationHeard() {
+        return locationHeard;
+    }
 }

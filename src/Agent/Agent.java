@@ -94,6 +94,9 @@ public class Agent implements Runnable {
     protected double turningLeft;
 
     private boolean goalSet = false;
+    private int alternatingCounter = 0;
+    protected Point[] points = new Point[2];
+    protected boolean doorNoise;
 
     /**
      * Constructor for Agent
@@ -345,6 +348,8 @@ public class Agent implements Runnable {
                     soundHeard = true;
                 } else if(position.distance(agent.getPosition()) < SOUNDRANGE_CLOSE && agent.currentSpeed > WALK_SPEED_SLOW) {
                     soundHeard = true;
+                } else if(agent.doorNoise == true){
+                    soundHeard = true;
                 }
                 if(soundHeard){
                     audioLogs.add(new AudioLog(System.nanoTime(), angleBetweenPoints, new Point2D(position.getX(), position.getY())));
@@ -373,6 +378,10 @@ public class Agent implements Runnable {
     }
 
     public Shape createCone(double minVisRange, double maxVisRange, double viewingAngle) {
+        return createCone(minVisRange, maxVisRange, this.viewingAngle, this.direction);
+    }
+
+    public Shape createCone(double minVisRange, double maxVisRange, double viewingAngle, double direction) {
         double x = position.getX();
         double y = position.getY();
         double visualRangeMin = minVisRange * SCALING_FACTOR; //max visionRange
@@ -387,16 +396,18 @@ public class Agent implements Runnable {
                 double xLeftBotLine = x;
                 double yLeftBotLine = y;
                 if(visualRangeMin != 0) {
-                    xLeftBotLine = x + (visualRangeMin * Math.cos(Math.toRadians((direction - viewingAngle/2) + (viewingAngle/AMOUNT_OF_VISION_TENTACLES)*i)));
-                    yLeftBotLine = y + (visualRangeMin * Math.sin(Math.toRadians((direction - viewingAngle/2) + (viewingAngle/AMOUNT_OF_VISION_TENTACLES)*i)));
+                    double angdeg = (direction - viewingAngle / 2) + (viewingAngle / AMOUNT_OF_VISION_TENTACLES) * i;
+                    xLeftBotLine = x + (visualRangeMin * Math.cos(Math.toRadians(angdeg)));
+                    yLeftBotLine = y + (visualRangeMin * Math.sin(Math.toRadians(angdeg)));
                     tentacle.setStartX(xLeftBotLine);
                     tentacle.setStartY(yLeftBotLine);
                 } else {
                     tentacle.setStartX(x);
                     tentacle.setStartY(y);
                 }
-                double xLeftTopLine = x + (visualRangeMax * (double)j/(double)(TENTACLE_INCREMENTS-1) * Math.cos(Math.toRadians((direction - viewingAngle/2) + (viewingAngle/(AMOUNT_OF_VISION_TENTACLES-1))*i)));
-                double yLeftTopLine = y + (visualRangeMax * (double)j/(double)(TENTACLE_INCREMENTS-1) * Math.sin(Math.toRadians((direction - viewingAngle/2) + (viewingAngle/(AMOUNT_OF_VISION_TENTACLES-1))*i)));
+                double angdeg = (direction - viewingAngle / 2) + (viewingAngle / (AMOUNT_OF_VISION_TENTACLES - 1)) * i;
+                double xLeftTopLine = x + (visualRangeMax * (double)j/(double)(TENTACLE_INCREMENTS-1) * Math.cos(Math.toRadians(angdeg)));
+                double yLeftTopLine = y + (visualRangeMax * (double)j/(double)(TENTACLE_INCREMENTS-1) * Math.sin(Math.toRadians(angdeg)));
                 xLeftTopLine = (Math.abs(x - xLeftTopLine) < Math.abs(x - xLeftBotLine)) ? xLeftBotLine : xLeftTopLine;
                 yLeftTopLine = (Math.abs(y - yLeftTopLine) < Math.abs(y - yLeftBotLine)) ? yLeftBotLine : yLeftTopLine;
                 tentacle.setEndX(xLeftTopLine);
@@ -688,7 +699,7 @@ public class Agent implements Runnable {
     public void updatePath()
     {
         int[][] blocks = aStarTerrain(knownTerrain);
-        Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks, this);
+        Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks, this, false);
         List<Node> path = pathFinder.findPath();
         if(!changed)
         {
@@ -717,7 +728,7 @@ public class Agent implements Runnable {
                 reAdded = false;
                 knownTerrain[tempWalls.get(i).y][tempWalls.get(i).x] = worldMap.getWorldGrid()[tempWalls.get(i).y][tempWalls.get(i).y];
                 int[][] phaseDetectionBlocks = aStarTerrain(knownTerrain);
-                Astar phaseDetectionPathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), phaseDetectionBlocks, this);
+                Astar phaseDetectionPathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), phaseDetectionBlocks, this, false);
                 List<Node> phaseDetectionPath = phaseDetectionPathFinder.findPath();
                 for(int j = 0 ; j < phaseDetectionPath.size() ; j++)
                 {

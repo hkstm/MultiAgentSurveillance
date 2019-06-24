@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import static World.GameScene.SCALING_FACTOR;
 import static World.WorldMap.EMPTY;
+import static World.WorldMap.WALL;
 
 /**
  * A subclass of Agent for the Intruders
@@ -20,6 +21,12 @@ public class Intruder extends Agent{
     protected int sprintCounter = 5;
     protected int walkCounter = 10; //check if this is right (might be 10 sec not 15)
     protected List<Point> tempWalls = new ArrayList<Point>();
+    private Point tempOldPos = null;
+    private Point oldPos = null;
+    private boolean first;
+    private int alternatingCounter;
+    private boolean modify;
+
 
 
     /**
@@ -63,9 +70,6 @@ public class Intruder extends Agent{
 
     public void gameTreeIntruder(double timeStep)
     {
-        //TODO check for guards
-        //TODO make noise
-        //TODO add weights to flags and other types of squares, try manually an possibly with a genetic algorithm
         double walkingDistance = (BASE_SPEED *SCALING_FACTOR*timeStep);
         double sprintingDistance = (SPRINT_SPEED *SCALING_FACTOR*timeStep);
         updateWalls();
@@ -85,7 +89,7 @@ public class Intruder extends Agent{
             freezeTime = 0;
             oldTempGoal = tempGoal;
             int[][] blocks = aStarTerrain(knownTerrain);
-            Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks, this);
+            Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks, this, modify);
             List<Node> path = pathFinder.findPath();
             if(!changed)
             {
@@ -127,8 +131,34 @@ public class Intruder extends Agent{
             {
                 turnToFace(270-turnAngle);
             }
+            if(oldPos == null)
+            {
+                tempOldPos = new Point((int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR));
+                first = true;
+            }
+            else if (preDivisor == 0){
+                preDivisor++;
+            }
+            if(tempGoal.getX() >= position.getX() && tempGoal.getY() <= position.getY())
+            {
+                tempOldPos = new Point((int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR));
+                first = false;
+            }
+            int wallCount = 0;
+            int sprintPercent = 0;
+//            for (int i = locationToWorldgrid(position.getX() - 2 ); i < locationToWorldgrid(position.getX() + 2 ); i++){
+//                for (int j = locationToWorldgrid(position.getY() - 2); j < locationToWorldgrid(position.getY() + 2); j++){
+//                    if (knownTerrain[i][j] == WALL){
+//                        wallCount++;
+//                    }
+//                    if (wallCount > 10 ){
+//                        sprintPercent = Math.random()
+//                    }
+//                }
+//            }
             if(!tired)
             {
+
                 if(legalMoveCheck(sprintingDistance))
                 {
                     long nowMillis = System.currentTimeMillis();
@@ -157,6 +187,26 @@ public class Intruder extends Agent{
                     }
                 }
             }
+            modify = false;
+            if(tempOldPos.x != (int)(position.getX()/SCALING_FACTOR) || tempOldPos.y != (int)(position.getY()/SCALING_FACTOR))
+            {
+                if(!first && oldPos.x == (int)(position.getX()/SCALING_FACTOR) && oldPos.y == (int)(position.getY()/SCALING_FACTOR))
+                {
+                    alternatingCounter++;
+                }
+                else
+                {
+                    alternatingCounter = 0;
+                }
+            }
+            if(alternatingCounter == 6)
+            {
+                alternatingCounter = 0;
+                modify = true;
+                points[0] = oldPos;
+                points[1] = tempOldPos;
+            }
+            oldPos = tempOldPos;
         }
     }
 
@@ -177,6 +227,7 @@ public class Intruder extends Agent{
             else
             {
                 freezeTime = 5;
+                doorNoise = true;
                 //HERE A NOISE MUST BE MADE!!!!!
             }
             frozen = true;
@@ -190,5 +241,10 @@ public class Intruder extends Agent{
             freezeTime = 3;
             frozen = true;
         }
+    }
+
+    public Point[] getPoints()
+    {
+        return points;
     }
 }

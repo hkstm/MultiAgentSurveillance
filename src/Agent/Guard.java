@@ -171,6 +171,9 @@ public class Guard extends Agent {
                 turnToFace(turnAngle-90);
                 updatePath();
 
+                updateDirection(direction+90);
+
+                updatePath();
                 return;
             }
             
