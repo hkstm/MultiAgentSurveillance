@@ -50,7 +50,7 @@ public class Guard extends Agent {
         this.color = Color.AZURE;
         this.firstRunBehaviourTreeGuardLogic = true;
         Routine guard1 = Routines.sequence(
-                Routines.moveTo(200,30)
+                Routines.moveTo(locationToWorldgrid(500.0),locationToWorldgrid(600.0))
 
                 // Routines.wander(worldMap,this)
         );
@@ -76,7 +76,7 @@ public class Guard extends Agent {
         currentTime = System.nanoTime();
         delta = currentTime - previousTime;
         delta /= 1e9; //makes it in seconds
-        System.out.println("x: " + getPosition().getX() + "y: " + getPosition().getY());
+        System.out.println("y: " + locationToWorldgrid( getPosition().getX() )+ "x: " + locationToWorldgrid( getPosition().getY()));
         update();
         updatePerformanceCriteria();
     }
@@ -146,24 +146,30 @@ public class Guard extends Agent {
         {
             checkChangedStatus();
         }
-        double elapsedTime = (System.currentTimeMillis()-startTime)/1000;
-        if(elapsedTime > freezeTime)
-        {
+//        double elapsedTime = (System.currentTimeMillis()-startTime)/1000;
+//        if(elapsedTime > freezeTime)
+//        {
             frozen = false;
             startTime = 0;
             freezeTime = 0;
             oldTempGoal = tempGoal;
             int[][] blocks = aStarTerrain(knownTerrain);
             Astar pathMaker = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR),
-                    (int)(position.getY()/SCALING_FACTOR), (int)destX, (int)destY, blocks, this);
+                    (int)(position.getY()/SCALING_FACTOR), (int)destY, (int)destX, blocks, this);
             List<Node> path = pathMaker.findPath();
             
-            if (path.size() <1)
+            if (path.size() <1 && "sss" != "chase")
             {
+                //find a way to keep destx and desty in bounds
                 //change directon
+                double changedestX = (locationToWorldgrid(100)*(-1));
+                double changedestY = locationToWorldgrid(100)*(-1);
+                destX += changedestX;
+                destY += changedestY;
                 double divisor = Math.abs(tempGoal.getY()-position.getY());
                 double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.getX()-position.getX())/divisor));
                 turnToFace(turnAngle-90);
+                updatePath();
 
                 return;
             }
@@ -181,7 +187,7 @@ public class Guard extends Agent {
                 }
             }
         //    wallPhaseDetection();
-        //    cornerCorrection();
+            cornerCorrection();
             double divisor = Math.abs(tempGoal.getY()-position.getY());
             double preDivisor = Math.abs(previousTempGoal.getY()-tempGoal.getY());
             if(divisor == 0)
@@ -215,6 +221,6 @@ public class Guard extends Agent {
                     move(walkingDistance);
 
                 }
-            }
+        //    }
         }
     }

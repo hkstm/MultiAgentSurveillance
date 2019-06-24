@@ -10,7 +10,7 @@ import java.util.List;
 
 import static Agent.MoveTo.destX;
 import static Agent.MoveTo.destY;
-
+import static Agent.Agent.locationToWorldgrid;
 
 public class Chase extends Routine {
     private MoveTo moveTo;
@@ -34,9 +34,9 @@ public class Chase extends Routine {
         chasing(guard);
     }
     public void chasing(Guard guard) {
-        destX = intruder.getPosition().getX();
-        destY = intruder.getPosition().getY();
+
         guard.gameTree(guard.delta);
+        System.out.println("destX: " + destY + " destY: " + destX);
         System.out.println("chasing");
 
     }
