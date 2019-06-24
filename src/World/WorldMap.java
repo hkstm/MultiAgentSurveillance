@@ -279,10 +279,10 @@ public class WorldMap implements Serializable {
         else return false;
     }
 
-    public static boolean isEmpty(int toCheck) { //I think wall and sentry are missing from here but not sure :D
+    public static boolean isEmpty(int toCheck) {
 //        if ((toCheck == STRUCTURE) || (toCheck == DOOR) || (toCheck == WINDOW)) {
         if ((toCheck == EMPTY) || (toCheck == MARKER_1) || (toCheck == MARKER_2) || (toCheck == MARKER_3) ||
-                (toCheck == MARKER_4) || (toCheck == MARKER_5)) {
+                (toCheck == MARKER_4) || (toCheck == MARKER_5) || (toCheck == OPEN_DOOR) || (toCheck == OPEN_WINDOW)){
             return true;
         }
         else return false;

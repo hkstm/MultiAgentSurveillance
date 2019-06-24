@@ -87,14 +87,14 @@ public class GameScene extends BorderPane implements Runnable {
 
         this.startGameBut = new Button("Start/Stop Game"); //should stop and start game, not properly working atm
         Agent.worldMap = worldMap;
-        Guard guard1  = new Guard(new Point2D(200, 300), 70);
-        Guard guard2  = new Guard(new Point2D(500, 100), 100);
-        Intruder intruder = new Intruder(new Point2D(500, 500), 0);
-        AreaOptimizer areaOptimzer = new AreaOptimizer(new Point2D(500, 400), 0);
+//        Guard guard1  = new Guard(new Point2D(200, 300), 70);
+//        Guard guard2  = new Guard(new Point2D(500, 100), 100);
+        Intruder intruder = new Intruder(new Point2D(500, 520), 0);
+//        AreaOptimizer areaOptimzer = new AreaOptimizer(new Point2D(500, 400), 0);
+        Guard stupidGuard = new StupidGuard(new Point2D(500, 900), 90);
 //        worldMap.addAgent(guard);
-//        worldMap.addAgent(intruder);
-        worldMap.addOnlyAgent(guard1);
-        worldMap.addOnlyAgent(guard2);
+//        worldMap.addOnlyAgent(intruder);
+        worldMap.addOnlyAgent(stupidGuard);
         this.pher = new Pheromones(worldMap);
 
         //worldMap.addOnlyAgent(areaOptimzer);
@@ -203,7 +203,6 @@ public class GameScene extends BorderPane implements Runnable {
                 TileView tmpView = null;
                 if(tileViews.get(c + (r * worldMap.getSize())).getState() != worldMap.getTileState(r, c)) {
                     tmpView = new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c));
-                    System.out.println("changed a tile");
                 } else {
                     tmpView = tileViews.get(c + (r * worldMap.getSize()));
                 }

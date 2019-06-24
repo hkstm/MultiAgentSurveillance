@@ -204,7 +204,7 @@ public class Agent implements Runnable {
     public void executeAgentLogic() {
         double walkingDistance = (BASE_SPEED * SCALING_FACTOR) * (delta);
         Point2D newPosition = new Point2D((position.getX() + (walkingDistance * Math.cos(Math.toRadians(direction)))), (position.getY() + (walkingDistance * Math.sin(Math.toRadians(direction)))));
-        if(!isVisionObscuring(worldMap.getTileState(locationToWorldgrid(newPosition.getY()), locationToWorldgrid(newPosition.getX())))) {
+        if(isEmpty(worldMap.getTileState(locationToWorldgrid(newPosition.getY()), locationToWorldgrid(newPosition.getX())))) {
             position = newPosition;
         } else {
             updateDirection(Math.random() * 360);

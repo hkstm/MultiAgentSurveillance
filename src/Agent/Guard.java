@@ -55,7 +55,7 @@ public class Guard extends Agent {
                 // Routines.wander(worldMap,this)
         );
         this.setRoutine(guard1);
-
+        System.out.println("Guard initialized");
 
         //this.knownTerrain = worldMap.getWorldGrid();
     }
