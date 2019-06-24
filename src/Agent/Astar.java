@@ -214,7 +214,7 @@ public class Astar {
             {
                 if(i >= 0 && j >= 0 && i < ASSUMED_WORLDSIZE && j < ASSUMED_WORLDSIZE && knownTerrain[i][j] == 5)
                 {
-                    weightToAdd += 15;
+                    weightToAdd += 30;
                 }
             }
         }
@@ -224,7 +224,7 @@ public class Astar {
             {
                 if(i >= 0 && j >= 0 && i < ASSUMED_WORLDSIZE && j < ASSUMED_WORLDSIZE && knownTerrain[i][j] == 5)
                 {
-                    weightToAdd += 15;
+                    weightToAdd += 30;
                 }
             }
         }
@@ -234,7 +234,7 @@ public class Astar {
             {
                 if(i >= 0 && j >= 0 && i < ASSUMED_WORLDSIZE && j < ASSUMED_WORLDSIZE && knownTerrain[i][j] == 5)
                 {
-                    weightToAdd += 15;
+                    weightToAdd += 30;
                 }
             }
         }
@@ -244,7 +244,7 @@ public class Astar {
             {
                 if(i >= 0 && j >= 0 && i < ASSUMED_WORLDSIZE && j < ASSUMED_WORLDSIZE && knownTerrain[i][j] == 5)
                 {
-                    weightToAdd += 15;
+                    weightToAdd += 30;
                 }
             }
         }

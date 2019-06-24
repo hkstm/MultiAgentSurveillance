@@ -86,13 +86,13 @@ public class GameScene extends BorderPane implements Runnable {
         this.startGameBut = new Button("Start/Stop Game"); //should stop and start game, not properly working atm
         Agent.worldMap = worldMap;
         Guard guard  = new Guard(new Point2D(200, 300), 70);
-        Intruder intruder = new Intruder(new Point2D(500, 500), 0);
+        Intruder intruder = new Intruder(new Point2D(900, 500), 0);
         AreaOptimizer areaOptimizer = new AreaOptimizer(new Point2D(520, 210), 0);
 //        worldMap.addAgent(guard);
 //        worldMap.addAgent(intruder);
 //        worldMap.addOnlyAgent(guard);
-//        worldMap.addOnlyAgent(intruder);
-        worldMap.addOnlyAgent(areaOptimizer);
+        worldMap.addOnlyAgent(intruder);
+//        worldMap.addOnlyAgent(areaOptimizer);
 
         //Actual game "loop" in here
         startGameBut.setOnAction(e -> { //
@@ -163,15 +163,15 @@ public class GameScene extends BorderPane implements Runnable {
 
     public void drawCones() {
         worldMap.createCones();
-        Circle goal = new Circle(worldMap.getAgents().get(0).getGoalPosition().getX(), worldMap.getAgents().get(0).getGoalPosition().getY(), 10);
-        goal.setFill(Color.CORNFLOWERBLUE);
-        worldMap.getAgentsCones().add(goal);
-        Circle goalPath = new Circle(worldMap.getAgents().get(0).getGoalPositionPath().getX(), worldMap.getAgents().get(0).getGoalPositionPath().getY(), 5);
-        goal.setFill(Color.HOTPINK);
-        worldMap.getAgentsCones().add(goalPath);
-        Circle goalPrev = new Circle(worldMap.getAgents().get(0).getPrevGoalPosition().getX(), worldMap.getAgents().get(0).getPrevGoalPosition().getY(), 10);
-        goal.setFill(Color.LIGHTSEAGREEN);
-        worldMap.getAgentsCones().add(goalPrev);
+//        Circle goal = new Circle(worldMap.getAgents().get(0).getGoalPosition().getX(), worldMap.getAgents().get(0).getGoalPosition().getY(), 10);
+//        goal.setFill(Color.CORNFLOWERBLUE);
+//        worldMap.getAgentsCones().add(goal);
+//        Circle goalPath = new Circle(worldMap.getAgents().get(0).getGoalPositionPath().getX(), worldMap.getAgents().get(0).getGoalPositionPath().getY(), 5);
+//        goal.setFill(Color.HOTPINK);
+//        worldMap.getAgentsCones().add(goalPath);
+//        Circle goalPrev = new Circle(worldMap.getAgents().get(0).getPrevGoalPosition().getX(), worldMap.getAgents().get(0).getPrevGoalPosition().getY(), 10);
+//        goal.setFill(Color.LIGHTSEAGREEN);
+//        worldMap.getAgentsCones().add(goalPrev);
         agentGroup.getChildren().addAll(worldMap.getAgentsCones());
     }
 
