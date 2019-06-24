@@ -53,7 +53,7 @@ public class RunSimulation extends Application {
             countDown = false;
             visitedTarget = false;
             firstVisitTime = 0;
-
+            Agent.worldMap = worldMap;
             Guard guard1  = new Guard(new Point2D(200, 450), 70);
             Guard guard2  = new Guard(new Point2D(500, 400), 100);
             Intruder intruder = new Intruder(new Point2D(500, 500), 0);
@@ -66,6 +66,9 @@ public class RunSimulation extends Application {
 //        worldMap.addAgent(guard);
 //        worldMap.addOnlyAgent(areaOptimizer);
             worldMap.addOnlyAgent(stupidGuard);
+            worldMap.addOnlyAgent(straightLiner);;
+//        worldMap.addOnlyAgent(areaOptimizer);
+            worldMap.addOnlyAgent(stupidGuard);
         worldMap.addOnlyAgent(straightLiner);
             //Actual game "loop" in here
             this.pher = new Pheromones(worldMap);
@@ -74,11 +77,11 @@ public class RunSimulation extends Application {
                 long currentTime = System.nanoTime();
                 worldMap.forceUpdateAgents();
                 long delta = (currentTime - previousTime);
-                System.out.println("delta: " + delta);
+                System.out.println("delta: " + delta/1e9);
                 previousTime = currentTime;
                 pher.update(delta);
-                generateRandomSound(delta);
-                gameEnded = haveGuardsCapturedIntruder(mode, delta);
+                generateRandomSound(delta);;
+                if(haveGuardsCapturedIntruder(mode, delta) || haveIntrudersWon(mode, delta)) gameEnded = true;
 
             }
             System.out.println("game ended");
