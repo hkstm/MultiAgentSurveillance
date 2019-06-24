@@ -21,7 +21,7 @@ import static World.WorldMap.*;
  * @author Benjamin, Kailhan, Thibaut
  */
 
-public class Agent implements Runnable {
+public class Agent implements Runnable{
     public static final double WALK_SPEED_SLOW = 0; //speed <0.5m/s
     public static final double WALK_SPEED_MEDIUM = 0.5; //speed >0.5 & <1 m/s
     public static final double WALK_SPEED_MEDIUMFAST = 1; //speed >1 & 2 m/s
@@ -33,8 +33,8 @@ public class Agent implements Runnable {
     public static final double SOUND_NOISE_STDEV =  10;  //stndard dev of normal distributed noise
     public static final double STRUCTURE_VIS_RANGE = 10;
     public static final double SENTRY_VIS_RANGE = 18;
-    public static final int AMOUNT_OF_VISION_TENTACLES = 100;
-    public static final int TENTACLE_INCREMENTS = 100;
+    public static final int AMOUNT_OF_VISION_TENTACLES = 50;
+    public static final int TENTACLE_INCREMENTS = 50;
     public static final double MAX_TURNING_PER_SECOND = 180; //degrees
     public static final double MAX_NONBLIND_TURNING_PER_SECOND = 45; //degrees
     public static final double MAX_TURNING_WHILE_SPRINTING = 10;
@@ -397,7 +397,7 @@ public class Agent implements Runnable {
 
         for(int i = 1; i < AMOUNT_OF_VISION_TENTACLES; i++) {
             double decreaseInVision = 0;
-            tentacleincrementloop:
+//            tentacleincrementloop:
             for(int j = 1; j < TENTACLE_INCREMENTS; j++) {
                 Line tentacle = new Line();
                 double xLeftBotLine = x;
@@ -425,19 +425,23 @@ public class Agent implements Runnable {
                 if(isVisionObscuring(worldMap.getWorldGrid()[locationToWorldgrid(yLeftTopLine)][locationToWorldgrid(xLeftTopLine)]) || j >= TENTACLE_INCREMENTS-(decreaseInVision)-1) {
                     collisionPoints[((i-1)*2)+0] = xLeftTopLine; //(i-1 instead of i because outer for loop starts at 1)
                     collisionPoints[((i-1)*2)+1] = yLeftTopLine;
-                    knownTerrain[locationToWorldgrid(yLeftTopLine)][locationToWorldgrid(xLeftTopLine)] = worldMap.getWorldGrid()[locationToWorldgrid(yLeftTopLine)][locationToWorldgrid(xLeftTopLine)];
-                    break tentacleincrementloop;
+                    knownTerrain[locationToWorldgrid(yLeftTopLine)][locationToWorldgrid(xLeftTopLine)] = worldMap.getTileState(locationToWorldgrid(yLeftTopLine), locationToWorldgrid(xLeftTopLine));
+//                    break tentacleincrementloop;
+                    break;
                 }
             }
         }
-        collisionPoints[collisionPoints.length-2] = x + (visualRangeMin * Math.cos(Math.toRadians(direction - viewingAngle/2)));
+
         collisionPoints[collisionPoints.length-1] = y + (visualRangeMin * Math.sin(Math.toRadians(direction - viewingAngle/2)));
-        collisionPoints[collisionPoints.length-4] = x + (visualRangeMin * Math.cos(Math.toRadians(direction + viewingAngle/2)));
+        collisionPoints[collisionPoints.length-2] = x + (visualRangeMin * Math.cos(Math.toRadians(direction - viewingAngle/2)));
         collisionPoints[collisionPoints.length-3] = y + (visualRangeMin * Math.sin(Math.toRadians(direction + viewingAngle/2)));
+        collisionPoints[collisionPoints.length-4] = x + (visualRangeMin * Math.cos(Math.toRadians(direction + viewingAngle/2)));
+
 
         Polygon cutout = new Polygon(collisionPoints);
         cutout.setFill(color);
         return cutout;
+//        return new Polygon(collisionPoints);
     }
 
     public Shape getCone() {

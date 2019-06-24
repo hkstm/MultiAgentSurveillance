@@ -164,7 +164,7 @@ public class WorldMap implements Serializable {
         Thread threadToBeAdded = new Thread(toBeAdded);
         threadToBeAdded.setPriority(1);
         this.agentThreads.add(threadToBeAdded);
-        //startAgents();
+//        startAgents();
     }
 
     /**

@@ -71,6 +71,7 @@ public class RunSimulation extends Application {
             //Actual game "loop" in here
             this.pher = new Pheromones(worldMap);
             System.out.println("doing simulation");
+            worldMap.startAgents();
             while(!gameEnded){
                 long currentTime = System.nanoTime();
                 worldMap.forceUpdateAgents();
@@ -78,7 +79,7 @@ public class RunSimulation extends Application {
                 System.out.println("delta: " + delta/1e9);
                 previousTime = currentTime;
                 pher.update(delta);
-                generateRandomSound(delta);;
+                generateRandomSound(delta);
                 if(haveGuardsCapturedIntruder(mode, delta) || haveIntrudersWon(mode, delta)) gameEnded = true;
 
             }

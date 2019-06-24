@@ -98,8 +98,8 @@ public class GameScene extends BorderPane implements Runnable {
         StraightLiner straightLiner = new StraightLiner(new Point2D(20, 20), -45);
 //        worldMap.addAgent(guard);
 //        worldMap.addOnlyAgent(areaOptimizer);
-        worldMap.addOnlyAgent(stupidGuard);
-        worldMap.addOnlyAgent(straightLiner);;
+//        worldMap.addOnlyAgent(stupidGuard);
+        worldMap.addAgent(straightLiner);
         this.pher = new Pheromones(worldMap);
 
         //worldMap.addOnlyAgent(areaOptimzer);
@@ -108,7 +108,7 @@ public class GameScene extends BorderPane implements Runnable {
             currentTimeCountDown = System.nanoTime();
             if(!gameStarted) {
                 gameStarted = true;
-//                worldMap.startAgents();
+                worldMap.startAgents();
                 System.out.println("Started agents");
                 new AnimationTimer() {
                     long currentTimeCalc = System.nanoTime();
@@ -117,7 +117,7 @@ public class GameScene extends BorderPane implements Runnable {
                     public void handle(long currentTime) {
                         if(gameStarted && !paused){
 //                        long beforeUpdatingAgents = System.nanoTime();
-                            worldMap.forceUpdateAgents();
+//                            worldMap.forceUpdateAgents();
 //                        long afterUpdatingAgents = System.nanoTime();
 //                        System.out.println("updating agentstook: " + ((afterUpdatingAgents-beforeUpdatingAgents)/1e9));
 
