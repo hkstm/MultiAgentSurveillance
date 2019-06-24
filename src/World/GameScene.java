@@ -91,17 +91,15 @@ public class GameScene extends BorderPane implements Runnable {
         Guard guard2  = new Guard(new Point2D(500, 400), 100);
         Intruder intruder = new Intruder(new Point2D(500, 500), 0);
         AreaOptimizer areaOptimzer = new AreaOptimizer(new Point2D(500, 400), 0);
- //       Guard guard1  = new Guard(new Point2D(200, 300), 70);
+        //       Guard guard1  = new Guard(new Point2D(200, 300), 70);
 //        Guard guard2  = new Guard(new Point2D(500, 100), 100);
         AreaOptimizer areaOptimizer = new AreaOptimizer(new Point2D(500, 400), 0);
         Guard stupidGuard = new StupidGuard(new Point2D(800, 300), 315);
-        StraightLiner straightLiner = new StraightLiner(new Point2D(800, 300), -45);
+        StraightLiner straightLiner = new StraightLiner(new Point2D(20, 20), -45);
 //        worldMap.addAgent(guard);
-        worldMap.addOnlyAgent(intruder);
-        worldMap.addOnlyAgent(guard1);
 //        worldMap.addOnlyAgent(areaOptimizer);
         worldMap.addOnlyAgent(stupidGuard);
-//        worldMap.addOnlyAgent(straightLiner);
+        worldMap.addOnlyAgent(straightLiner);;
         this.pher = new Pheromones(worldMap);
 
         //worldMap.addOnlyAgent(areaOptimzer);
@@ -270,9 +268,7 @@ public class GameScene extends BorderPane implements Runnable {
             if(agentGuard instanceof Guard) {
                 for(Agent agentIntruder : agentIntruders) {
                     if(agentIntruder instanceof Intruder) {
-                        System.out.println("found guard and intruder");
-                        System.out.println(DISTANCE_TO_CATCH * SCALING_FACTOR*1.60);
-                        if(agentGuard.getPosition().distance(agentIntruder.getPosition()) < (DISTANCE_TO_CATCH * SCALING_FACTOR*1.60)){
+                        if(agentGuard.getPosition().distance(agentIntruder.getPosition()) < (DISTANCE_TO_CATCH * SCALING_FACTOR)){
                             createAlert("GUARDS have found INTRUDER");
                         }
                     }
@@ -291,7 +287,7 @@ public class GameScene extends BorderPane implements Runnable {
         if(random.nextDouble() < occurenceRate/(delta)) {
             Point2D randomNoiseLocation = new Point2D(random.nextInt(windowSize), random.nextInt(windowSize));
             for(Agent agent : worldMap.getAgents()) {
-                if(randomNoiseLocation.distance(agent.getPosition())/SCALING_FACTOR < 5) {
+                if(randomNoiseLocation.distance(agent.getPosition()) < SOUNDRANGE_MEDIUMFAR * SCALING_FACTOR) {
                     double angleBetweenPoints = Math.toDegrees(Math.atan2((agent.getPosition().getY() - randomNoiseLocation.getY()), (agent.getPosition().getX() - randomNoiseLocation.getX())));
                     angleBetweenPoints += new Random().nextGaussian()*SOUND_NOISE_STDEV;
                     agent.getAudioLogs().add(new AudioLog(System.nanoTime(), angleBetweenPoints, new Point2D(agent.getPosition().getX(), agent.getPosition().getY())));

@@ -14,8 +14,7 @@ import java.io.FileInputStream;
 import java.io.ObjectInputStream;
 import java.util.Random;
 
-import static Agent.Agent.DISTANCE_TO_CATCH;
-import static Agent.Agent.SOUND_NOISE_STDEV;
+import static Agent.Agent.*;
 import static World.GameScene.ASSUMED_WORLDSIZE;
 import static World.GameScene.SCALING_FACTOR;
 
@@ -28,6 +27,9 @@ public class RunSimulation extends Application {
     private boolean visitedTarget;
     private long firstVisitTime;
     private File worldFile;
+
+    private Pheromones pher;
+    private boolean pherActive = true;
 
     public static void main(String[] args) {
         launch(args);
@@ -52,24 +54,32 @@ public class RunSimulation extends Application {
             visitedTarget = false;
             firstVisitTime = 0;
 
-            Guard guard = new Guard(new Point2D(200, 300), 70);
-            Intruder intruder = new Intruder(new Point2D(500, 300), 0);
+            Guard guard1  = new Guard(new Point2D(200, 450), 70);
+            Guard guard2  = new Guard(new Point2D(500, 400), 100);
+            Intruder intruder = new Intruder(new Point2D(500, 500), 0);
             AreaOptimizer areaOptimzer = new AreaOptimizer(new Point2D(500, 400), 0);
+            //       Guard guard1  = new Guard(new Point2D(200, 300), 70);
+//        Guard guard2  = new Guard(new Point2D(500, 100), 100);
+            AreaOptimizer areaOptimizer = new AreaOptimizer(new Point2D(500, 400), 0);
+            Guard stupidGuard = new StupidGuard(new Point2D(800, 300), 315);
+            StraightLiner straightLiner = new StraightLiner(new Point2D(20, 20), -45);
 //        worldMap.addAgent(guard);
-//        worldMap.addAgent(intruder);
-//        worldMap.addOnlyAgent(guard);
-            worldMap.addOnlyAgent(intruder);
-            worldMap.addOnlyAgent(areaOptimzer);
+//        worldMap.addOnlyAgent(areaOptimizer);
+            worldMap.addOnlyAgent(stupidGuard);
+        worldMap.addOnlyAgent(straightLiner);
             //Actual game "loop" in here
+            this.pher = new Pheromones(worldMap);
             System.out.println("doing simulation");
             while(!gameEnded){
                 long currentTime = System.nanoTime();
                 worldMap.forceUpdateAgents();
                 long delta = (currentTime - previousTime);
+                System.out.println("delta: " + delta);
                 previousTime = currentTime;
+                pher.update(delta);
                 generateRandomSound(delta);
                 gameEnded = haveGuardsCapturedIntruder(mode, delta);
-                if(!gameEnded) gameEnded = haveIntrudersWon(mode, delta);
+
             }
             System.out.println("game ended");
         }
@@ -131,10 +141,10 @@ public class RunSimulation extends Application {
         if(random.nextDouble() < occurenceRate/(delta)) {
             Point2D randomNoiseLocation = new Point2D(random.nextInt((int)(ASSUMED_WORLDSIZE*SCALING_FACTOR)), random.nextInt((int)(ASSUMED_WORLDSIZE*SCALING_FACTOR))); //prolly not right
             for(Agent agent : worldMap.getAgents()) {
-                if(randomNoiseLocation.distance(agent.getPosition())/SCALING_FACTOR < 5) {
-                    double angleBetweenPoints = Math.toDegrees(Math.atan2((agent.getPosition().getY() - randomNoiseLocation.getY()), (agent.getPosition().getX() - randomNoiseLocation.getX())));
-                    angleBetweenPoints += new Random().nextGaussian()*SOUND_NOISE_STDEV;
-                    agent.getAudioLogs().add(new AudioLog(System.nanoTime(), angleBetweenPoints, new Point2D(agent.getPosition().getX(), agent.getPosition().getY())));
+                if(randomNoiseLocation.distance(agent.getPosition()) < SOUNDRANGE_MEDIUMFAR * SCALING_FACTOR) {
+                    double soundDirection = Math.toDegrees(Math.atan2((agent.getPosition().getY() - randomNoiseLocation.getY()), (agent.getPosition().getX() - randomNoiseLocation.getX())));
+                    soundDirection += new Random().nextGaussian()*SOUND_NOISE_STDEV;
+                    agent.getAudioLogs().add(new AudioLog(System.nanoTime(), soundDirection, new Point2D(agent.getPosition().getX(), agent.getPosition().getY())));
                     System.out.println("Agent heard sound");
                 }
             }

@@ -38,7 +38,6 @@ public class StraightLiner extends Intruder{
 
     public void gameTreeIntruder(double timeStep) {
         double walkingDistance = (BASE_SPEED *SCALING_FACTOR*timeStep);
-        double sprintingDistance = (SPRINT_SPEED *SCALING_FACTOR*timeStep);
         updateWalls();
         if(!frozen)
         {
@@ -49,21 +48,19 @@ public class StraightLiner extends Intruder{
             checkChangedStatus();
         }
         double elapsedTime = (System.currentTimeMillis()-startTime)/1000;
-        if(elapsedTime > freezeTime)
-        {
+        if(elapsedTime > freezeTime) {
             frozen = false;
             startTime = 0;
             freezeTime = 0;
             oldTempGoal = tempGoal;
             int[][] blocks = aStarTerrain(knownTerrain);
-            Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, locationToWorldgrid(position.getX()), locationToWorldgrid(position.getY())
-                    , locationToWorldgrid(goalPosition.getX()), locationToWorldgrid(goalPosition.getY()), blocks, this, false);
+            Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, locationToWorldgrid(position.getX()), locationToWorldgrid(position.getY()), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks, this, false);
             List<Node> path = pathFinder.findPath();
             if(!changed)
             {
-                tempGoal = new Point2D((path.get(path.size()-1).row*SCALING_FACTOR)+(SCALING_FACTOR/2), (path.get(path.size()-1).column*SCALING_FACTOR)+(SCALING_FACTOR/2));
+                tempGoal = new Point2D((worldMap.convertArrayToWorld(path.get(path.size() - 1).row) + worldMap.convertArrayToWorld(1)/2), (worldMap.convertArrayToWorld(path.get(path.size() - 1).column) + worldMap.convertArrayToWorld(1)/2));
                 if (path.size() > 1) {
-                    previousTempGoal = new Point2D((path.get(path.size() - 2).row * SCALING_FACTOR) + (SCALING_FACTOR / 2), (path.get(path.size() - 2).column * SCALING_FACTOR) + (SCALING_FACTOR / 2));
+                    previousTempGoal = new Point2D((worldMap.convertArrayToWorld(path.get(path.size() - 2).row) + worldMap.convertArrayToWorld(1)/2), (worldMap.convertArrayToWorld(path.get(path.size() - 2).column) + worldMap.convertArrayToWorld(1)/2));
                 }
                 else{
                     previousTempGoal = tempGoal;
@@ -99,36 +96,11 @@ public class StraightLiner extends Intruder{
             {
                 updateDirection(270-turnAngle);
             }
-            if(!tired)
-            {
-                if(legalMoveCheck(sprintingDistance))
-                {
-                    long nowMillis = System.currentTimeMillis();
-                    int countSec = (int)((nowMillis - this.createdMillis) / 1000);
-                    if (countSec != sprintCounter){
-                        move(sprintingDistance);
-                    }
-                    else{
-                        tired = true;
-                        sprintCounter = sprintCounter + 15;
-                    }
-                }
-            }
-            if (tired)
-            {
-                if(legalMoveCheck(walkingDistance))
-                {
-                    long nowMillis = System.currentTimeMillis();
-                    int countSec = (int)((nowMillis - this.createdMillis) / 1000);
-                    if (countSec != walkCounter) {
-                        move(walkingDistance);
-                    }
-                    else{
-                        tired = false;
-                        walkCounter += 15; //HAO please check if theses are the correct resting times
-                    }
-                }
-            }
+            if (legalMoveCheck(walkingDistance)){
+                move(walkingDistance);
+            } else System.out.println("not legal move - straightline");
+        } else {
+            System.out.println("elapsed time not larger than freeze time");
         }
     }
 }
