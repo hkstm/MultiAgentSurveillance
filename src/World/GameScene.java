@@ -93,7 +93,6 @@ public class GameScene extends BorderPane implements Runnable {
         AreaOptimizer areaOptimzer = new AreaOptimizer(new Point2D(500, 400), 0);
  //       Guard guard1  = new Guard(new Point2D(200, 300), 70);
 //        Guard guard2  = new Guard(new Point2D(500, 100), 100);
-        Intruder intruder = new Intruder(new Point2D(500, 500), 0);
         AreaOptimizer areaOptimizer = new AreaOptimizer(new Point2D(500, 400), 0);
         Guard stupidGuard = new StupidGuard(new Point2D(800, 300), 315);
         StraightLiner straightLiner = new StraightLiner(new Point2D(800, 300), -45);
