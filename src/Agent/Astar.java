@@ -216,9 +216,9 @@ public class Astar {
         {
             weightToAdd -= 6;
         }
-        for(int i = row+2 ; i < row+16 ; i++)
+        for(int i = row ; i < row+16 ; i++)
         {
-            for(int j = column+2 ; j < column+16 ; j++)
+            for(int j = column ; j < column+16 ; j++)
             {
                 if(i >= 0 && j >= 0 && i < ASSUMED_WORLDSIZE && j < ASSUMED_WORLDSIZE && knownTerrain[i][j] == SENTRY)
                 {
@@ -226,9 +226,9 @@ public class Astar {
                 }
             }
         }
-        for(int i = row+2 ; i < row+16 ; i++)
+        for(int i = row ; i < row+16 ; i++)
         {
-            for(int j = column-2 ; j > column-16 ; j--)
+            for(int j = column ; j > column-16 ; j--)
             {
                 if(i >= 0 && j >= 0 && i < ASSUMED_WORLDSIZE && j < ASSUMED_WORLDSIZE && knownTerrain[i][j] == SENTRY)
                 {
@@ -236,9 +236,9 @@ public class Astar {
                 }
             }
         }
-        for(int i = row-2 ; i > row-16 ; i--)
+        for(int i = row ; i > row-16 ; i--)
         {
-            for(int j = column+2 ; j < column+16 ; j++)
+            for(int j = column ; j < column+16 ; j++)
             {
                 if(i >= 0 && j >= 0 && i < ASSUMED_WORLDSIZE && j < ASSUMED_WORLDSIZE && knownTerrain[i][j] == SENTRY)
                 {
@@ -246,9 +246,9 @@ public class Astar {
                 }
             }
         }
-        for(int i = row-2 ; i > row-16 ; i--)
+        for(int i = row ; i > row-16 ; i--)
         {
-            for(int j = column-2 ; j > column-16 ; j--)
+            for(int j = column ; j > column-16 ; j--)
             {
                 if(i >= 0 && j >= 0 && i < ASSUMED_WORLDSIZE && j < ASSUMED_WORLDSIZE && knownTerrain[i][j] == SENTRY)
                 {

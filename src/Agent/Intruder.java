@@ -9,6 +9,12 @@ import java.util.List;
 import static World.GameScene.SCALING_FACTOR;
 import static World.WorldMap.EMPTY;
 import static World.WorldMap.WALL;
+import static World.WorldMap.DOOR;
+import static World.WorldMap.OPEN_DOOR;
+import static World.WorldMap.WINDOW;
+import static World.WorldMap.OPEN_WINDOW;
+import static World.WorldMap.SENTRY;
+import static World.WorldMap.STRUCTURE;
 
 /**
  * A subclass of Agent for the Intruders
@@ -19,7 +25,7 @@ public class Intruder extends Agent{
     protected boolean tired;
     protected final long createdMillis = System.currentTimeMillis();
     protected int sprintCounter = 5;
-    protected int walkCounter = 10; //check if this is right (might be 10 sec not 15)
+    protected int walkCounter = 15;
     protected List<Point> tempWalls = new ArrayList<Point>();
     private Point tempOldPos = null;
     private Point oldPos = null;
@@ -180,7 +186,7 @@ public class Intruder extends Agent{
                     }
                     else{
                         tired = false;
-                        walkCounter += 15; //HAO please check if theses are the correct resting times
+                        walkCounter += 15;
                     }
                 }
             }
@@ -210,10 +216,10 @@ public class Intruder extends Agent{
     public void open()
     {
         //open door
-        if(worldMap.worldGrid[(int)(position.getY()/SCALING_FACTOR)][(int)(position.getX()/SCALING_FACTOR)] == 2)
+        if(worldMap.worldGrid[(int)(position.getY()/SCALING_FACTOR)][(int)(position.getX()/SCALING_FACTOR)] == DOOR)
         {
-            worldMap.worldGrid[(int)(position.getY()/SCALING_FACTOR)][(int)(position.getX()/SCALING_FACTOR)] = 0;
-            worldMap.updateTile(locationToWorldgrid(position.getY()), locationToWorldgrid(position.getX()), EMPTY);
+            worldMap.worldGrid[(int)(position.getY()/SCALING_FACTOR)][(int)(position.getX()/SCALING_FACTOR)] = OPEN_DOOR;
+            worldMap.updateTile(locationToWorldgrid(position.getY()), locationToWorldgrid(position.getX()), OPEN_DOOR);
             knownTerrain[(int)(position.getY()/SCALING_FACTOR)][(int)(position.getX()/SCALING_FACTOR)] = 0;
             Random random = new Random();
             startTime = System.currentTimeMillis();
@@ -225,16 +231,15 @@ public class Intruder extends Agent{
             {
                 freezeTime = 5;
                 doorNoise = true;
-                //HERE A NOISE MUST BE MADE!!!!!
             }
             frozen = true;
         }
         //go through window
-        else if(worldMap.worldGrid[(int)(position.getY()/SCALING_FACTOR)][(int)(position.getX()/SCALING_FACTOR)] == 3)
+        else if(worldMap.worldGrid[(int)(position.getY()/SCALING_FACTOR)][(int)(position.getX()/SCALING_FACTOR)] == WINDOW)
         {
             startTime = System.currentTimeMillis();
-            worldMap.worldGrid[(int)(position.getY()/SCALING_FACTOR)][(int)(position.getX()/SCALING_FACTOR)] = 0;
-            worldMap.updateTile(locationToWorldgrid(position.getY()), locationToWorldgrid(position.getX()), EMPTY);
+            worldMap.worldGrid[(int)(position.getY()/SCALING_FACTOR)][(int)(position.getX()/SCALING_FACTOR)] = OPEN_WINDOW;
+            worldMap.updateTile(locationToWorldgrid(position.getY()), locationToWorldgrid(position.getX()), OPEN_WINDOW);
             freezeTime = 3;
             frozen = true;
         }
@@ -243,5 +248,27 @@ public class Intruder extends Agent{
     public Point[] getPoints()
     {
         return points;
+    }
+
+    public int[][] aStarTerrain(int[][] terrain) {
+        List<Point> walls = new ArrayList<Point>();
+        for(int i = 0; i < terrain.length; i++)
+        {
+            for(int j = 0; j < terrain[0].length; j++)
+            {
+                if(terrain[i][j] == STRUCTURE || terrain[i][j] == SENTRY || terrain[i][j] == WALL)
+                {
+                    Point wall = new Point(i, j);
+                    walls.add(wall);
+                }
+            }
+        }
+        int[][] blocks = new int[walls.size()][2];
+        for(int i = 0; i < walls.size(); i++)
+        {
+            blocks[i][0] = (int)walls.get(i).getY();
+            blocks[i][1] = (int)walls.get(i).getX();
+        }
+        return blocks;
     }
 }

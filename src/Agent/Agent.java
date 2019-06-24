@@ -526,20 +526,13 @@ public class Agent implements Runnable {
         {
             for(int j = 0; j < terrain[0].length; j++)
             {
-                if(terrain[i][j] == 1 || terrain[i][j] == 5 || terrain[i][j] == 7)
+                if(terrain[i][j] == STRUCTURE || terrain[i][j] == SENTRY || terrain[i][j] == WALL || terrain[i][j] == DOOR || terrain[i][j] == WINDOW)
                 {
                     Point wall = new Point(i, j);
-                    walls.add(wall); //WALL
+                    walls.add(wall);
                 }
             }
         }
-        //if(walls.size() == 0)
-        //{
-        //    System.out.println("adding corner");
-        //    Point corner = new Point(0, 0);
-        //    walls.add(corner);
-        //    System.out.println(walls.size());
-        //}
         int[][] blocks = new int[walls.size()][2];
         for(int i = 0; i < walls.size(); i++)
         {
