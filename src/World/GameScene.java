@@ -123,7 +123,7 @@ public class GameScene extends BorderPane implements Runnable {
                             worldMap.forceUpdateAgents();
 //                        long afterUpdatingAgents = System.nanoTime();
 //                        System.out.println("updating agentstook: " + ((afterUpdatingAgents-beforeUpdatingAgents)/1e9));
-                            pher.update();
+
 //                        long beforeDrawingBoard = System.nanoTime();
                             redrawBoard();
 //                        long afterDrawingBoard = System.nanoTime();
@@ -133,6 +133,7 @@ public class GameScene extends BorderPane implements Runnable {
                             long delta = (currentTime - previousTime);
 //                        System.out.println("drawing tick in: " + (delta/1e9));
                             previousTime = currentTime;
+                            pher.update(delta);
                             generateRandomSound(delta);
                             haveGuardsCapturedIntruder(mode, delta);
                             haveIntrudersWon(mode, delta);
