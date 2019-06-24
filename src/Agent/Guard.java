@@ -48,9 +48,9 @@ public class Guard extends Agent {
         this.visualRange[1] = 8;
 //        this.visualRange[1] = 20;
         this.color = Color.AZURE;
-        this.firstRunBehaviourTreeGuardLogic = true;
+        this.firstRunBehaviourTreeGuardLogic = true;=
         Routine guard1 = Routines.sequence(
-                Routines.moveTo(200,30)
+                Routines.moveTo(locationToWorldgrid(600),locationToWorldgrid(400))
 
                 // Routines.wander(worldMap,this)
         );
@@ -155,19 +155,25 @@ public class Guard extends Agent {
             oldTempGoal = tempGoal;
             int[][] blocks = aStarTerrain(knownTerrain);
             Astar pathMaker = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR),
-                    (int)(position.getY()/SCALING_FACTOR), (int)destX, (int)destY, blocks, this, false);
+                    (int)(position.getY()/SCALING_FACTOR), (int)destX, (int)destY, blocks, this);
             List<Node> path = pathMaker.findPath();
-            
-            if (path.size() <1)
-            {
+
+            if (path.size() < 1){
+
                 //change directon
-                double divisor = Math.abs(tempGoal.getY()-position.getY());
-                double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.getX()-position.getX())/divisor));
-                turnToFace(turnAngle-90);
+                destX += locationToWorldgrid(100)*(-1);
+                destY += locationToWorldgrid(100)*(-1);
+
+                updateDirection(direction+90);
+
+                updatePath();
+
 
                 return;
+
+
             }
-            
+
             if(!changed)
             {
                 tempGoal = new Point2D((path.get(path.size()-1).row*SCALING_FACTOR)+(SCALING_FACTOR/2),
@@ -181,7 +187,7 @@ public class Guard extends Agent {
                 }
             }
         //    wallPhaseDetection();
-        //    cornerCorrection();
+           cornerCorrection();
             double divisor = Math.abs(tempGoal.getY()-position.getY());
             double preDivisor = Math.abs(previousTempGoal.getY()-tempGoal.getY());
             if(divisor == 0)

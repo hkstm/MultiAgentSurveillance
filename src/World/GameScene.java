@@ -62,6 +62,8 @@ public class GameScene extends BorderPane implements Runnable {
     private long firstVisitTime;
 
     private boolean paused;
+    private Pheromones pher;
+    private boolean pherActive = true;
 
     public GameScene(Stage primaryStage, Settings settings) {
         this.grid = new GridPane(); //main grid that shows the tiles
@@ -85,15 +87,27 @@ public class GameScene extends BorderPane implements Runnable {
 
         this.startGameBut = new Button("Start/Stop Game"); //should stop and start game, not properly working atm
         Agent.worldMap = worldMap;
-        Guard guard  = new Guard(new Point2D(200, 300), 70);
-        Intruder intruder = new Intruder(new Point2D(900, 500), 0);
-        AreaOptimizer areaOptimizer = new AreaOptimizer(new Point2D(520, 210), 0);
+        Guard guard1  = new Guard(new Point2D(200, 300), 70);
+        Guard guard2  = new Guard(new Point2D(500, 100), 100);
+        Intruder intruder = new Intruder(new Point2D(500, 500), 0);
+        AreaOptimizer areaOptimzer = new AreaOptimizer(new Point2D(500, 400), 0);
 //        worldMap.addAgent(guard);
 //        worldMap.addAgent(intruder);
-//        worldMap.addOnlyAgent(guard);
+        worldMap.addOnlyAgent(guard1);
+        worldMap.addOnlyAgent(guard2);
         worldMap.addOnlyAgent(intruder);
-//        worldMap.addOnlyAgent(areaOptimizer);
 
+        ArrayList<Guard> guards = new ArrayList<Guard>();
+        ArrayList<Intruder> intruders = new ArrayList<Intruder>();
+
+        guards.add(guard1);
+        guards.add(guard2);
+        intruders.add(intruder);
+
+        this.pher = new Pheromones(worldMap);
+        pher.setAgents(guards,intruders);
+
+        //worldMap.addOnlyAgent(areaOptimzer);
         //Actual game "loop" in here
         startGameBut.setOnAction(e -> { //
             currentTimeCountDown = System.nanoTime();
@@ -121,6 +135,7 @@ public class GameScene extends BorderPane implements Runnable {
                             long delta = (currentTime - previousTime);
 //                        System.out.println("drawing tick in: " + (delta/1e9));
                             previousTime = currentTime;
+                            pher.update(delta);
                             generateRandomSound(delta);
                             haveGuardsCapturedIntruder(mode, delta);
                             haveIntrudersWon(mode, delta);
@@ -192,7 +207,12 @@ public class GameScene extends BorderPane implements Runnable {
         }
     }
 
-    public void createTiles() {
+    public void drawTileShapes() {
+        worldMap.createWorldGridShapes();
+        agentGroup.getChildren().addAll(worldMap.getWorldGridShapes());
+    }
+
+    public void initTiles() {
         for (int r = 0; r < worldMap.getSize(); r++) {
             for (int c = 0; c < worldMap.getSize(); c++) {
                 TileView tmpView = null;
@@ -263,6 +283,15 @@ public class GameScene extends BorderPane implements Runnable {
                     }
                 }
             }
+            countDown = true;
+        } else {
+            countDown = false;
+        }
+        if(visitedTarget && (System.nanoTime() - firstVisitTime) > (3*1e9)) {
+            intrudersWon = true;
+        }
+        if(intrudersWon) {
+            createAlert("INTRUDER has reached TARGET");
         }
     }
 

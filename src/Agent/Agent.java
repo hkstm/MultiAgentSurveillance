@@ -356,6 +356,7 @@ public class Agent implements Runnable {
                     System.out.println("Agent heard sound");
                 }
             }
+
         }
     }
 

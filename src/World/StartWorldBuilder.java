@@ -18,7 +18,7 @@ public class StartWorldBuilder extends Application {
     public static void main(String[] args) {launch(args);}
     private Stage primaryStage;
     private SettingsScene settingsScene;
-    public static int WINDOW_SIZE = 1000; //do not change this
+    public static int WINDOW_SIZE = 750;
 
 
     @Override

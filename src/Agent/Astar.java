@@ -17,9 +17,12 @@ import static World.WorldMap.UNEXPLORED;
 
 import java.awt.Point;
 
+public static WorldMap worldMap;
+import java.util.ArrayList;
+import java.util.PriorityQueue;
+
 public class Astar {
 
-    public static WorldMap worldMap;
     public static final int diaCost = 14;
     public static final int vhCost = 10;
     private Node[][] grid;
