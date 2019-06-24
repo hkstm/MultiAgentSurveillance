@@ -189,7 +189,7 @@ public class Intruder extends Agent{
             knownTerrain[(int)(position.getY()/SCALING_FACTOR)][(int)(position.getX()/SCALING_FACTOR)] = 0;
             Random random = new Random();
             startTime = System.currentTimeMillis();
-            if(Math.random() > 0.5)
+            if(Math.sqrt((Math.pow(goalPosition.getX()-position.getX(), 2))+(Math.pow(goalPosition.getY()-position.getY(), 2))) < 200)
             {
                 freezeTime = (random.nextGaussian()*2+12);
             }
