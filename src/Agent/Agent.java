@@ -33,8 +33,8 @@ public class Agent implements Runnable{
     public static final double SOUND_NOISE_STDEV =  10;  //stndard dev of normal distributed noise
     public static final double STRUCTURE_VIS_RANGE = 10;
     public static final double SENTRY_VIS_RANGE = 18;
-    public static final int AMOUNT_OF_VISION_TENTACLES = 50;
-    public static final int TENTACLE_INCREMENTS = 50;
+    public static final int AMOUNT_OF_VISION_TENTACLES = 80;
+    public static final int TENTACLE_INCREMENTS = 80;
     public static final double MAX_TURNING_PER_SECOND = 180; //degrees
     public static final double MAX_NONBLIND_TURNING_PER_SECOND = 45; //degrees
     public static final double MAX_TURNING_WHILE_SPRINTING = 10;
@@ -389,36 +389,30 @@ public class Agent implements Runnable{
     }
 
     public Shape createCone(double minVisRange, double maxVisRange, double viewingAngle, double direction) {
+
         double x = position.getX();
         double y = position.getY();
         double visualRangeMin = minVisRange * SCALING_FACTOR; //max visionRange
         double visualRangeMax = maxVisRange * SCALING_FACTOR; //max visionRange
         double[] collisionPoints = new double[((AMOUNT_OF_VISION_TENTACLES) * 2)];
-
+        long initTime = System.nanoTime();
         for(int i = 1; i < AMOUNT_OF_VISION_TENTACLES; i++) {
             double decreaseInVision = 0;
-//            tentacleincrementloop:
             for(int j = 1; j < TENTACLE_INCREMENTS; j++) {
-                Line tentacle = new Line();
                 double xLeftBotLine = x;
                 double yLeftBotLine = y;
                 if(visualRangeMin != 0) {
                     double angdeg = (direction - viewingAngle / 2) + (viewingAngle / AMOUNT_OF_VISION_TENTACLES) * i;
                     xLeftBotLine = x + (visualRangeMin * Math.cos(Math.toRadians(angdeg)));
                     yLeftBotLine = y + (visualRangeMin * Math.sin(Math.toRadians(angdeg)));
-                    tentacle.setStartX(xLeftBotLine);
-                    tentacle.setStartY(yLeftBotLine);
-                } else {
-                    tentacle.setStartX(x);
-                    tentacle.setStartY(y);
                 }
                 double angdeg = (direction - viewingAngle / 2) + (viewingAngle / (AMOUNT_OF_VISION_TENTACLES - 1)) * i;
                 double xLeftTopLine = x + (visualRangeMax * (double)j/(double)(TENTACLE_INCREMENTS-1) * Math.cos(Math.toRadians(angdeg)));
                 double yLeftTopLine = y + (visualRangeMax * (double)j/(double)(TENTACLE_INCREMENTS-1) * Math.sin(Math.toRadians(angdeg)));
-                xLeftTopLine = (Math.abs(x - xLeftTopLine) < Math.abs(x - xLeftBotLine)) ? xLeftBotLine : xLeftTopLine;
-                yLeftTopLine = (Math.abs(y - yLeftTopLine) < Math.abs(y - yLeftBotLine)) ? yLeftBotLine : yLeftTopLine;
-                tentacle.setEndX(xLeftTopLine);
-                tentacle.setEndY(yLeftTopLine);
+                if(visualRangeMin != 0) {
+                    xLeftTopLine = (Math.abs(x - xLeftTopLine) < Math.abs(x - xLeftBotLine)) ? xLeftBotLine : xLeftTopLine;
+                    yLeftTopLine = (Math.abs(y - yLeftTopLine) < Math.abs(y - yLeftBotLine)) ? yLeftBotLine : yLeftTopLine;
+                }
                 if(worldMap.checkTile(locationToWorldgrid(yLeftTopLine), locationToWorldgrid(xLeftTopLine), DECREASED_VIS_RANGE)) {
                     decreaseInVision += (1*DECREASE_IN_VISION);
                 }
@@ -426,12 +420,12 @@ public class Agent implements Runnable{
                     collisionPoints[((i-1)*2)+0] = xLeftTopLine; //(i-1 instead of i because outer for loop starts at 1)
                     collisionPoints[((i-1)*2)+1] = yLeftTopLine;
                     knownTerrain[locationToWorldgrid(yLeftTopLine)][locationToWorldgrid(xLeftTopLine)] = worldMap.getTileState(locationToWorldgrid(yLeftTopLine), locationToWorldgrid(xLeftTopLine));
-//                    break tentacleincrementloop;
                     break;
                 }
             }
         }
-
+        long tentacleTime = System.nanoTime();
+        System.out.println("init-tent: " + (tentacleTime-initTime)/1e9);
         collisionPoints[collisionPoints.length-1] = y + (visualRangeMin * Math.sin(Math.toRadians(direction - viewingAngle/2)));
         collisionPoints[collisionPoints.length-2] = x + (visualRangeMin * Math.cos(Math.toRadians(direction - viewingAngle/2)));
         collisionPoints[collisionPoints.length-3] = y + (visualRangeMin * Math.sin(Math.toRadians(direction + viewingAngle/2)));
