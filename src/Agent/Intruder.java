@@ -2,19 +2,16 @@ package Agent;
 import javafx.scene.paint.Color;
 
 import javafx.geometry.Point2D;
+
+import javax.swing.*;
 import java.awt.Point;
 import java.util.Random;
 import java.util.ArrayList;
 import java.util.List;
+
+import static World.GameScene.ASSUMED_WORLDSIZE;
 import static World.GameScene.SCALING_FACTOR;
-import static World.WorldMap.EMPTY;
-import static World.WorldMap.WALL;
-import static World.WorldMap.DOOR;
-import static World.WorldMap.OPEN_DOOR;
-import static World.WorldMap.WINDOW;
-import static World.WorldMap.OPEN_WINDOW;
-import static World.WorldMap.SENTRY;
-import static World.WorldMap.STRUCTURE;
+import static World.WorldMap.*;
 
 /**
  * A subclass of Agent for the Intruders
@@ -32,7 +29,8 @@ public class Intruder extends Agent{
     private boolean first;
     private int alternatingCounter;
     private boolean modify;
-    private boolean inDanger;
+    private double runTime = 5;
+    private double walkTime = 10;
 
 
 
@@ -77,142 +75,170 @@ public class Intruder extends Agent{
 
     public void gameTreeIntruder(double timeStep)
     {
-        inDanger = false;
         double walkingDistance = (BASE_SPEED *SCALING_FACTOR*timeStep);
         double sprintingDistance = (SPRINT_SPEED *SCALING_FACTOR*timeStep);
-        for(int i = 0 ; i < worldMap.getAgents().size() ; i++)
+        updateWalls();
+        if(!frozen)
         {
-            if(worldMap.getAgents().get(i).getClass() != Intruder.class && viewingCone.contains(worldMap.getAgents().get(i).position))
-            {
-                inDanger = true;
-                double distanceToGuard = Math.sqrt((Math.pow(worldMap.getAgents().get(i).position.getX()-position.getX(), 2))+(Math.pow((worldMap.getAgents().get(i).position.getY()-position.getY()), 2)));
-                double distanceToTarget = Math.sqrt((Math.pow(goalPosition.getX()-position.getX(), 2))+(Math.pow((goalPosition.getY()-position.getY()), 2)));
-                if(distanceToTarget < distanceToGuard/2 && tired) //go to target
-                {
-                    if(legalMoveCheck(walkingDistance))
-                    {
-                        long nowMillis = System.currentTimeMillis();
-                        int countSec = (int)((nowMillis - this.createdMillis) / 1000);
-                        if (countSec != walkCounter) {
-                            move(walkingDistance);
-                        }
-                        else{
-                            tired = false;
-                            walkCounter += 15;
-                        }
-                    }
-                }
-                else if(distanceToTarget < distanceToGuard && !tired) //sprint to target
-                {
-                    if(legalMoveCheck(sprintingDistance))
-                    {
-                        long nowMillis = System.currentTimeMillis();
-                        int countSec = (int)((nowMillis - this.createdMillis) / 1000);
-                        if (countSec != sprintCounter){
-                            move(sprintingDistance);
-                        }
-                        else{
-                            tired = true;
-                            sprintCounter = sprintCounter + 15;
-                        }
-                    }
-                }
-            }
+            open();
         }
-        if(!inDanger)
+        if(oldTempGoal != null)
         {
-            updateWalls();
-            if(!frozen)
+            checkChangedStatus();
+        }
+        double elapsedTime = (System.currentTimeMillis()-startTime)/1000;
+        if(elapsedTime > freezeTime)
+        {
+            frozen = false;
+            startTime = 0;
+            freezeTime = 0;
+            oldTempGoal = tempGoal;
+            int[][] blocks = aStarTerrain(knownTerrain);
+            Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks, this, modify);
+            List<Node> path = pathFinder.findPath();
+            if(!changed)
             {
-                open();
+                tempGoal = new Point2D((path.get(path.size()-1).row*SCALING_FACTOR)+(SCALING_FACTOR/2), (path.get(path.size()-1).column*SCALING_FACTOR)+(SCALING_FACTOR/2));
+                if (path.size() > 1) {
+                    previousTempGoal = new Point2D((path.get(path.size() - 2).row * SCALING_FACTOR) + (SCALING_FACTOR / 2), (path.get(path.size() - 2).column * SCALING_FACTOR) + (SCALING_FACTOR / 2));
+                }
+                else{
+                    previousTempGoal = tempGoal;
+                }
             }
-            if(oldTempGoal != null)
+            wallPhaseDetection();
+            cornerCorrection();
+            double divisor = Math.abs(tempGoal.getY()-position.getY());
+            double preDivisor = Math.abs(previousTempGoal.getY()-tempGoal.getY());
+            if(divisor == 0)
             {
-                checkChangedStatus();
+                divisor++;
             }
-            double elapsedTime = (System.currentTimeMillis()-startTime)/1000;
-            if(elapsedTime > freezeTime)
+            else if (preDivisor == 0){
+                preDivisor++;
+            }
+            double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.getX()-position.getX())/divisor));
+            performTurn(turnAngle);
+            if(oldPos == null)
             {
-                frozen = false;
-                startTime = 0;
-                freezeTime = 0;
-                oldTempGoal = tempGoal;
-                int[][] blocks = aStarTerrain(knownTerrain);
-                Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks, this, modify);
-                List<Node> path = pathFinder.findPath();
-                if(!changed)
-                {
-                    tempGoal = new Point2D((path.get(path.size()-1).row*SCALING_FACTOR)+(SCALING_FACTOR/2), (path.get(path.size()-1).column*SCALING_FACTOR)+(SCALING_FACTOR/2));
-                    if (path.size() > 1) {
-                        previousTempGoal = new Point2D((path.get(path.size() - 2).row * SCALING_FACTOR) + (SCALING_FACTOR / 2), (path.get(path.size() - 2).column * SCALING_FACTOR) + (SCALING_FACTOR / 2));
+                tempOldPos = new Point((int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR));
+                first = true;
+            }
+            else
+            {
+                tempOldPos = new Point((int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR));
+                first = false;
+            }
+            int wallCount = 0;
+            double sprintPercent = 0;
+            double random = Math.random();
+            int rangeYTop = 2;
+            int rangeXLeft = 2;
+            int rangeXRight = 2;
+            int rangeYButtom = 2;
+            //System.out.println("x: " + locationToWorldgrid(position.getX()) + "y: " + locationToWorldgrid(position.getY()));
+            if(locationToWorldgrid(position.getX()) - 2 < 0 ){
+                rangeXLeft = 1;
+            }else if (locationToWorldgrid(position.getY()) - 2 < 0){
+                rangeYTop = 1;
+            }else if (locationToWorldgrid(position.getX()) + 2 > knownTerrain.length){
+                rangeXRight = 1;
+            }else if (locationToWorldgrid(position.getY()) + 2 > knownTerrain[0].length){
+                rangeYButtom = 1;
+            }
+            for (int r = locationToWorldgrid(position.getY()) - rangeYTop; r < locationToWorldgrid(position.getY()) + rangeYButtom; r++) {
+                for (int c = locationToWorldgrid(position.getX()) - rangeXLeft; c < locationToWorldgrid(position.getX()) + rangeXRight; c++) {
+                    // System.out.println(knownTerrain[r][c]);
+                    if (knownTerrain[r][c] == WALL) {
+                        wallCount++;
                     }
-                    else{
-                        previousTempGoal = tempGoal;
+                }
+            }
+            if (wallCount == 0) {
+                sprintPercent = 1.0;
+            } else if (wallCount < 5) {
+                sprintPercent = 0.9;
+            } else if (wallCount > 5 && wallCount < 10) {
+                sprintPercent = 0.5;
+            } else if (wallCount > 10) {
+                sprintPercent = 0.0;
+            }
+            //  System.out.println("wall cout" + wallCount);
+//            System.out.println("sprint percent" + sprintPercent);
+            for (Agent agent : worldMap.getAgents()) {
+                if (agent instanceof Guard && viewingCone.contains(agent.getPosition()) && !tired) {
+                    updateDirection(direction + 180);
+                    if (legalMoveCheck(sprintingDistance)) {
+                        runTime -= timeStep;
+                        move(sprintingDistance);
+                        if (runTime < 0){
+                            tired = true;
+                            runTime = 5;
+                        }
                     }
                 }
-                wallPhaseDetection();
-                cornerCorrection();
-                double divisor = Math.abs(tempGoal.getY()-position.getY());
-                double preDivisor = Math.abs(previousTempGoal.getY()-tempGoal.getY());
-                if(divisor == 0)
-                {
-                    divisor++;
+                else if (agent instanceof Guard && viewingCone.contains(agent.getPosition()) && tired){
+                    updateDirection(direction + 180);
+                    if (legalMoveCheck(walkingDistance)){
+                        walkTime -= timeStep;
+                        move(walkingDistance);
+                        if (walkTime < 0){
+                            tired = false;
+                            walkTime = 10;
+                        }
+                    }
                 }
-                else if (preDivisor == 0){
-                    preDivisor++;
+                else if (random <= sprintPercent && !tired) {
+                    if (legalMoveCheck(sprintingDistance)) {
+                        runTime = runTime - timeStep;
+                        // System.out.println("sprint time" + runTime);
+                        move(sprintingDistance);
+                        // System.out.println("sprint percent: " + sprintPercent + "tired?: " + tired + "im sprinting");
+                        if (runTime < 0) {
+                            tired = true;
+                            runTime = 5;
+                        }
+                    }
+                } else if (tired) {
+                    if (legalMoveCheck(walkingDistance)) {
+                        walkTime -= timeStep;
+                        //  System.out.println("walk time" + walkTime);
+                        // System.out.println("sprint percent: " + sprintPercent + "tired?: " + tired + "im walking");
+                        move(walkingDistance);
+                        if (walkTime < 0) {
+                            tired = false;
+                            walkTime = 10;
+                        }
+                    }
+                } else if (viewingCone.contains(goalPosition) && !tired) {
+                    move(walkingDistance);
+                } else {
+                    if (legalMoveCheck(walkingDistance)) {
+                        //  System.out.println("sprint percent: " + sprintPercent + "tired?: " + tired + "im walking");
+                        move(walkingDistance);
+                    }
                 }
-                double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.getX()-position.getX())/divisor));
-                double previousAngle = Math.toDegrees(Math.atan(Math.abs(previousTempGoal.getX()-tempGoal.getX())/preDivisor));
-                double finalAngle = previousAngle - turnAngle;
-                if(tempGoal.getX() >= position.getX() && tempGoal.getY() <= position.getY())
+            }
+            modify = false;
+            if(tempOldPos.x != (int)(position.getX()/SCALING_FACTOR) || tempOldPos.y != (int)(position.getY()/SCALING_FACTOR))
+            {
+                if(!first && oldPos.x == (int)(position.getX()/SCALING_FACTOR) && oldPos.y == (int)(position.getY()/SCALING_FACTOR))
                 {
-                    turnToFace(turnAngle-90);
-                }
-                else if(tempGoal.getX() >= position.getX() && tempGoal.getY() > position.getY())
-                {
-                    turnToFace(90-turnAngle);
-                }
-                else if(tempGoal.getX() < position.getX() && tempGoal.getY() > position.getY())
-                {
-                    turnToFace(90+turnAngle);
-                }
-                else if(tempGoal.getX() < position.getX() && tempGoal.getY() <= position.getY())
-                {
-                    turnToFace(270-turnAngle);
-                }
-
-                if(oldPos == null)
-                {
-                    tempOldPos = new Point((int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR));
-                    first = true;
+                    alternatingCounter++;
                 }
                 else
                 {
-                    tempOldPos = new Point((int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR));
-                    first = false;
-                }
-                travel(walkingDistance, sprintingDistance);
-                modify = false;
-                if(tempOldPos.x != (int)(position.getX()/SCALING_FACTOR) || tempOldPos.y != (int)(position.getY()/SCALING_FACTOR))
-                {
-                    if(!first && oldPos.x == (int)(position.getX()/SCALING_FACTOR) && oldPos.y == (int)(position.getY()/SCALING_FACTOR))
-                    {
-                        alternatingCounter++;
-                    }
-                    else
-                    {
-                        alternatingCounter = 0;
-                    }
-                }
-                if(alternatingCounter == 6)
-                {
                     alternatingCounter = 0;
-                    modify = true;
-                    points[0] = oldPos;
-                    points[1] = tempOldPos;
                 }
-                oldPos = tempOldPos;
             }
+            if(alternatingCounter == 6)
+            {
+                alternatingCounter = 0;
+                modify = true;
+                points[0] = oldPos;
+                points[1] = tempOldPos;
+            }
+            oldPos = tempOldPos;
         }
     }
 
@@ -225,7 +251,7 @@ public class Intruder extends Agent{
             knownTerrain[(int)(position.getY()/SCALING_FACTOR)][(int)(position.getX()/SCALING_FACTOR)] = 0;
             Random random = new Random();
             startTime = System.currentTimeMillis();
-            if(Math.random() > 0.5)
+            if(Math.sqrt((Math.pow(goalPosition.getX()-position.getX(), 2))+(Math.pow(goalPosition.getY()-position.getY(), 2))) < 200)
             {
                 freezeTime = (random.nextGaussian()*2+12);
             }
@@ -271,41 +297,6 @@ public class Intruder extends Agent{
             blocks[i][1] = (int)walls.get(i).getX();
         }
         return blocks;
-    }
-
-    public void travel(double walkingDistance, double sprintingDistance)
-    {
-        if(!tired)
-        {
-
-            if(legalMoveCheck(sprintingDistance))
-            {
-                long nowMillis = System.currentTimeMillis();
-                int countSec = (int)((nowMillis - this.createdMillis) / 1000);
-                if (countSec != sprintCounter){
-                    move(sprintingDistance);
-                }
-                else{
-                    tired = true;
-                    sprintCounter = sprintCounter + 15;
-                }
-            }
-        }
-        if (tired)
-        {
-            if(legalMoveCheck(walkingDistance))
-            {
-                long nowMillis = System.currentTimeMillis();
-                int countSec = (int)((nowMillis - this.createdMillis) / 1000);
-                if (countSec != walkCounter) {
-                    move(walkingDistance);
-                }
-                else{
-                    tired = false;
-                    walkCounter += 15;
-                }
-            }
-        }
     }
 }
 
