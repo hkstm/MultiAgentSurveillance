@@ -103,7 +103,6 @@ public class GameScene extends BorderPane implements Runnable {
         worldMap.addOnlyAgent(stupidGuard);
 //        worldMap.addOnlyAgent(straightLiner);
         this.pher = new Pheromones(worldMap);
-       // pher.setAgents(guards,intruders);
 
         //worldMap.addOnlyAgent(areaOptimzer);
         //Actual game "loop" in here
@@ -126,12 +125,12 @@ public class GameScene extends BorderPane implements Runnable {
 
 //                        long beforeDrawingBoard = System.nanoTime();
                             redrawBoard();
-//                        long afterDrawingBoard = System.nanoTime();
-//                        System.out.println("redrawing board took: " + ((afterDrawingBoard-beforeDrawingBoard)/1e9));
+    //                        long afterDrawingBoard = System.nanoTime();
+    //                        System.out.println("redrawing board took: " + ((afterDrawingBoard-beforeDrawingBoard)/1e9));
 
 
                             long delta = (currentTime - previousTime);
-//                        System.out.println("drawing tick in: " + (delta/1e9));
+    //                        System.out.println("drawing tick in: " + (delta/1e9));
                             previousTime = currentTime;
                             pher.update(delta);
                             generateRandomSound(delta);
