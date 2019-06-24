@@ -105,7 +105,7 @@ public class Agent implements Runnable {
      */
 
     public Agent(Point2D position, double direction) {
-        System.out.println("agent constructor called");
+//        System.out.println("agent constructor called");
         this.position = position;
         this.direction = direction;
         this.color = Color.LIGHTSEAGREEN;
@@ -119,7 +119,7 @@ public class Agent implements Runnable {
             }
         }
         if(goalSet == false) {
-            System.out.println("No Target");
+//            System.out.println("No Target");
         }
         this.visualRange = new double[2];
         this.firstRun = true;
@@ -343,8 +343,8 @@ public class Agent implements Runnable {
         for(Agent agent : worldMap.getAgents()) {
             if(position.distance(agent.getPosition()) != 0) { //to not add hearing "ourselves" to our log tho a path that we have taken might be something that we want store in the end
                 boolean soundHeard = false;
-                double angleBetweenPoints = Math.toDegrees(Math.atan2((agent.getPosition().getY() - position.getY()), (agent.getPosition().getX() - position.getX())));
-                angleBetweenPoints += new Random().nextGaussian()*SOUND_NOISE_STDEV;
+                double soundDirection = Math.toDegrees(Math.atan2((agent.getPosition().getY() - position.getY()), (agent.getPosition().getX() - position.getX())));
+                soundDirection += new Random().nextGaussian()*SOUND_NOISE_STDEV;
                 if(position.distance(agent.getPosition()) < SCALING_FACTOR * SOUNDRANGE_FAR && agent.currentSpeed > WALK_SPEED_FAST) {
                     soundHeard = true;
                 } else if(position.distance(agent.getPosition()) < SCALING_FACTOR * SOUNDRANGE_MEDIUMFAR && agent.currentSpeed > WALK_SPEED_MEDIUMFAST) {
@@ -359,7 +359,7 @@ public class Agent implements Runnable {
                     soundHeard = true;
                 }
                 if(soundHeard){
-                    audioLogs.add(new AudioLog(System.nanoTime(), angleBetweenPoints, new Point2D(position.getX(), position.getY())));
+                    audioLogs.add(new AudioLog(System.nanoTime(), soundDirection, new Point2D(position.getX(), position.getY())));
 
                 }
             }
