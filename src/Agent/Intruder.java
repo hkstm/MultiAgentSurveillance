@@ -142,7 +142,10 @@ public class Intruder extends Agent{
                 tempOldPos = new Point((int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR));
                 first = true;
             }
-            else
+            else if (preDivisor == 0){
+                preDivisor++;
+            }
+            if(tempGoal.getX() >= position.getX() && tempGoal.getY() <= position.getY())
             {
                 tempOldPos = new Point((int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR));
                 first = false;

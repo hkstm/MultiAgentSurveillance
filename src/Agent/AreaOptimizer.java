@@ -8,6 +8,11 @@ import javafx.scene.shape.Shape;
 import static World.GameScene.SCALING_FACTOR;
 import static World.GameScene.random;
 import static World.WorldMap.*;
+import javafx.geometry.Point2D;
+import javafx.scene.shape.Shape;
+
+import static World.GameScene.SCALING_FACTOR;
+import static World.WorldMap.isVisionObscuring;
 
 import java.awt.Point;
 import java.util.ArrayList;
