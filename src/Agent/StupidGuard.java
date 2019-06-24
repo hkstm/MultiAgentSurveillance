@@ -50,7 +50,6 @@ public class StupidGuard extends Guard{
             } else {
                 Point2D newPositionToGo = null;
                 do {
-                    System.out.println("direction not empty: " + directionToGo);
                     directionToGo = random.nextDouble() * 360;
                     newPositionToGo = new Point2D((position.getX() + (walkingDistance * Math.cos(Math.toRadians(directionToGo)))), (position.getY() + (walkingDistance * Math.sin(Math.toRadians(directionToGo)))));
                 } while (!isEmpty(worldMap.getTileState(locationToWorldgrid(newPositionToGo.getY()), locationToWorldgrid(newPositionToGo.getX()))));
@@ -58,7 +57,6 @@ public class StupidGuard extends Guard{
             }
         } else {
             System.out.println("turning to direction: " + directionToGo);
-            System.out.println("current direction: " + direction);
             updateDirection(directionToGo);
 
             double abs = Math.abs(direction - directionToGo);
