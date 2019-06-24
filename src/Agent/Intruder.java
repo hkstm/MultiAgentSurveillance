@@ -80,6 +80,45 @@ public class Intruder extends Agent{
         inDanger = false;
         double walkingDistance = (BASE_SPEED *SCALING_FACTOR*timeStep);
         double sprintingDistance = (SPRINT_SPEED *SCALING_FACTOR*timeStep);
+        for(int i = 0 ; i < worldMap.getAgents().size() ; i++)
+        {
+            if(worldMap.getAgents().get(i).getClass() != Intruder.class && viewingCone.contains(worldMap.getAgents().get(i).position))
+            {
+                inDanger = true;
+                double distanceToGuard = Math.sqrt((Math.pow(worldMap.getAgents().get(i).position.getX()-position.getX(), 2))+(Math.pow((worldMap.getAgents().get(i).position.getY()-position.getY()), 2)));
+                double distanceToTarget = Math.sqrt((Math.pow(goalPosition.getX()-position.getX(), 2))+(Math.pow((goalPosition.getY()-position.getY()), 2)));
+                if(distanceToTarget < distanceToGuard/2 && tired) //go to target
+                {
+                    if(legalMoveCheck(walkingDistance))
+                    {
+                        long nowMillis = System.currentTimeMillis();
+                        int countSec = (int)((nowMillis - this.createdMillis) / 1000);
+                        if (countSec != walkCounter) {
+                            move(walkingDistance);
+                        }
+                        else{
+                            tired = false;
+                            walkCounter += 15;
+                        }
+                    }
+                }
+                else if(distanceToTarget < distanceToGuard && !tired) //sprint to target
+                {
+                    if(legalMoveCheck(sprintingDistance))
+                    {
+                        long nowMillis = System.currentTimeMillis();
+                        int countSec = (int)((nowMillis - this.createdMillis) / 1000);
+                        if (countSec != sprintCounter){
+                            move(sprintingDistance);
+                        }
+                        else{
+                            tired = true;
+                            sprintCounter = sprintCounter + 15;
+                        }
+                    }
+                }
+            }
+        }
         if(!inDanger)
         {
             updateWalls();
@@ -141,62 +180,18 @@ public class Intruder extends Agent{
                 {
                     turnToFace(270-turnAngle);
                 }
+
                 if(oldPos == null)
                 {
                     tempOldPos = new Point((int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR));
                     first = true;
                 }
-                else if (preDivisor == 0){
-                    preDivisor++;
-                }
-                if(tempGoal.getX() >= position.getX() && tempGoal.getY() <= position.getY())
+                else
                 {
                     tempOldPos = new Point((int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR));
                     first = false;
                 }
-                int wallCount = 0;
-                int sprintPercent = 0;
-//            for (int i = locationToWorldgrid(position.getX() - 2 ); i < locationToWorldgrid(position.getX() + 2 ); i++){
-//                for (int j = locationToWorldgrid(position.getY() - 2); j < locationToWorldgrid(position.getY() + 2); j++){
-//                    if (knownTerrain[i][j] == WALL){
-//                        wallCount++;
-//                    }
-//                    if (wallCount > 10 ){
-//                        sprintPercent = Math.random()
-//                    }
-//                }
-//            }
-                if(!tired)
-                {
-
-                    if(legalMoveCheck(sprintingDistance))
-                    {
-                        long nowMillis = System.currentTimeMillis();
-                        int countSec = (int)((nowMillis - this.createdMillis) / 1000);
-                        if (countSec != sprintCounter){
-                            move(sprintingDistance);
-                        }
-                        else{
-                            tired = true;
-                            sprintCounter = sprintCounter + 15;
-                        }
-                    }
-                }
-                if (tired)
-                {
-                    if(legalMoveCheck(walkingDistance))
-                    {
-                        long nowMillis = System.currentTimeMillis();
-                        int countSec = (int)((nowMillis - this.createdMillis) / 1000);
-                        if (countSec != walkCounter) {
-                            move(walkingDistance);
-                        }
-                        else{
-                            tired = false;
-                            walkCounter += 15;
-                        }
-                    }
-                }
+                travel(walkingDistance, sprintingDistance);
                 modify = false;
                 if(tempOldPos.x != (int)(position.getX()/SCALING_FACTOR) || tempOldPos.y != (int)(position.getY()/SCALING_FACTOR))
                 {
@@ -279,4 +274,40 @@ public class Intruder extends Agent{
         }
         return blocks;
     }
+
+    public void travel(double walkingDistance, double sprintingDistance)
+    {
+        if(!tired)
+        {
+
+            if(legalMoveCheck(sprintingDistance))
+            {
+                long nowMillis = System.currentTimeMillis();
+                int countSec = (int)((nowMillis - this.createdMillis) / 1000);
+                if (countSec != sprintCounter){
+                    move(sprintingDistance);
+                }
+                else{
+                    tired = true;
+                    sprintCounter = sprintCounter + 15;
+                }
+            }
+        }
+        if (tired)
+        {
+            if(legalMoveCheck(walkingDistance))
+            {
+                long nowMillis = System.currentTimeMillis();
+                int countSec = (int)((nowMillis - this.createdMillis) / 1000);
+                if (countSec != walkCounter) {
+                    move(walkingDistance);
+                }
+                else{
+                    tired = false;
+                    walkCounter += 15;
+                }
+            }
+        }
+    }
 }
+

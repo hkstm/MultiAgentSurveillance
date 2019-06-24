@@ -94,7 +94,6 @@ public class Agent implements Runnable {
     protected double turningLeft;
 
     private boolean goalSet = false;
-    private int alternatingCounter = 0;
     protected Point[] points = new Point[2];
     protected boolean doorNoise;
 

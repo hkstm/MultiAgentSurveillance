@@ -13,7 +13,6 @@ import static World.GameScene.SCALING_FACTOR;
 import static World.WorldMap.*;
 
 public class Pheromones {
-
     private Pcell [][] mapPhero;
     private WorldMap worldMap;
 
