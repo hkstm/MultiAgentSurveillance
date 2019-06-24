@@ -38,7 +38,7 @@ public class RunSimulation extends Application {
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Multi-Agent Surveillance - Simulation Only");
-        int amountOfSims = 3;
+        int amountOfSims = 100;
         worldFile = loadFile(primaryStage);
         for(int i = 0; i < amountOfSims; i++) {
             worldMap = loadMap(worldFile);
@@ -65,11 +65,9 @@ public class RunSimulation extends Application {
             StraightLiner straightLiner = new StraightLiner(new Point2D(20, 20), -45);
 //        worldMap.addAgent(guard);
 //        worldMap.addOnlyAgent(areaOptimizer);
-            worldMap.addOnlyAgent(stupidGuard);
-            worldMap.addOnlyAgent(straightLiner);;
 //        worldMap.addOnlyAgent(areaOptimizer);
-            worldMap.addOnlyAgent(stupidGuard);
-        worldMap.addOnlyAgent(straightLiner);
+//            worldMap.addOnlyAgent(stupidGuard);
+            worldMap.addOnlyAgent(straightLiner);
             //Actual game "loop" in here
             this.pher = new Pheromones(worldMap);
             System.out.println("doing simulation");
