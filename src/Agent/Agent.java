@@ -339,26 +339,25 @@ public class Agent implements Runnable {
      * Checks if we can hear other agents and if so add it personal memory with noise
      */
     public void checkForAgentSound(){
-        Point2D tmpPoint = getMove(1000, direction);
         for(Agent agent : worldMap.getAgents()) {
             if(position.distance(agent.getPosition()) != 0) { //to not add hearing "ourselves" to our log tho a path that we have taken might be something that we want store in the end
                 boolean soundHeard = false;
                 double angleBetweenPoints = Math.toDegrees(Math.atan2((agent.getPosition().getY() - position.getY()), (agent.getPosition().getX() - position.getX())));
                 angleBetweenPoints += new Random().nextGaussian()*SOUND_NOISE_STDEV;
-                if(position.distance(agent.getPosition()) < SOUNDRANGE_FAR && agent.currentSpeed > WALK_SPEED_FAST) {
+                if(position.distance(agent.getPosition()) < SCALING_FACTOR * SOUNDRANGE_FAR && agent.currentSpeed > WALK_SPEED_FAST) {
                     soundHeard = true;
-                } else if(position.distance(agent.getPosition()) < SOUNDRANGE_MEDIUMFAR && agent.currentSpeed > WALK_SPEED_MEDIUMFAST) {
+                } else if(position.distance(agent.getPosition()) < SCALING_FACTOR * SOUNDRANGE_MEDIUMFAR && agent.currentSpeed > WALK_SPEED_MEDIUMFAST) {
                     soundHeard = true;
-                } else if(position.distance(agent.getPosition()) < SOUNDRANGE_MEDIUM && agent.currentSpeed > WALK_SPEED_MEDIUM) {
+                } else if(position.distance(agent.getPosition()) < SCALING_FACTOR * SOUNDRANGE_MEDIUM && agent.currentSpeed > WALK_SPEED_MEDIUM) {
                     soundHeard = true;
-                } else if(position.distance(agent.getPosition()) < SOUNDRANGE_CLOSE && agent.currentSpeed > WALK_SPEED_SLOW) {
+                } else if(position.distance(agent.getPosition()) < SCALING_FACTOR * SOUNDRANGE_CLOSE && agent.currentSpeed > WALK_SPEED_SLOW) {
                     soundHeard = true;
                 } else if(agent.doorNoise == true){
                     soundHeard = true;
                 }
                 if(soundHeard){
                     audioLogs.add(new AudioLog(System.nanoTime(), angleBetweenPoints, new Point2D(position.getX(), position.getY())));
-                    System.out.println("Agent heard sound");
+
                 }
             }
 
