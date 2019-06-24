@@ -39,7 +39,6 @@ public class Astar {
         this.agent = agent;
         if(modify)
         {
-            System.out.println("here");
             pointsToModify.add(agent.points[0]);
             pointsToModify.add(agent.points[1]);
         }

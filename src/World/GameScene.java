@@ -62,6 +62,8 @@ public class GameScene extends BorderPane implements Runnable {
     private long firstVisitTime;
 
     private boolean paused;
+    private Pheromones pher;
+    private boolean pherActive = true;
 
     public GameScene(Stage primaryStage, Settings settings) {
         this.grid = new GridPane(); //main grid that shows the tiles
@@ -85,15 +87,18 @@ public class GameScene extends BorderPane implements Runnable {
 
         this.startGameBut = new Button("Start/Stop Game"); //should stop and start game, not properly working atm
         Agent.worldMap = worldMap;
-        Guard guard  = new Guard(new Point2D(900, 490), 0);
-        Intruder intruder = new Intruder(new Point2D(900, 500), 0);
-        AreaOptimizer areaOptimizer = new AreaOptimizer(new Point2D(520, 210), 0);
+//        Guard guard1  = new Guard(new Point2D(200, 300), 70);
+//        Guard guard2  = new Guard(new Point2D(500, 100), 100);
+        Intruder intruder = new Intruder(new Point2D(500, 520), 0);
+        AreaOptimizer areaOptimizer = new AreaOptimizer(new Point2D(500, 400), 0);
+        Guard stupidGuard = new StupidGuard(new Point2D(500, 500), 90);
 //        worldMap.addAgent(guard);
-//        worldMap.addAgent(intruder);
-        worldMap.addOnlyAgent(guard);
         worldMap.addOnlyAgent(intruder);
-//        worldMap.addOnlyAgent(areaOptimizer);
+        worldMap.addOnlyAgent(areaOptimizer);
+//        worldMap.addOnlyAgent(stupidGuard);
+        this.pher = new Pheromones(worldMap);
 
+        //worldMap.addOnlyAgent(areaOptimzer);
         //Actual game "loop" in here
         startGameBut.setOnAction(e -> { //
             currentTimeCountDown = System.nanoTime();
@@ -121,6 +126,7 @@ public class GameScene extends BorderPane implements Runnable {
                             long delta = (currentTime - previousTime);
 //                        System.out.println("drawing tick in: " + (delta/1e9));
                             previousTime = currentTime;
+                            pher.update(delta);
                             generateRandomSound(delta);
                             haveGuardsCapturedIntruder(mode, delta);
                             haveIntrudersWon(mode, delta);
@@ -184,8 +190,8 @@ public class GameScene extends BorderPane implements Runnable {
         for (int r = 0; r < worldMap.getSize(); r++) {
             for (int c = 0; c < worldMap.getSize(); c++) {
                 TileView tmpView = new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c));
-//                tmpView.setCache(true);
-//                tmpView.setCacheHint(CacheHint.SPEED);
+                tmpView.setCache(true);
+                tmpView.setCacheHint(CacheHint.SPEED);
                 tileViews.add(c + (r * worldMap.getSize()), tmpView);
                 grid.add(tmpView, c, r);tileViews.set(c + (r * worldMap.getSize()),  new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c)));
             }
@@ -198,12 +204,11 @@ public class GameScene extends BorderPane implements Runnable {
                 TileView tmpView = null;
                 if(tileViews.get(c + (r * worldMap.getSize())).getState() != worldMap.getTileState(r, c)) {
                     tmpView = new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c));
-                    System.out.println("changed a tile");
                 } else {
                     tmpView = tileViews.get(c + (r * worldMap.getSize()));
                 }
-//                tmpView.setCache(true);
-//                tmpView.setCacheHint(CacheHint.SPEED);
+                tmpView.setCache(true);
+                tmpView.setCacheHint(CacheHint.SPEED);
                 tileViews.set(c + (r * worldMap.getSize()), tmpView);
                 grid.add(tmpView, c, r);
             }
