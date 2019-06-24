@@ -16,8 +16,6 @@ import static World.WorldMap.WALL;
 import static World.WorldMap.UNEXPLORED;
 
 import java.awt.Point;
-
-public static WorldMap worldMap;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
 

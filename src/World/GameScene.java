@@ -199,20 +199,15 @@ public class GameScene extends BorderPane implements Runnable {
         for (int r = 0; r < worldMap.getSize(); r++) {
             for (int c = 0; c < worldMap.getSize(); c++) {
                 TileView tmpView = new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c));
-//                tmpView.setCache(true);
-//                tmpView.setCacheHint(CacheHint.SPEED);
+                tmpView.setCache(true);
+                tmpView.setCacheHint(CacheHint.SPEED);
                 tileViews.add(c + (r * worldMap.getSize()), tmpView);
                 grid.add(tmpView, c, r);tileViews.set(c + (r * worldMap.getSize()),  new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c)));
             }
         }
     }
 
-    public void drawTileShapes() {
-        worldMap.createWorldGridShapes();
-        agentGroup.getChildren().addAll(worldMap.getWorldGridShapes());
-    }
-
-    public void initTiles() {
+    public void createTiles() {
         for (int r = 0; r < worldMap.getSize(); r++) {
             for (int c = 0; c < worldMap.getSize(); c++) {
                 TileView tmpView = null;
@@ -222,8 +217,8 @@ public class GameScene extends BorderPane implements Runnable {
                 } else {
                     tmpView = tileViews.get(c + (r * worldMap.getSize()));
                 }
-//                tmpView.setCache(true);
-//                tmpView.setCacheHint(CacheHint.SPEED);
+                tmpView.setCache(true);
+                tmpView.setCacheHint(CacheHint.SPEED);
                 tileViews.set(c + (r * worldMap.getSize()), tmpView);
                 grid.add(tmpView, c, r);
             }
@@ -283,15 +278,6 @@ public class GameScene extends BorderPane implements Runnable {
                     }
                 }
             }
-            countDown = true;
-        } else {
-            countDown = false;
-        }
-        if(visitedTarget && (System.nanoTime() - firstVisitTime) > (3*1e9)) {
-            intrudersWon = true;
-        }
-        if(intrudersWon) {
-            createAlert("INTRUDER has reached TARGET");
         }
     }
 

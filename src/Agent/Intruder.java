@@ -139,9 +139,6 @@ public class Intruder extends Agent{
             else if (preDivisor == 0){
                 preDivisor++;
             }
-            double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.getX()-position.getX())/divisor));
-            double previousAngle = Math.toDegrees(Math.atan(Math.abs(previousTempGoal.getX()-tempGoal.getX())/preDivisor));
-            double finalAngle = previousAngle - turnAngle;
             if(tempGoal.getX() >= position.getX() && tempGoal.getY() <= position.getY())
             {
                 tempOldPos = new Point((int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR));

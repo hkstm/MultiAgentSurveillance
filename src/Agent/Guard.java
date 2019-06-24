@@ -48,7 +48,7 @@ public class Guard extends Agent {
         this.visualRange[1] = 8;
 //        this.visualRange[1] = 20;
         this.color = Color.AZURE;
-        this.firstRunBehaviourTreeGuardLogic = true;=
+        this.firstRunBehaviourTreeGuardLogic = true;
         Routine guard1 = Routines.sequence(
                 Routines.moveTo(locationToWorldgrid(600),locationToWorldgrid(400))
 
@@ -90,6 +90,7 @@ public class Guard extends Agent {
         if((o.direction == this.direction) && (o.position.equals(this.position))) equals = true;
         return equals;
     }
+
     public void updateVisualRange(){
         if (worldMap.coordinatesToCell(position) == SENTRY) { // row.e. guard in on a tower
            this.visualRange[0] = 2;
@@ -99,7 +100,6 @@ public class Guard extends Agent {
             this.visualRange[0] = 0;
             this.visualRange[1] = 6;
             this.viewingAngle = 45;
-
         }
     }
 
@@ -155,7 +155,7 @@ public class Guard extends Agent {
             oldTempGoal = tempGoal;
             int[][] blocks = aStarTerrain(knownTerrain);
             Astar pathMaker = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR),
-                    (int)(position.getY()/SCALING_FACTOR), (int)destX, (int)destY, blocks, this);
+                    (int)(position.getY()/SCALING_FACTOR), (int)destX, (int)destY, blocks, this, false);
             List<Node> path = pathMaker.findPath();
 
             if (path.size() < 1){
@@ -167,11 +167,7 @@ public class Guard extends Agent {
                 updateDirection(direction+90);
 
                 updatePath();
-
-
                 return;
-
-
             }
 
             if(!changed)

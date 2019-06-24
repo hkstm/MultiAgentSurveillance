@@ -10,8 +10,7 @@ import java.util.List;
 import static Agent.Agent.locationToWorldgrid;
 import static World.GameScene.ASSUMED_WORLDSIZE;
 import static World.GameScene.SCALING_FACTOR;
-import static World.WorldMap.MARKER_1;
-import static World.WorldMap.MARKER_2;
+import static World.WorldMap.*;
 
 public class Pheromones {
 
@@ -56,11 +55,15 @@ public class Pheromones {
     public void updateWorldMap(){
         for (int r = 0; r < worldMap.getSize(); r++) {
             for (int c = 0; c < worldMap.getSize(); c++) {
-                if (mapPhero[r][c].getCol() == Color.GREEN) {
-                    worldMap.worldGrid[r][c] = MARKER_1;
+                if(mapPhero[r][c] != null) {
+                    if (mapPhero[r][c].getCol() == Color.RED) {
+                        worldMap.updateTile(r, c, MARKER_1);
 
-                }else if(mapPhero[r][c].getCol() == Color.RED) {
-                    worldMap.worldGrid[r][c] = MARKER_2;
+                    }else if(mapPhero[r][c].getCol() == Color.GREEN) {
+                        worldMap.updateTile(r, c, MARKER_2);
+                    }
+                } else {
+                    if(worldMap.getTileState(r,c) == MARKER_1 || worldMap.getTileState(r, c) == MARKER_2) worldMap.updateTile(r, c, EMPTY);
                 }
             }
         }
@@ -78,8 +81,11 @@ public class Pheromones {
     public void updateMapPhero(double delta){
         for(int i =0; i< mapPhero.length;i++){
             for (int j = 0; j < mapPhero[0].length ; j++) {
-                mapPhero[i][j].updateLifetime(delta);
-                if(mapPhero[i][j].getLifetime() < 0) mapPhero[i][j] = null;
+                if(mapPhero[i][j] != null) {
+                    mapPhero[i][j].updateLifetime(delta);
+                    System.out.println("lifetime: "+mapPhero[i][j].getLifetime());
+                    if(mapPhero[i][j].getLifetime() < 0) mapPhero[i][j] = null;
+                }
             }
         }
     }
@@ -90,12 +96,12 @@ public class Pheromones {
 
     public class Pcell{
         private Color col;
-        private int count = 10; //frame counts for a pheromone to last
+        private int count = 2; //frame counts for a pheromone to last
         private double lifetime;
 
         public Pcell(Color col, double lifetime) {
             this.col = col;
-            this.lifetime = lifetime;
+            this.lifetime = lifetime * 1e9; //delta in nanoseconds
         }
 
         public Pcell(Color col) {
