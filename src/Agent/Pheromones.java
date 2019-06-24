@@ -31,27 +31,12 @@ public class Pheromones {
         }
     }
 
-    public void update(){
+    public void update(double delta){
         colorTiles();
-        countManager();
+        updateMapPhero(delta);
 
     }
 
-    public void countManager(){
-        for (int i = 0; i < mapPhero.length; i++) {
-            for (int j = 0; j < mapPhero[0].length; j++) {
-                if(mapPhero[i][j].count>0){
-                    mapPhero[i][j].count--;
-                }
-
-                if(mapPhero[i][j].count < 0){
-                    mapPhero[i][j].count = 0;
-                    //mapPhero[i][j].;
-
-                }
-            }
-        }
-    }
 
     public void colorTiles(){
         for (Guard g : guards){
@@ -90,6 +75,15 @@ public class Pheromones {
         return (int)((toBeConverted * (1/((ASSUMED_WORLDSIZE/mapPhero.length)*SCALING_FACTOR))));
     }
 
+    public void updateMapPhero(double delta){
+        for(int i =0; i< mapPhero.length;i++){
+            for (int j = 0; j < mapPhero[0].length ; j++) {
+                mapPhero[i][j].updateLifetime(delta);
+                if(mapPhero[i][j].getLifetime() < 0) mapPhero[i][j] = null;
+            }
+        }
+    }
+
     public Pcell[][] getMapPhero() {
         return mapPhero;
     }
@@ -97,13 +91,19 @@ public class Pheromones {
     public class Pcell{
         private Color col;
         private int count = 10; //frame counts for a pheromone to last
+        private double lifetime;
+
+        public Pcell(Color col, double lifetime) {
+            this.col = col;
+            this.lifetime = lifetime;
+        }
 
         public Pcell(Color col) {
-            this.col = col;
+            this(col, 10);
         }
 
         public Pcell(){
-            this.col = Color.BLACK;
+            this(Color.BLACK);
         }
 
         //getters and setters
@@ -122,6 +122,14 @@ public class Pheromones {
 
         public int getCount() {
             return count;
+        }
+
+        public void updateLifetime(double delta) {
+            lifetime -= delta;
+        }
+
+        public double getLifetime() {
+            return lifetime;
         }
     }
 }
