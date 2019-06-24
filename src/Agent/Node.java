@@ -13,6 +13,10 @@ public class Node {
         this.column = column;
     }
 
+    public Node()
+    {
+    }
+
     public String toString(){
         return "[" + row + ", "+ column + "]";
     }
