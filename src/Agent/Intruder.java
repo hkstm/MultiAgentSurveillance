@@ -32,6 +32,7 @@ public class Intruder extends Agent{
     private boolean first;
     private int alternatingCounter;
     private boolean modify;
+    private boolean inDanger;
 
 
 
@@ -76,143 +77,142 @@ public class Intruder extends Agent{
 
     public void gameTreeIntruder(double timeStep)
     {
+        inDanger = false;
         double walkingDistance = (BASE_SPEED *SCALING_FACTOR*timeStep);
         double sprintingDistance = (SPRINT_SPEED *SCALING_FACTOR*timeStep);
-        updateWalls();
-        if(!frozen)
+        for(int i = 0 ; i < worldMap.getAgents().size() ; i++)
         {
-            open();
-        }
-        if(oldTempGoal != null)
-        {
-            checkChangedStatus();
-        }
-        double elapsedTime = (System.currentTimeMillis()-startTime)/1000;
-        if(elapsedTime > freezeTime)
-        {
-            frozen = false;
-            startTime = 0;
-            freezeTime = 0;
-            oldTempGoal = tempGoal;
-            int[][] blocks = aStarTerrain(knownTerrain);
-            Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks, this, modify);
-            List<Node> path = pathFinder.findPath();
-            if(!changed)
+            if(worldMap.getAgents().get(i).getClass() != Intruder.class && viewingCone.contains(worldMap.getAgents().get(i).position))
             {
-                tempGoal = new Point2D((path.get(path.size()-1).row*SCALING_FACTOR)+(SCALING_FACTOR/2), (path.get(path.size()-1).column*SCALING_FACTOR)+(SCALING_FACTOR/2));
-                if (path.size() > 1) {
-                    previousTempGoal = new Point2D((path.get(path.size() - 2).row * SCALING_FACTOR) + (SCALING_FACTOR / 2), (path.get(path.size() - 2).column * SCALING_FACTOR) + (SCALING_FACTOR / 2));
+                inDanger = true;
+                double distanceToGuard = Math.sqrt((Math.pow(worldMap.getAgents().get(i).position.getX()-position.getX(), 2))+(Math.pow((worldMap.getAgents().get(i).position.getY()-position.getY()), 2)));
+                double distanceToTarget = Math.sqrt((Math.pow(goalPosition.getX()-position.getX(), 2))+(Math.pow((goalPosition.getY()-position.getY()), 2)));
+                if(distanceToTarget < distanceToGuard/2 && tired) //go to target
+                {
+                    if(legalMoveCheck(walkingDistance))
+                    {
+                        long nowMillis = System.currentTimeMillis();
+                        int countSec = (int)((nowMillis - this.createdMillis) / 1000);
+                        if (countSec != walkCounter) {
+                            move(walkingDistance);
+                        }
+                        else{
+                            tired = false;
+                            walkCounter += 15;
+                        }
+                    }
                 }
-                else{
-                    previousTempGoal = tempGoal;
+                else if(distanceToTarget < distanceToGuard && !tired) //sprint to target
+                {
+                    if(legalMoveCheck(sprintingDistance))
+                    {
+                        long nowMillis = System.currentTimeMillis();
+                        int countSec = (int)((nowMillis - this.createdMillis) / 1000);
+                        if (countSec != sprintCounter){
+                            move(sprintingDistance);
+                        }
+                        else{
+                            tired = true;
+                            sprintCounter = sprintCounter + 15;
+                        }
+                    }
                 }
             }
-            wallPhaseDetection();
-            cornerCorrection();
-            double divisor = Math.abs(tempGoal.getY()-position.getY());
-            double preDivisor = Math.abs(previousTempGoal.getY()-tempGoal.getY());
-            if(divisor == 0)
+        }
+        if(!inDanger)
+        {
+            updateWalls();
+            if(!frozen)
             {
-                divisor++;
+                open();
             }
-            else if (preDivisor == 0){
-                preDivisor++;
-            }
-            double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.getX()-position.getX())/divisor));
-            double previousAngle = Math.toDegrees(Math.atan(Math.abs(previousTempGoal.getX()-tempGoal.getX())/preDivisor));
-            double finalAngle = previousAngle - turnAngle;
-            if(tempGoal.getX() >= position.getX() && tempGoal.getY() <= position.getY())
+            if(oldTempGoal != null)
             {
-                turnToFace(turnAngle-90);
+                checkChangedStatus();
             }
-            else if(tempGoal.getX() >= position.getX() && tempGoal.getY() > position.getY())
+            double elapsedTime = (System.currentTimeMillis()-startTime)/1000;
+            if(elapsedTime > freezeTime)
             {
-                turnToFace(90-turnAngle);
-            }
-            else if(tempGoal.getX() < position.getX() && tempGoal.getY() > position.getY())
-            {
-                turnToFace(90+turnAngle);
-            }
-            else if(tempGoal.getX() < position.getX() && tempGoal.getY() <= position.getY())
-            {
-                turnToFace(270-turnAngle);
-            }
-            if(oldPos == null)
-            {
-                tempOldPos = new Point((int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR));
-                first = true;
-            }
-            else if (preDivisor == 0){
-                preDivisor++;
-            }
-            if(tempGoal.getX() >= position.getX() && tempGoal.getY() <= position.getY())
-            {
-                tempOldPos = new Point((int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR));
-                first = false;
-            }
-            int wallCount = 0;
-            int sprintPercent = 0;
-//            for (int i = locationToWorldgrid(position.getX() - 2 ); i < locationToWorldgrid(position.getX() + 2 ); i++){
-//                for (int j = locationToWorldgrid(position.getY() - 2); j < locationToWorldgrid(position.getY() + 2); j++){
-//                    if (knownTerrain[i][j] == WALL){
-//                        wallCount++;
-//                    }
-//                    if (wallCount > 10 ){
-//                        sprintPercent = Math.random()
-//                    }
-//                }
-//            }
-            if(!tired)
-            {
+                frozen = false;
+                startTime = 0;
+                freezeTime = 0;
+                oldTempGoal = tempGoal;
+                int[][] blocks = aStarTerrain(knownTerrain);
+                Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks, this, modify);
+                List<Node> path = pathFinder.findPath();
+                if(!changed)
+                {
+                    tempGoal = new Point2D((path.get(path.size()-1).row*SCALING_FACTOR)+(SCALING_FACTOR/2), (path.get(path.size()-1).column*SCALING_FACTOR)+(SCALING_FACTOR/2));
+                    if (path.size() > 1) {
+                        previousTempGoal = new Point2D((path.get(path.size() - 2).row * SCALING_FACTOR) + (SCALING_FACTOR / 2), (path.get(path.size() - 2).column * SCALING_FACTOR) + (SCALING_FACTOR / 2));
+                    }
+                    else{
+                        previousTempGoal = tempGoal;
+                    }
+                }
+                wallPhaseDetection();
+                cornerCorrection();
+                double divisor = Math.abs(tempGoal.getY()-position.getY());
+                double preDivisor = Math.abs(previousTempGoal.getY()-tempGoal.getY());
+                if(divisor == 0)
+                {
+                    divisor++;
+                }
+                else if (preDivisor == 0){
+                    preDivisor++;
+                }
+                double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.getX()-position.getX())/divisor));
+                double previousAngle = Math.toDegrees(Math.atan(Math.abs(previousTempGoal.getX()-tempGoal.getX())/preDivisor));
+                double finalAngle = previousAngle - turnAngle;
+                if(tempGoal.getX() >= position.getX() && tempGoal.getY() <= position.getY())
+                {
+                    turnToFace(turnAngle-90);
+                }
+                else if(tempGoal.getX() >= position.getX() && tempGoal.getY() > position.getY())
+                {
+                    turnToFace(90-turnAngle);
+                }
+                else if(tempGoal.getX() < position.getX() && tempGoal.getY() > position.getY())
+                {
+                    turnToFace(90+turnAngle);
+                }
+                else if(tempGoal.getX() < position.getX() && tempGoal.getY() <= position.getY())
+                {
+                    turnToFace(270-turnAngle);
+                }
 
-                if(legalMoveCheck(sprintingDistance))
+                if(oldPos == null)
                 {
-                    long nowMillis = System.currentTimeMillis();
-                    int countSec = (int)((nowMillis - this.createdMillis) / 1000);
-                    if (countSec != sprintCounter){
-                        move(sprintingDistance);
-                    }
-                    else{
-                        tired = true;
-                        sprintCounter = sprintCounter + 15;
-                    }
-                }
-            }
-            if (tired)
-            {
-                if(legalMoveCheck(walkingDistance))
-                {
-                    long nowMillis = System.currentTimeMillis();
-                    int countSec = (int)((nowMillis - this.createdMillis) / 1000);
-                    if (countSec != walkCounter) {
-                        move(walkingDistance);
-                    }
-                    else{
-                        tired = false;
-                        walkCounter += 15;
-                    }
-                }
-            }
-            modify = false;
-            if(tempOldPos.x != (int)(position.getX()/SCALING_FACTOR) || tempOldPos.y != (int)(position.getY()/SCALING_FACTOR))
-            {
-                if(!first && oldPos.x == (int)(position.getX()/SCALING_FACTOR) && oldPos.y == (int)(position.getY()/SCALING_FACTOR))
-                {
-                    alternatingCounter++;
+                    tempOldPos = new Point((int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR));
+                    first = true;
                 }
                 else
                 {
-                    alternatingCounter = 0;
+                    tempOldPos = new Point((int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR));
+                    first = false;
                 }
+                travel(walkingDistance, sprintingDistance);
+                modify = false;
+                if(tempOldPos.x != (int)(position.getX()/SCALING_FACTOR) || tempOldPos.y != (int)(position.getY()/SCALING_FACTOR))
+                {
+                    if(!first && oldPos.x == (int)(position.getX()/SCALING_FACTOR) && oldPos.y == (int)(position.getY()/SCALING_FACTOR))
+                    {
+                        alternatingCounter++;
+                    }
+                    else
+                    {
+                        alternatingCounter = 0;
+                    }
+                }
+                if(alternatingCounter == 6)
+                {
+                    alternatingCounter = 0;
+                    modify = true;
+                    points[0] = oldPos;
+                    points[1] = tempOldPos;
+                }
+                oldPos = tempOldPos;
             }
-            if(alternatingCounter == 6)
-            {
-                alternatingCounter = 0;
-                modify = true;
-                points[0] = oldPos;
-                points[1] = tempOldPos;
-            }
-            oldPos = tempOldPos;
         }
     }
 
@@ -274,4 +274,40 @@ public class Intruder extends Agent{
         }
         return blocks;
     }
+
+    public void travel(double walkingDistance, double sprintingDistance)
+    {
+        if(!tired)
+        {
+
+            if(legalMoveCheck(sprintingDistance))
+            {
+                long nowMillis = System.currentTimeMillis();
+                int countSec = (int)((nowMillis - this.createdMillis) / 1000);
+                if (countSec != sprintCounter){
+                    move(sprintingDistance);
+                }
+                else{
+                    tired = true;
+                    sprintCounter = sprintCounter + 15;
+                }
+            }
+        }
+        if (tired)
+        {
+            if(legalMoveCheck(walkingDistance))
+            {
+                long nowMillis = System.currentTimeMillis();
+                int countSec = (int)((nowMillis - this.createdMillis) / 1000);
+                if (countSec != walkCounter) {
+                    move(walkingDistance);
+                }
+                else{
+                    tired = false;
+                    walkCounter += 15;
+                }
+            }
+        }
+    }
 }
+

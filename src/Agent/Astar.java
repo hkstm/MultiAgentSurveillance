@@ -39,7 +39,7 @@ public class Astar {
         this.agent = agent;
         if(modify)
         {
-            Point pointToAdd = new Point((int)(agent.position.getX()/SCALING_FACTOR), (int)(agent.position.getY()/SCALING_FACTOR));
+            System.out.println("here");
             pointsToModify.add(agent.points[0]);
             pointsToModify.add(agent.points[1]);
         }
