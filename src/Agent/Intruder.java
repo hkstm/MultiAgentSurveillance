@@ -146,17 +146,17 @@ public class Intruder extends Agent{
             }
             int wallCount = 0;
             int sprintPercent = 0;
-            for (int i = locationToWorldgrid(position.getX() - 2 ); i < locationToWorldgrid(position.getX() + 2 ); i++){
-                for (int j = locationToWorldgrid(position.getY() - 2); j < locationToWorldgrid(position.getY() + 2); j++){
-                    if (knownTerrain[i][j] == WALL){
-                        wallCount++;
-                    }
-                    if (wallCount > 10 ){
-                        sprintPercent = Math.random()
-                    }
-                }
-            }
-            if()
+//            for (int i = locationToWorldgrid(position.getX() - 2 ); i < locationToWorldgrid(position.getX() + 2 ); i++){
+//                for (int j = locationToWorldgrid(position.getY() - 2); j < locationToWorldgrid(position.getY() + 2); j++){
+//                    if (knownTerrain[i][j] == WALL){
+//                        wallCount++;
+//                    }
+//                    if (wallCount > 10 ){
+//                        sprintPercent = Math.random()
+//                    }
+//                }
+//            }
+            if(!tired)
             {
 
                 if(legalMoveCheck(sprintingDistance))
