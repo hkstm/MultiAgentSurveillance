@@ -1,0 +1,28 @@
+getGuardPos()
+
+start
+        noise?
+            yes -> see intruder or start going in its direction
+            no -> keep walking
+
+        see intruder?
+        if corridorGuard :
+        yes -> get intruders coords
+                    make them the destination
+                    chase it (intruder not in corridor anymore -> return fail and send signal to guard on the next corridor
+                                                                                        and go back to patrolling
+                                                                                        else success)
+            no -> keep patrolling
+
+        if tower guard:
+            yes -> get intruders coord
+                    nearest guard? send them signal
+            no -> keep looking
+
+        if exploritory
+            yes-> get intruders coords
+                    make them the destination
+            START CHASING IT and try not to lose it!!!
+            no ->keep walking randomly
+end
+check

@@ -1,36 +1,40 @@
 package Agent;
-import java.awt.geom.Point2D;
-import java.lang.Math;
-import World.WorldMap;
-import java.awt.*;
+import javafx.scene.paint.Color;
+
+import javafx.geometry.Point2D;
+import java.awt.Point;
 import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.ArrayList;
+import java.util.List;
+import static World.GameScene.SCALING_FACTOR;
+import static World.WorldMap.EMPTY;
 
 /**
  * A subclass of Agent for the Intruders
- * @author Benjamin
+ * @author Benjamin, Kailhan
  */
 
 public class Intruder extends Agent{
-    private boolean tired;
+    protected boolean tired;
+    protected final long createdMillis = System.currentTimeMillis();
+    protected int sprintCounter = 5;
+    protected int walkCounter = 10; //check if this is right (might be 10 sec not 15)
+    protected List<Point> tempWalls = new ArrayList<Point>();
+
 
     /**
      * An Intruder constructor with an empty internal map
-     * @param position is a point containing the coordinates of the Intruder
+     * @param position is a point containing the coordinates of the Intruderq
      * @param direction is the angle which the agent is facing, this spans from -180 to 180 degrees
      */
 
-    public Intruder(Point2D.Double position, double direction)
-    {
+    public Intruder(Point2D position, double direction) {
         super(position, direction);
-        //this.knownTerrain = worldMap.getWorldGrid();
+        this.viewingAngle = 45;
+        this.visualRange[0] = 0;
+        this.visualRange[1] = 7.5;
+        this.color = Color.LIGHTGOLDENRODYELLOW;
         this.tired = false;
-        for(int i = 1;i < 200;i++) {
-            for(int j = 1;j<200;j++) {
-                //knownTerrain[i][j] = 8;
-            }
-        }
     }
 
     public boolean equals(Object obj) {
@@ -46,54 +50,145 @@ public class Intruder extends Agent{
     /**
      * A method for going through a window or door. It is important the the intruder is standing on the tile to be changed.
      * The time taken is consistent (3 seconds for a window and 5 for a door), unless a door is to be opened quietly, in which case a normal distribution is used.
-     * @param loud is whether the intruder wishes to open the door fast but loudly or slowly and quietly
      */
 
-    public void open(boolean loud)
+    public void executeAgentLogic() {
+        try {
+            gameTreeIntruder(delta);
+        }
+        catch(Exception e) {
+            //do something here :D
+        }
+    }
+
+    public void gameTreeIntruder(double timeStep)
     {
-        if (coordinatesToCell(position) == 2)
+        //TODO check for guards
+        //TODO make noise
+        //TODO add weights to flags and other types of squares, try manually an possibly with a genetic algorithm
+        double walkingDistance = (BASE_SPEED *SCALING_FACTOR*timeStep);
+        double sprintingDistance = (SPRINT_SPEED *SCALING_FACTOR*timeStep);
+        updateWalls();
+        if(!frozen)
         {
-            class OpenDoor extends TimerTask
+            open();
+        }
+        if(oldTempGoal != null)
+        {
+            checkChangedStatus();
+        }
+        double elapsedTime = (System.currentTimeMillis()-startTime)/1000;
+        if(elapsedTime > freezeTime)
+        {
+            frozen = false;
+            startTime = 0;
+            freezeTime = 0;
+            oldTempGoal = tempGoal;
+            int[][] blocks = aStarTerrain(knownTerrain);
+            Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks);
+            List<Node> path = pathFinder.findPath();
+            if(!changed)
             {
-                public void run()
-                {
-                    worldMap.updateTile((int)position.getX(), (int)position.getY(), 22);
-                    knownTerrain[(int)position.getX()][(int)position.getY()] = 22;
+                tempGoal = new Point2D((path.get(path.size()-1).row*SCALING_FACTOR)+(SCALING_FACTOR/2), (path.get(path.size()-1).column*SCALING_FACTOR)+(SCALING_FACTOR/2));
+                if (path.size() > 1) {
+                    previousTempGoal = new Point2D((path.get(path.size() - 2).row * SCALING_FACTOR) + (SCALING_FACTOR / 2), (path.get(path.size() - 2).column * SCALING_FACTOR) + (SCALING_FACTOR / 2));
+                }
+                else{
+                    previousTempGoal = tempGoal;
                 }
             }
-            Timer timer = new Timer();
-            TimerTask openDoor = new OpenDoor();
-            if (loud)
+            wallPhaseDetection();
+            cornerCorrection();
+            double divisor = Math.abs(tempGoal.getY()-position.getY());
+            double preDivisor = Math.abs(previousTempGoal.getY()-tempGoal.getY());
+            if(divisor == 0)
             {
-                timer.schedule(openDoor, 5000);
+                divisor++;
+            }
+            else if (preDivisor == 0){
+                preDivisor++;
+            }
+            double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.getX()-position.getX())/divisor));
+            double previousAngle = Math.toDegrees(Math.atan(Math.abs(previousTempGoal.getX()-tempGoal.getX())/preDivisor));
+            double finalAngle = previousAngle - turnAngle;
+            if(tempGoal.getX() >= position.getX() && tempGoal.getY() <= position.getY())
+            {
+                turnToFace(turnAngle-90);
+            }
+            else if(tempGoal.getX() >= position.getX() && tempGoal.getY() > position.getY())
+            {
+                turnToFace(90-turnAngle);
+            }
+            else if(tempGoal.getX() < position.getX() && tempGoal.getY() > position.getY())
+            {
+                turnToFace(90+turnAngle);
+            }
+            else if(tempGoal.getX() < position.getX() && tempGoal.getY() <= position.getY())
+            {
+                turnToFace(270-turnAngle);
+            }
+            if(!tired)
+            {
+                if(legalMoveCheck(sprintingDistance))
+                {
+                    long nowMillis = System.currentTimeMillis();
+                    int countSec = (int)((nowMillis - this.createdMillis) / 1000);
+                    if (countSec != sprintCounter){
+                        move(sprintingDistance);
+                    }
+                    else{
+                        tired = true;
+                        sprintCounter = sprintCounter + 15;
+                    }
+                }
+            }
+            if (tired)
+            {
+                if(legalMoveCheck(walkingDistance))
+                {
+                    long nowMillis = System.currentTimeMillis();
+                    int countSec = (int)((nowMillis - this.createdMillis) / 1000);
+                    if (countSec != walkCounter) {
+                        move(walkingDistance);
+                    }
+                    else{
+                        tired = false;
+                        walkCounter += 15; //HAO please check if theses are the correct resting times
+                    }
+                }
+            }
+        }
+    }
+
+    public void open()
+    {
+        //open door
+        if(worldMap.worldGrid[(int)(position.getY()/SCALING_FACTOR)][(int)(position.getX()/SCALING_FACTOR)] == 2)
+        {
+            worldMap.worldGrid[(int)(position.getY()/SCALING_FACTOR)][(int)(position.getX()/SCALING_FACTOR)] = 0;
+            worldMap.updateTile(locationToWorldgrid(position.getY()), locationToWorldgrid(position.getX()), EMPTY);
+            knownTerrain[(int)(position.getY()/SCALING_FACTOR)][(int)(position.getX()/SCALING_FACTOR)] = 0;
+            Random random = new Random();
+            startTime = System.currentTimeMillis();
+            if(Math.random() > 0.5)
+            {
+                freezeTime = (random.nextGaussian()*2+12);
             }
             else
             {
-                Random r = new Random();
-                double time;
-                do
-                {
-                    time = r.nextGaussian()*2+12;
-                }
-                while (time <= 0);
-                time = time*1000;
-                timer.schedule(openDoor, (long)time);
+                freezeTime = 5;
+                //HERE A NOISE MUST BE MADE!!!!!
             }
-            timer.cancel();
+            frozen = true;
         }
-        else if (coordinatesToCell(position) == 3)
+        //go through window
+        else if(worldMap.worldGrid[(int)(position.getY()/SCALING_FACTOR)][(int)(position.getX()/SCALING_FACTOR)] == 3)
         {
-            class OpenWindow extends TimerTask
-            {
-                public void run()
-                {
-                    worldMap.updateTile((int)position.getX(), (int)position.getY(), 33);
-                    knownTerrain[(int)position.getX()][(int)position.getY()] = 33;
-                }
-            }
-            Timer timer = new Timer();
-            TimerTask openWindow = new OpenWindow();
-            timer.schedule(openWindow, 3000);
+            startTime = System.currentTimeMillis();
+            worldMap.worldGrid[(int)(position.getY()/SCALING_FACTOR)][(int)(position.getX()/SCALING_FACTOR)] = 0;
+            worldMap.updateTile(locationToWorldgrid(position.getY()), locationToWorldgrid(position.getX()), EMPTY);
+            freezeTime = 3;
+            frozen = true;
         }
     }
 }

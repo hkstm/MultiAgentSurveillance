@@ -1,152 +1,247 @@
 package Agent;
+
 import World.WorldMap;
-import java.awt.Point;
-import java.awt.geom.Point2D;
+import javafx.geometry.Point2D;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
+import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Shape;
+
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+import static World.GameScene.ASSUMED_WORLDSIZE;
+import static World.GameScene.SCALING_FACTOR;
+import static World.WorldMap.*;
 
 /**
  * This is the superclass of Intruder and Guard, which contains methods for actions
- * @author Benjamin
+ * @author Benjamin, Kailhan, Thibaut
  */
 
-public class Agent implements Runnable{
-    protected volatile Point2D.Double position;
+public class Agent implements Runnable {
+    public static final double WALK_SPEED_SLOW = 0; //speed <0.5m/s
+    public static final double WALK_SPEED_MEDIUM = 0.5; //speed >0.5 & <1 m/s
+    public static final double WALK_SPEED_MEDIUMFAST = 1; //speed >1 & 2 m/s
+    public static final double WALK_SPEED_FAST = 2; //speed >2m/s
+    public static final double SOUNDRANGE_CLOSE = 1; //distance 1m
+    public static final double SOUNDRANGE_MEDIUM = 3; //distance 3m
+    public static final double SOUNDRANGE_MEDIUMFAR = 5; //distance 5m
+    public static final double SOUNDRANGE_FAR = 10;  //distance 10m
+    public static final double SOUND_NOISE_STDEV =  10;  //stndard dev of normal distributed noise
+    public static final double STRUCTURE_VIS_RANGE = 10;
+    public static final double SENTRY_VIS_RANGE = 18;
+    public static final int AMOUNT_OF_VISION_TENTACLES = 100;
+    public static final int TENTACLE_INCREMENTS = 1000;
+    public static final double MAX_TURNING_PER_SECOND = 180; //degrees
+    public static final double MAX_NONBLIND_TURNING_PER_SECOND = 45; //degrees
+    public static final double MAX_TURNING_WHILE_SPRINTING = 10;
+    public static final double TIME_BLINDED = 0.5;
+    public static final double MIN_TIME_BEFORE_SHORT_DETECT_IN_DECREASEDVIS = 10;//seconds
+    public static final double DECREASE_IN_VISION = 0.5; //used for the 50% reduction in vision when seeing a decreased visibility location
+    public static final double DISTANCE_TO_CATCH = 0.5; //meters
+    public static final double BASE_SPEED = 1.4; //m/s
+    public static final double SPRINT_SPEED = 3.0; //m/s
+    protected Point2D oldTempGoal;
+    protected Point2D tempGoal;
+    protected Point2D previousTempGoal;
+    protected double freezeTime = 0;
+    protected double startTime = 0;
+    protected boolean frozen = false;
+    protected boolean changed = false;
+    protected List<Point> tempWalls = new ArrayList<Point>();
+    protected boolean blind = false;
+    protected boolean rePath = false;
+
+    protected volatile Point2D position;
     protected double direction;
     protected int[][] knownTerrain;
+    protected List<AudioLog> audioLogs = new ArrayList<AudioLog>();
+    protected double currentSpeed;
+    protected Color color;
 
-    //protected volatile double xCurrent;
-    //protected volatile double yCurrent;
-    protected volatile double xGoal;
-    protected volatile double yGoal;
+    protected Shape viewingCone;
+    protected double viewingAngle;
+    protected double[] visualRange;
 
     public static WorldMap worldMap;
-        double currentTime;
-        double delta;
-//        ;
-//        ;
-        protected boolean exitThread;
-        protected double previousTime;
-        protected volatile Point2D.Double goalPosition;
+    protected double currentTime;
+    protected double delta;
+    protected boolean exitThread;
+    protected double previousTime;
+    protected boolean pathChanged = false;
+    protected boolean reAdded = false;
 
-        /**
-         * Constructor for Agent
-         * @param position is a point containing the coordinates of an Agent
-         * @param direction is the angle which the agent is facing, this spans from -180 to 180 degrees
-         */
+    protected Point2D previousPosition;
+    protected volatile Point2D goalPosition;
 
-    public Agent(Point2D.Double position, double direction)
-        {
-            this.position = position;
-            this.direction = direction;
-            this.goalPosition = position;
-        }
+    protected boolean firstRun;
 
-        public void run() {
-        double deltaScaling = 0.0001; //arbitrary as fuck dependent on how fast we are allowed to walk and how big the actual world is
-        previousTime = System.nanoTime();
-        goalPosition = new Point2D.Double(25, 25);
-        while(!exitThread) {
-            currentTime = System.nanoTime();
-            delta = currentTime - previousTime;
-            //delta /= 1e6; //makes it ms
-            double walkingDistance = 1.4/delta;
-            if (legalMoveCheck(walkingDistance))
-            {
-                move(walkingDistance);
-                System.out.println("position: "+position);
+    protected boolean turning;
+    protected boolean sprinting;
+
+    protected long startTimeFastTurn;
+    protected double previousDirection;
+    protected boolean hiddenInDecreasedVis;
+    protected boolean shortDetectionRange;
+    protected long startTimeDecreasedVis;
+
+    protected boolean turnedMaxWhileSprinting;
+    protected double turningLeft;
+
+    private boolean goalSet = false;
+
+    /**
+     * Constructor for Agent
+     * @param position is a point containing the coordinates of an Agent
+     * @param direction is the angle which the agent is facing, this spans from -180 to 180 degrees
+     */
+
+    public Agent(Point2D position, double direction) {
+        System.out.println("agent constructor called");
+        this.position = position;
+        this.direction = direction;
+        this.goalPosition = position;
+        this.color = Color.LIGHTSEAGREEN;
+        this.knownTerrain = new int[worldMap.getSize()][worldMap.getSize()];
+        for(int i = 0; i < knownTerrain[0].length; i++) {
+            for(int j = 0; j < knownTerrain.length; j++) {
+                if(worldMap.worldGrid[i][j] == TARGET) {
+                    goalPosition = new Point2D(j, i);
+                    goalSet = true;
+                }
             }
-            else
-            {
-                double turningAngle = Math.random()*90-45;
-                turn(turningAngle);
-            }
-            previousTime = currentTime;
-            //xCurrent = getPosition().getX();
-            //yCurrent = getPosition().getY();
-            updateGoalPosition();
-            xGoal = getGoalPosition().getX();
-            yGoal = getGoalPosition().getY();
-//            System.out.println(
-//                    "xCurrent: " + xCurrent + " yCurrent: " + yCurrent);
-//            System.out.println(
-//                    "xGoal: " + xGoal + " yGoal: " + yGoal);
-//            System.out.println("delta: " + (delta) + "ms");
-            //position.setLocation((xCurrent + ((xGoal - xCurrent) * (delta * deltaScaling))), (yCurrent + ((yGoal - yCurrent) * (delta * deltaScaling))));
-//            System.out.println("xCurrent" + xCurrent);
-//            System.out.println("yCurrent" + yCurrent);
         }
-    }
-
-    public void updateGoalPosition() {
-        //some logic with the worldMap and whatever algorithms we are using
-        double x = 100;
-        double y = 500;
-        goalPosition.setLocation(x, y);
+        if(goalSet == false) {
+            System.out.println("No Target");
+        }
+        //this.goalPosition = position;
+        this.visualRange = new double[2];
+        this.firstRun = true;
+        for (int i = 0; i < knownTerrain.length; i++) {
+            for (int j = 0; j < knownTerrain[0].length;j++) {
+                knownTerrain[i][j] = UNEXPLORED;
+            }
+        }
     }
 
     /**
-     * to update the direction which an agent is facing
-     * @param angle is the angle which the agent will turn, positive for turning to the right, negative for turning to the left
+     * Default run method
      */
+    public void run() {
+        previousTime = System.nanoTime();
+        previousPosition = new Point2D(position.getX(), position.getY());
+        previousDirection = direction;
+        firstRun = false;
+        while(!exitThread) {
+            executeGeneralAgentLogic();
+        }
+    }
 
-    public void turn(double angle)
-    {
-        this.direction = this.direction+angle;
-        while (this.direction > 180 || this.direction < -180)
-        {
-            if (this.direction > 180)
-            {
-                this.direction = (this.direction-180)-180;
+    /**
+     * Used instead of the run method if we want to manually control when the agent should update
+     */
+    public void forceUpdate() {
+        if(firstRun) {
+            previousTime = System.nanoTime();
+            previousPosition = new Point2D(position.getX(), position.getY());
+            previousDirection = direction;
+            firstRun = false;
+        }
+        executeGeneralAgentLogic();
+    }
+
+    public void executeGeneralAgentLogic() {
+        System.out.print("check 1 ");
+        currentTime = System.nanoTime();
+        delta = currentTime - previousTime;
+        delta /= 1e9; //makes it in seconds
+        previousTime = currentTime;
+        previousDirection = direction;
+        //System.out.println("currentSpeed:" + currentSpeed);
+        previousPosition = new Point2D(position.getX(), position.getY());
+        if(!blind) {
+            createCone();
+            updateKnownTerrain();
+        }
+        /**
+         * this is the point where the logic of your bot gets called
+         */
+        //printKnownTerrain();
+        executeAgentLogic();
+        /**
+         *
+         */
+        checkForAgentSound();
+        if((Math.abs(previousDirection - direction) * delta) > (MAX_NONBLIND_TURNING_PER_SECOND * delta)) {
+            startTimeFastTurn = System.nanoTime();
+            blind = true;
+        } else if((System.nanoTime() - startTimeFastTurn)/1e9 > (TIME_BLINDED + delta)) blind = false; //TIME_BLINDED in seconds so have to convert nanoTime()
+        if(worldMap.checkTile(locationToWorldgrid(position.getX()), locationToWorldgrid(position.getX()), DECREASED_VIS_RANGE) && !hiddenInDecreasedVis){
+            hiddenInDecreasedVis = true;
+            startTimeDecreasedVis = System.nanoTime();
+        }
+        if(!sprinting) {
+            turningLeft = MAX_TURNING_WHILE_SPRINTING;
+        } else {
+            turningLeft -= (Math.abs(previousDirection-direction));
+        }
+        if(turningLeft <= 0) turnedMaxWhileSprinting = true;
+        else turnedMaxWhileSprinting = false;
+        if(hiddenInDecreasedVis && ((System.nanoTime() - startTimeDecreasedVis)/1e9) > MIN_TIME_BEFORE_SHORT_DETECT_IN_DECREASEDVIS) shortDetectionRange = true;
+        else shortDetectionRange = false;
+        if(!hiddenInDecreasedVis) shortDetectionRange = false;
+        currentSpeed = ((position.distance(previousPosition) / SCALING_FACTOR) / delta);
+        System.out.println("check 3");
+    }
+
+    /**
+     * Default agent logic
+     */
+    public void executeAgentLogic() {
+        double walkingDistance = (BASE_SPEED * SCALING_FACTOR) * (delta);
+        Point2D newPosition = new Point2D((position.getX() + (walkingDistance * Math.cos(Math.toRadians(direction)))), (position.getY() + (walkingDistance * Math.sin(Math.toRadians(direction)))));
+        if(!isVisionObscuring(worldMap.getTileState(locationToWorldgrid(newPosition.getY()), locationToWorldgrid(newPosition.getX())))) {
+            position = newPosition;
+        } else {
+            updateDirection(Math.random() * 360);
+//            System.out.println("turning");
+        }
+    }
+
+    /**
+     * Method that you should use when trying to update an agents direction
+     * Limits the amount you can turn
+     * @param directionToGo direction you are trying to face (in degrees 0 - 360, I think)
+     */
+    public void updateDirection(double directionToGo) {
+        if(!turnedMaxWhileSprinting) {
+            double maxTurn = 10* delta;
+            double toTurn = Math.abs(directionToGo - direction);
+            double turn = Math.min(maxTurn, toTurn);
+            if(directionToGo > direction) {
+                direction += turn;
+            } else {
+                direction -= turn;
             }
-            if (this.direction < 180)
-            {
-                this.direction = (this.direction+180)+180;
-            }
+        } else {
+            System.out.println("you have turned to match while sprinting");
         }
     }
 
     /**
      * find out where an Agent will end up after a potential move
      * @param distance is the distance to be moved by the agent
-     *                 depending on the time-step, speeds will need to be divided before being used as parameters
-     * @param facingDirection is the angle which the Agent is turned (i.e. it's direction) for the potential move
+     *                 depending on the time-step, speeds will need to be divided before being used as parameter
      * @return a point at which the Agent would end up if this move were made
      */
 
-    public Point2D.Double getMove(double distance, double facingDirection)
-    {
-        if (facingDirection > 0 && facingDirection <= 90)
-        {
-            double angle = 90-facingDirection;
-            double newXCoordinate = this.position.getX()+distance*Math.cos(angle);
-            double newYCoordinate = this.position.getY()+distance*Math.sin(angle);
-            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
-            return newLocation;
-        }
-        else if (facingDirection > 90 && facingDirection <= 180)
-        {
-            double angle = 180-facingDirection;
-            double newXCoordinate = this.position.getX()+distance*Math.sin(angle);
-            double newYCoordinate = this.position.getY()-distance*Math.cos(angle);
-            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
-            return newLocation;
-        }
-        else if (facingDirection <= 0 && facingDirection > -90)
-        {
-            double angle = -1*(180-facingDirection);
-            double newXCoordinate = this.position.getX()-distance*Math.sin(angle);
-            double newYCoordinate = this.position.getY()-distance*Math.cos(angle);
-            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
-            return newLocation;
-        }
-        //else if (facingDirection <= -90 || facingDirection > -180)
-        else
-        {
-            double angle = -1*(90+facingDirection);
-            double newXCoordinate = this.position.getX()-distance*Math.cos(angle);
-            double newYCoordinate = this.position.getY()+distance*Math.sin(angle);
-            Point2D.Double newLocation = new Point2D.Double(newXCoordinate, newYCoordinate);
-            return newLocation;
-        }
+    public Point2D getMove(double distance, double facingDirection) {
+        double xEnd = position.getX() + (distance * Math.cos(Math.toRadians(facingDirection)));
+        double yEnd = position.getY() + (distance * Math.sin(Math.toRadians(facingDirection)));
+        return new Point2D(xEnd, yEnd);
     }
 
     /**
@@ -155,10 +250,12 @@ public class Agent implements Runnable{
      *                 depending on the time-step, speeds will need to be divided before being used as parameters
      *                 angle is not required here because it is an instance variable of the Agent
      */
-
-    public void move(double distance)
-    {
-        this.position.setLocation(getMove(distance, this.direction));
+    public void move(double distance) {
+        //System.out.println("direction before move: "+direction);
+        //double y = position.getY();
+        position = getMove(distance, direction);
+        //System.out.println(position.getY()-y);
+        //System.out.println("location: " + this.position.toString() );
     }
 
     /**
@@ -169,126 +266,181 @@ public class Agent implements Runnable{
      */
 
     public boolean legalMoveCheck(double distance) {
-        Point2D.Double positionToCheck = getMove(distance, this.direction);
-        if (coordinatesToCell(positionToCheck) == 1 || coordinatesToCell(positionToCheck) == 5 || coordinatesToCell(positionToCheck) == 7) {
+        Point2D tmpMove = getMove(distance, direction);
+        Point2D positionToCheck = new Point2D(tmpMove.getX(), tmpMove.getY());
+        int tileStatus = EMPTY;
+        if(((int)positionToCheck.getY())/SCALING_FACTOR < 0 || ((int)positionToCheck.getY())/SCALING_FACTOR > (worldMap.getSize()-1) || ((int)positionToCheck.getX())/SCALING_FACTOR < 0 || ((int)positionToCheck.getX())/SCALING_FACTOR > (worldMap.getSize()-1)) {
+            System.out.println(worldMap.getSize());
+            System.out.println("Location accessed in array is out of bounds");
             return false;
         } else {
-            return true;
+            tileStatus = worldMap.coordinatesToCell(positionToCheck);
         }
+        if (tileStatus == STRUCTURE || tileStatus == SENTRY || tileStatus == WALL) {
+            //System.out.println("detected wall, sentry or structure in legal move check");
+            return false;
+        }
+        return true;
     }
 
     /**
-     * check what type of terrain is at a given point
-     * @param location is the point at which the terrain type is desired
-     * @return an integer describing the terrain type in the worldGrid corresponding to the input location
+     * Checks if a tile is contained in an agents cone and if so adds it to the knownTerrain array
      */
-
-    public int coordinatesToCell(Point2D.Double location)
-    {
-        convert();
-        int xIndex = (int) location.getX();
-        int yIndex = (int) -location.getY();
-        return worldMap.getTileState(xIndex, yIndex);
-    }
-
-    /**
-     * updates the internal map of an Agent based on their field of vision based on sounds of sightings of other agents or in the case of intruders, sighting of new terrain
-     * @param radius is the distance an Agent can see in front of them
-     * @param angle is the width of view of an Agent
-     */
-
-    public void updateKnownTerrain(double radius, double angle)
-    {
-        //setting search bounds
-        int[][] tempTerrainKnowledge = knownTerrain;
-        Point corner1 = new Point((int) this.position.getX(), (int) this.position.getY());
-        Point2D.Double straight = getMove(radius, this.direction);
-        Point corner2 = new Point((int) straight.getX(), (int) straight.getY());
-        Point2D.Double left = getMove(radius, this.direction-(angle/2));
-        Point corner3 = new Point((int) left.getX(), (int) left.getY());
-        Point2D.Double right = getMove(radius, this.direction+(angle/2));
-        Point corner4 = new Point((int) right.getX(), (int) right.getY());
-        int XMax = Math.max((int) Math.max(corner1.getX(), corner2.getX()), (int) Math.max(corner3.getX(), corner4.getX()));
-        int XMin = Math.min((int) Math.min(corner1.getX(), corner2.getX()), (int) Math.min(corner3.getX(), corner4.getX()));
-        int YMax = Math.max((int) Math.max(corner1.getY(), corner2.getY()), (int) Math.max(corner3.getY(), corner4.getY()));
-        int YMin = Math.min((int) Math.min(corner1.getY(), corner2.getY()), (int) Math.min(corner3.getY(), corner4.getY()));
-        //checking if the points (each corner of each square in the bounds) is within the circle of search  THIS IS UDING COORDS??? NOT THE CORNERS!
-        for (int i = YMin;i <= YMax;i++)
-        {
-            for (int j = XMin;j <= XMax;j++)
-            {
-                //top left corner
-                if (Math.sqrt(((this.position.getX()-j)*(this.position.getX()-j))+((this.position.getY()-i)*(this.position.getY()))-i) <= radius && Math.atan((Math.abs(this.position.getX()-j))/(Math.abs(this.position.getY()-i)))+(Math.abs(this.direction)) <= angle/2)
-                {
-                    tempTerrainKnowledge[i][j] = worldMap.getTileState(i, j);
-                }
-                //top right corner
-                else if (Math.sqrt(((this.position.getX()-(j+1))*(this.position.getX()-(j+1)))+((this.position.getY()-i)*(this.position.getY()))-i) <= radius && Math.atan((Math.abs(this.position.getX()-(j+1)))/(Math.abs(this.position.getY()-i)))+(Math.abs(this.direction)) <= angle/2)
-                {
-                    tempTerrainKnowledge[i][j] = worldMap.getTileState(i, j);
-                }
-                //bottom right corner
-                else if (Math.sqrt(((this.position.getX()-(j+1))*(this.position.getX()-(j+1)))+((this.position.getY()-(i+1))*(this.position.getY()))-(i+1)) <= radius && Math.atan((Math.abs(this.position.getX()-(j+1)))/(Math.abs(this.position.getY()-(i+1))))+(Math.abs(this.direction)) <= angle/2)
-                {
-                    tempTerrainKnowledge[i][j] = worldMap.getTileState(i, j);
-                }
-                //bottom left corner
-                else if (Math.sqrt(((this.position.getX()-j)*(this.position.getX()-j))+((this.position.getY()-(i+1))*(this.position.getY()))-(i+1)) <= radius && Math.atan((Math.abs(this.position.getX()-j))/(Math.abs(this.position.getY()-(i+1))))+(Math.abs(this.direction)) <= angle/2)
-                {
-                    tempTerrainKnowledge[i][j] = worldMap.getTileState(i, j);
+    public void updateKnownTerrain(){
+        for(int r = 0; r < worldMap.getSize(); r++) {
+            for(int c = 0; c < worldMap.getSize(); c++){
+                if(viewingCone.contains(worldMap.convertArrayToWorld(c) + 0.5 * worldMap.convertArrayToWorld(1), //changed from *0.5 to *1
+                        worldMap.convertArrayToWorld(r) + 0.5 * worldMap.convertArrayToWorld(1))) { //changed from *0.5 to *1
+                    knownTerrain[r][c] = worldMap.getTileState(r, c);
+                    //System.out.println("r: "+r+" c: "+c);
+                    //System.out.println(worldMap.getTileState(r, c)+" "+knownTerrain[r][c]);
+//                    System.out.println("reward reset for r: " + r + " c: " + c);
                 }
             }
         }
-        //scan through and remove shaded areas
-        for (int i = YMin;i <= YMax;i++)
-        {
-            for (int j = XMin;j <= XMax;j++)
-            {
-                if (tempTerrainKnowledge[i][j] == 1 || tempTerrainKnowledge[i][j] == 2 || tempTerrainKnowledge[i][j] == 3 || tempTerrainKnowledge[i][j] == 5 || tempTerrainKnowledge[i][j] == 7)
-                {
-                    for (int k = YMin;k <= YMax;k++)
-                    {
-                        for (int l = XMin;l <= XMax;l++)
-                        {
-                            if (Math.sqrt(((this.position.getX()-l)*(this.position.getX()-l))+((this.position.getY()-k)*(this.position.getY()))-k) > Math.sqrt(((this.position.getX()-j)*(this.position.getX()-j))+((this.position.getY()-i)*(this.position.getY()))-i))
-                            {
-                                if (direction > 0 && direction <= 90 && Math.atan((l-this.position.getX())/(k-this.position.getY())) >= Math.atan((j-this.position.getX())/(i-this.position.getY())) && Math.atan(((l+1)-this.position.getX())/((k-1)-this.position.getY())) <= Math.atan(((j+1)-this.position.getX())/((i-1)-this.position.getY())))
-                                {
-                                    tempTerrainKnowledge[k][l] = knownTerrain[k][l];
-                                }
-                                else if (direction > 90 && direction <= 180 && Math.atan((k-this.position.getY())/((l+1)-this.position.getX())) >= Math.atan((i-this.position.getY())/((j+1)-this.position.getX())) && Math.atan(((k-1)-this.position.getY())/(l-this.position.getX())) <= Math.atan(((i+1)-this.position.getY())/(j-this.position.getX())))
-                                {
-                                    tempTerrainKnowledge[k][l] = knownTerrain[k][l];
-                                }
-                                else if (direction <= 0 && direction > -90 && Math.atan(((l+1)-this.position.getX())/(k-this.position.getY())) <= Math.atan(((j+1)-this.position.getX())/(i-this.position.getY())) && Math.atan((l-this.position.getX())/((k-1)-this.position.getY())) >= Math.atan((j-this.position.getX())/((i-1)-this.position.getY())))
-                                {
-                                    tempTerrainKnowledge[k][l] = knownTerrain[k][l];
-                                }
-                                else if (direction <= -90 && direction > -180 && Math.atan((k-this.position.getY())/(l-this.position.getX())) <= Math.atan((i-this.position.getY())/(j-this.position.getX())) && Math.atan(((k-1)-this.position.getY())/((l+1)-this.position.getX())) >= Math.atan(((i-1)-this.position.getY())/((j+1)-this.position.getX())))
-                                {
-                                    tempTerrainKnowledge[k][l] = knownTerrain[k][l];
-                                }
-                            }
+        updateSpecificTerrain(STRUCTURE, STRUCTURE_VIS_RANGE);
+        updateSpecificTerrain(SENTRY, SENTRY_VIS_RANGE);
+        //System.out.println();
+    }
+
+    /**
+     * Certain structures can be seen from further so you know where they are but not what the status is
+     * @param tileType
+     * @param visRange
+     */
+    private void updateSpecificTerrain(int tileType, double visRange) {
+        Shape cone = createCone(visualRange[0], visRange);
+        for(int r = 0; r < worldMap.getSize(); r++) {
+            for(int c = 0; c < worldMap.getSize(); c++){
+                if(isStructure(worldMap.getTileState(r, c))) {
+                    if(cone.contains(worldMap.convertArrayToWorld(c) + 0.5 * worldMap.convertArrayToWorld(1), //changed from *0.5 to *1
+                            worldMap.convertArrayToWorld(r) + 0.5 * worldMap.convertArrayToWorld(1))) { //changed from *0.5 to *1
+                        knownTerrain[r][c] = worldMap.getTileState(r,c);
+                    }
+                } else if (tileType == SENTRY){
+                    if(worldMap.getTileState(r, c) == SENTRY) {
+                        if(cone.contains(worldMap.convertArrayToWorld(c) + 0.5 * worldMap.convertArrayToWorld(1), //changed from *0.5 to *1
+                                worldMap.convertArrayToWorld(r) + 0.5 * worldMap.convertArrayToWorld(1))) { //changed from *0.5 to *1
+                            knownTerrain[r][c] = SENTRY;
                         }
                     }
                 }
             }
         }
-        knownTerrain = tempTerrainKnowledge;
     }
 
-    public Point2D.Double getPosition() {
+    /**
+     * Checks if we can hear other agents and if so add it personal memory with noise
+     */
+    public void checkForAgentSound(){
+        Point2D tmpPoint = getMove(1000, direction);
+        for(Agent agent : worldMap.getAgents()) {
+            if(position.distance(agent.getPosition()) != 0) { //to not add hearing "ourselves" to our log tho a path that we have taken might be something that we want store in the end
+                boolean soundHeard = false;
+                double angleBetweenPoints = Math.toDegrees(Math.atan2((agent.getPosition().getY() - position.getY()), (agent.getPosition().getX() - position.getX())));
+                angleBetweenPoints += new Random().nextGaussian()*SOUND_NOISE_STDEV;
+                if(position.distance(agent.getPosition()) < SOUNDRANGE_FAR && agent.currentSpeed > WALK_SPEED_FAST) {
+                    soundHeard = true;
+                } else if(position.distance(agent.getPosition()) < SOUNDRANGE_MEDIUMFAR && agent.currentSpeed > WALK_SPEED_MEDIUMFAST) {
+                    soundHeard = true;
+                } else if(position.distance(agent.getPosition()) < SOUNDRANGE_MEDIUM && agent.currentSpeed > WALK_SPEED_MEDIUM) {
+                    soundHeard = true;
+                } else if(position.distance(agent.getPosition()) < SOUNDRANGE_CLOSE && agent.currentSpeed > WALK_SPEED_SLOW) {
+                    soundHeard = true;
+                }
+                if(soundHeard){
+                    audioLogs.add(new AudioLog(System.nanoTime(), angleBetweenPoints, new Point2D(position.getX(), position.getY())));
+                    System.out.println("Agent heard sound");
+                }
+            }
+
+        }
+    }
+
+    public boolean sees(int r, int c) {
+        return viewingCone.contains((c*(ASSUMED_WORLDSIZE/(double)worldMap.getSize())*SCALING_FACTOR), (r*(ASSUMED_WORLDSIZE/(double)worldMap.getSize())*SCALING_FACTOR));
+    }
+
+    /**
+     * This method updaes an agents viewing cone, not checked yet it if works when in sentry/min visual range is not zero
+     * commented out code might be necessary in that case
+     * Needs to be called direct or indirectly (WorldMap.createCones())
+     */
+    public void createCone() {
+        viewingCone = createCone(visualRange[0], visualRange[1]);
+    }
+
+    public Shape createCone(double minVisRange, double maxVisRange) {
+        double x = position.getX();
+        double y = position.getY();
+        double visualRangeMin = minVisRange * SCALING_FACTOR; //max visionRange
+        double visualRangeMax = maxVisRange * SCALING_FACTOR; //max visionRange
+        double[] collisionPoints = new double[((AMOUNT_OF_VISION_TENTACLES) * 2)];
+
+        for(int i = 1; i < AMOUNT_OF_VISION_TENTACLES; i++) {
+            double decreaseInVision = 0;
+            tentacleincrementloop:
+            for(int j = 1; j < TENTACLE_INCREMENTS; j++) {
+                Line tentacle = new Line();
+                double xLeftBotLine = x;
+                double yLeftBotLine = y;
+                if(visualRangeMin != 0) {
+                    xLeftBotLine = x + (visualRangeMin * Math.cos(Math.toRadians((direction - viewingAngle/2) + (viewingAngle/AMOUNT_OF_VISION_TENTACLES)*i)));
+                    yLeftBotLine = y + (visualRangeMin * Math.sin(Math.toRadians((direction - viewingAngle/2) + (viewingAngle/AMOUNT_OF_VISION_TENTACLES)*i)));
+                    tentacle.setStartX(xLeftBotLine);
+                    tentacle.setStartY(yLeftBotLine);
+                } else {
+                    tentacle.setStartX(x);
+                    tentacle.setStartY(y);
+                }
+                double xLeftTopLine = x + (visualRangeMax * (double)j/(double)(TENTACLE_INCREMENTS-1) * Math.cos(Math.toRadians((direction - viewingAngle/2) + (viewingAngle/(AMOUNT_OF_VISION_TENTACLES-1))*i)));
+                double yLeftTopLine = y + (visualRangeMax * (double)j/(double)(TENTACLE_INCREMENTS-1) * Math.sin(Math.toRadians((direction - viewingAngle/2) + (viewingAngle/(AMOUNT_OF_VISION_TENTACLES-1))*i)));
+                xLeftTopLine = (Math.abs(x - xLeftTopLine) < Math.abs(x - xLeftBotLine)) ? xLeftBotLine : xLeftTopLine;
+                yLeftTopLine = (Math.abs(y - yLeftTopLine) < Math.abs(y - yLeftBotLine)) ? yLeftBotLine : yLeftTopLine;
+                tentacle.setEndX(xLeftTopLine);
+                tentacle.setEndY(yLeftTopLine);
+                if(worldMap.checkTile(locationToWorldgrid(yLeftTopLine), locationToWorldgrid(xLeftTopLine), DECREASED_VIS_RANGE)) {
+                    decreaseInVision += (1*DECREASE_IN_VISION);
+                }
+                if(isVisionObscuring(worldMap.getWorldGrid()[locationToWorldgrid(yLeftTopLine)][locationToWorldgrid(xLeftTopLine)]) || j >= TENTACLE_INCREMENTS-(decreaseInVision)-1) {
+                    collisionPoints[((i-1)*2)+0] = xLeftTopLine; //(i-1 instead of i because outer for loop starts at 1)
+                    collisionPoints[((i-1)*2)+1] = yLeftTopLine;
+                    knownTerrain[locationToWorldgrid(yLeftTopLine)][locationToWorldgrid(xLeftTopLine)] = worldMap.getWorldGrid()[locationToWorldgrid(yLeftTopLine)][locationToWorldgrid(xLeftTopLine)];
+                    break tentacleincrementloop;
+                }
+            }
+        }
+        collisionPoints[collisionPoints.length-2] = x + (visualRangeMin * Math.cos(Math.toRadians(direction - viewingAngle/2)));
+        collisionPoints[collisionPoints.length-1] = y + (visualRangeMin * Math.sin(Math.toRadians(direction - viewingAngle/2)));
+        collisionPoints[collisionPoints.length-4] = x + (visualRangeMin * Math.cos(Math.toRadians(direction + viewingAngle/2)));
+        collisionPoints[collisionPoints.length-3] = y + (visualRangeMin * Math.sin(Math.toRadians(direction + viewingAngle/2)));
+
+        Polygon cutout = new Polygon(collisionPoints);
+        cutout.setFill(color);
+        return cutout;
+    }
+
+    public Shape getCone() {
+        return viewingCone;
+    }
+
+    /**
+     * Converts world location to array, for example when you want to check if some coordinate you are trying to access
+     * is a wall or not
+     * @param toBeConverted x or y world coordinate (assuming we use a square world so calculations for x and y are the same)
+     * @return column or row that can be looked up in worldArray
+     */
+    public static int locationToWorldgrid(double toBeConverted) {
+        return (int)(toBeConverted * (1/((ASSUMED_WORLDSIZE/worldMap.getWorldGrid().length)*SCALING_FACTOR)));
+    }
+
+    public Point2D getPosition() {
         return position;
     }
 
-    public Point2D.Double getGoalPosition() {
+    public Point2D getGoalPosition() {
         return goalPosition;
     }
-
-    //
-//    public void setPosition(Point position) {
-//        this.position = position;
-//    }
 
     public boolean isThreadStopped() {
         return exitThread;
@@ -297,14 +449,280 @@ public class Agent implements Runnable{
     public void setThreadStopped(boolean exit) {
         this.exitThread = exit;
     }
-    public synchronized void setPosition(Point2D.Double position) {
+    public synchronized void setPosition(Point2D position) {
         this.position = position;
     }
 
-    public double convert()
+    public double getCurrentSpeed() {
+        return currentSpeed;
+    }
+
+    public void setCurrentSpeed(double currentSpeed) {
+        this.currentSpeed = currentSpeed;
+    }
+
+    public List<AudioLog> getAudioLogs() {
+        return audioLogs;
+    }
+
+    public void setAudioLogs(List<AudioLog> audioLogs) {
+        this.audioLogs = audioLogs;
+    }
+
+    public double getDirection() {
+        return direction;
+    }
+
+    public void setDirection(double direction) {
+        this.direction = direction;
+    }
+
+    public double getViewingAngle() {
+        return viewingAngle;
+    }
+
+    public void setViewingAngle(double viewingAngle) {
+        this.viewingAngle = viewingAngle;
+    }
+
+    public double[] getVisualRange() {
+        return visualRange;
+    }
+
+    public void setVisualRange(double[] visualRange) {
+        this.visualRange = visualRange;
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
+    }
+
+
+    public void turnToFace(double angle)
     {
-        World.SettingsScene temp = new World.SettingsScene();
-        return temp.getSize()/worldMap.getSize();
+        direction = angle;
+    }
+
+    public int[][] aStarTerrain(int[][] terrain) {
+        List<Point> walls = new ArrayList<Point>();
+        for(int i = 0; i < terrain.length; i++)
+        {
+            for(int j = 0; j < terrain[0].length; j++)
+            {
+                if(terrain[i][j] == 1 || terrain[i][j] == 5 || terrain[i][j] == 7)
+                {
+                    Point wall = new Point(i, j);
+                    walls.add(wall); //WALL
+                }
+            }
+        }
+        //if(walls.size() == 0)
+        //{
+        //    System.out.println("adding corner");
+        //    Point corner = new Point(0, 0);
+        //    walls.add(corner);
+        //    System.out.println(walls.size());
+        //}
+        int[][] blocks = new int[walls.size()][2];
+        for(int i = 0; i < walls.size(); i++)
+        {
+            blocks[i][0] = (int)walls.get(i).getY();
+            blocks[i][1] = (int)walls.get(i).getX();
+        }
+        return blocks;
+    }
+
+    public void printKnownTerrain()
+    {
+        for(int i = 0; i < knownTerrain.length; i++)
+        {
+            for(int j = 0; j < knownTerrain.length; j++)
+            {
+                System.out.print(knownTerrain[i][j]+" ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+        System.out.println();
+    }
+
+    public void checkChangedStatus()
+    {
+        Point2D pointToCheck = new Point2D(tempGoal.getX(), tempGoal.getY());
+        Point2D currentPos = new Point2D(position.getX(), position.getY());
+        if(changed && checkApproximateEquality(currentPos, pointToCheck))
+        {
+            changed = false;
+        }
+    }
+
+    public boolean checkApproximateEquality(Point2D p1, Point2D p2)
+    {
+        if(p1.getX() <= p2.getX()+1 && p1.getX() >= p2.getX()-1 && p1.getY() <= p2.getY()+1 && p1.getY() >= p2.getY()-1)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public boolean isObstruction(int y, int x)
+    {
+        if(knownTerrain[y][x] == 1 || knownTerrain[y][x] == 5 || knownTerrain[y][x] == 7)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public void cornerCorrection()
+    {
+        if(oldTempGoal.getX()+10 == tempGoal.getX() && oldTempGoal.getY()-10 == tempGoal.getY())
+        {
+            if(isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()+10)/SCALING_FACTOR)))
+            {
+                tempGoal = new Point2D(oldTempGoal.getX(), oldTempGoal.getY()-10);
+                changed = true;
+            }
+            else if(isObstruction((int)((oldTempGoal.getY()-10)/SCALING_FACTOR), (int)(oldTempGoal.getX()/SCALING_FACTOR)))
+            {
+                tempGoal =  new Point2D(oldTempGoal.getX()+10, oldTempGoal.getY());
+                changed = true;
+            }
+        }
+        else if(oldTempGoal.getX()-10 == tempGoal.getX() && oldTempGoal.getY()+10 == tempGoal.getY())
+        {
+            if(isObstruction((int)((oldTempGoal.getY()+10)/SCALING_FACTOR), (int)(oldTempGoal.getX()/SCALING_FACTOR)))
+            {
+                tempGoal = new Point2D(oldTempGoal.getX()-10, oldTempGoal.getY());
+                changed = true;
+            }
+            else if(isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()-10)/SCALING_FACTOR)))
+            {
+                tempGoal = new Point2D(oldTempGoal.getX(), oldTempGoal.getY()+10);
+                changed = true;
+            }
+        }
+        else if(oldTempGoal.getX()+10 == tempGoal.getX() && oldTempGoal.getY()+10 == tempGoal.getY())
+        {
+            if(isObstruction((int)((oldTempGoal.getY()+10)/SCALING_FACTOR), (int)(oldTempGoal.getX()/SCALING_FACTOR)))
+            {
+                tempGoal = new Point2D(oldTempGoal.getX()+10, oldTempGoal.getY());
+                changed = true;
+            }
+            else if(isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()+10)/SCALING_FACTOR)))
+            {
+                tempGoal = new Point2D(oldTempGoal.getX(), oldTempGoal.getY()+10);
+                changed = true;
+            }
+        }
+        else if(oldTempGoal.getX()-10 == tempGoal.getX() && oldTempGoal.getY()-10 == tempGoal.getY())
+        {
+            if (isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()-10)/SCALING_FACTOR)))
+            {
+                tempGoal = new Point2D(oldTempGoal.getX(), oldTempGoal.getY()-10);
+                changed = true;
+            }
+            else if (isObstruction((int)((oldTempGoal.getY()-10)/SCALING_FACTOR), (int)(oldTempGoal.getX()/SCALING_FACTOR)))
+            {
+                tempGoal = new Point2D(oldTempGoal.getX()-10, oldTempGoal.getY());
+                changed = true;
+            }
+        }
+    }
+
+    public void wallPhaseDetection()
+    {
+        pathChanged = false;
+        if(oldTempGoal.getX()+10 == tempGoal.getX() && oldTempGoal.getY()-10 == tempGoal.getY() && isObstruction((int) (oldTempGoal.getY() / SCALING_FACTOR), (int) ((oldTempGoal.getX() + 10) / SCALING_FACTOR)) && isObstruction((int) ((oldTempGoal.getY() - 10) / SCALING_FACTOR), (int) (oldTempGoal.getX() / SCALING_FACTOR)))
+        {
+            Point tempWall = new Point((int) (tempGoal.getX() / SCALING_FACTOR), (int) (tempGoal.getY() / SCALING_FACTOR));
+            tempWalls.add(tempWall);
+            knownTerrain[(int) tempWall.getY()][(int) tempWall.getX()] = 7;
+            pathChanged = true;
+            updatePath();
+        }
+        if(oldTempGoal.getX()-10 == tempGoal.getX() && oldTempGoal.getY()+10 == tempGoal.getY() && isObstruction((int)((oldTempGoal.getY()+10)/SCALING_FACTOR), (int)(oldTempGoal.getX()/SCALING_FACTOR)) && isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()-10)/SCALING_FACTOR)))
+        {
+            Point tempWall = new Point((int) (tempGoal.getX() / SCALING_FACTOR), (int) (tempGoal.getY() / SCALING_FACTOR));
+            tempWalls.add(tempWall);
+            knownTerrain[(int) tempWall.getY()][(int) tempWall.getX()] = 7;
+            pathChanged = true;
+            updatePath();
+        }
+        if(oldTempGoal.getX()+10 == tempGoal.getX() && oldTempGoal.getY()+10 == tempGoal.getY() && isObstruction((int)((oldTempGoal.getY()+10)/SCALING_FACTOR), (int)(oldTempGoal.getX()/SCALING_FACTOR)) && isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()+10)/SCALING_FACTOR)))
+        {
+            Point tempWall = new Point((int)(tempGoal.getX() / SCALING_FACTOR), (int)(tempGoal.getY() / SCALING_FACTOR));
+            tempWalls.add(tempWall);
+            knownTerrain[(int)tempWall.getY()][(int)tempWall.getX()] = 7;
+            pathChanged = true;
+            updatePath();
+        }
+        if(oldTempGoal.getX()-10 == tempGoal.getX() && oldTempGoal.getY()-10 == tempGoal.getY() && isObstruction((int)(oldTempGoal.getY()/SCALING_FACTOR), (int)((oldTempGoal.getX()-10)/SCALING_FACTOR)) && isObstruction((int)((oldTempGoal.getY()-10)/SCALING_FACTOR), (int)(oldTempGoal.getX()/SCALING_FACTOR)))
+        {
+            Point tempWall = new Point((int) (tempGoal.getX() / SCALING_FACTOR), (int) (tempGoal.getY() / SCALING_FACTOR));
+            tempWalls.add(tempWall);
+            knownTerrain[(int) tempWall.getY()][(int) tempWall.getX()] = 7;
+            pathChanged = true;
+            updatePath();
+        }
+    }
+
+    public void updatePath()
+    {
+        int[][] blocks = aStarTerrain(knownTerrain);
+        Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks);
+        List<Node> path = pathFinder.findPath();
+        if(!changed)
+        {
+            tempGoal = new Point2D((path.get(path.size()-1).row*SCALING_FACTOR)+(SCALING_FACTOR/2), (path.get(path.size()-1).column*SCALING_FACTOR)+(SCALING_FACTOR/2));
+
+            if (path.size() > 1) {
+                previousTempGoal = new Point2D((path.get(path.size() - 2).row * SCALING_FACTOR) + (SCALING_FACTOR / 2), (path.get(path.size() - 2).column * SCALING_FACTOR) + (SCALING_FACTOR / 2));
+            }
+            else{
+                previousTempGoal = tempGoal;
+            }
+        }
+        if(pathChanged)
+        {
+            wallPhaseDetection();
+        }
+        cornerCorrection();
+    }
+
+    public void updateWalls()
+    {
+        if(tempWalls.size() > 0)
+        {
+            for(int i = 0 ; i < tempWalls.size() ; i++)
+            {
+                reAdded = false;
+                knownTerrain[tempWalls.get(i).y][tempWalls.get(i).x] = worldMap.getWorldGrid()[tempWalls.get(i).y][tempWalls.get(i).y];
+                int[][] phaseDetectionBlocks = aStarTerrain(knownTerrain);
+                Astar phaseDetectionPathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), phaseDetectionBlocks);
+                List<Node> phaseDetectionPath = phaseDetectionPathFinder.findPath();
+                for(int j = 0 ; j < phaseDetectionPath.size() ; j++)
+                {
+                    if(phaseDetectionPath.get(j).row == tempWalls.get(i).x && phaseDetectionPath.get(j).column == tempWalls.get(i).y)
+                    {
+                        knownTerrain[tempWalls.get(i).y][tempWalls.get(i).x] = 7;
+                        reAdded = true;
+                        break;
+                    }
+                }
+                if(!reAdded)
+                {
+                    tempWalls.remove(i);
+                }
+            }
+        }
     }
 }
 
