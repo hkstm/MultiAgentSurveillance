@@ -87,13 +87,12 @@ public class GameScene extends BorderPane implements Runnable {
         Agent.worldMap = worldMap;
         Guard guard  = new Guard(new Point2D(200, 300), 70);
         Intruder intruder = new Intruder(new Point2D(500, 500), 0);
-        AreaOptimizer areaOptimzer = new AreaOptimizer(new Point2D(520, 210), 0);
+        AreaOptimizer areaOptimizer = new AreaOptimizer(new Point2D(520, 210), 0);
 //        worldMap.addAgent(guard);
-        worldMap.addAgent(intruder);
-//        worldMap.addAgent(areaOptimzer);
+//        worldMap.addAgent(intruder);
 //        worldMap.addOnlyAgent(guard);
 //        worldMap.addOnlyAgent(intruder);
-//        worldMap.addOnlyAgent(areaOptimzer);
+        worldMap.addOnlyAgent(areaOptimizer);
 
         //Actual game "loop" in here
         startGameBut.setOnAction(e -> { //
@@ -164,15 +163,15 @@ public class GameScene extends BorderPane implements Runnable {
 
     public void drawCones() {
         worldMap.createCones();
-//        Circle goal = new Circle(worldMap.getAgents().get(0).getGoalPosition().getX(), worldMap.getAgents().get(0).getGoalPosition().getY(), 10);
-//        goal.setFill(Color.CORNFLOWERBLUE);
-//        worldMap.getAgentsCones().add(goal);
-//        Circle goalPath = new Circle(worldMap.getAgents().get(0).getGoalPositionPath().getX(), worldMap.getAgents().get(0).getGoalPositionPath().getY(), 5);
-//        goal.setFill(Color.HOTPINK);
-//        worldMap.getAgentsCones().add(goalPath);
-//        Circle goalPrev = new Circle(worldMap.getAgents().get(0).getPrevGoalPosition().getX(), worldMap.getAgents().get(0).getPrevGoalPosition().getY(), 10);
-//        goal.setFill(Color.LIGHTSEAGREEN);
-//        worldMap.getAgentsCones().add(goalPrev);
+        Circle goal = new Circle(worldMap.getAgents().get(0).getGoalPosition().getX(), worldMap.getAgents().get(0).getGoalPosition().getY(), 10);
+        goal.setFill(Color.CORNFLOWERBLUE);
+        worldMap.getAgentsCones().add(goal);
+        Circle goalPath = new Circle(worldMap.getAgents().get(0).getGoalPositionPath().getX(), worldMap.getAgents().get(0).getGoalPositionPath().getY(), 5);
+        goal.setFill(Color.HOTPINK);
+        worldMap.getAgentsCones().add(goalPath);
+        Circle goalPrev = new Circle(worldMap.getAgents().get(0).getPrevGoalPosition().getX(), worldMap.getAgents().get(0).getPrevGoalPosition().getY(), 10);
+        goal.setFill(Color.LIGHTSEAGREEN);
+        worldMap.getAgentsCones().add(goalPrev);
         agentGroup.getChildren().addAll(worldMap.getAgentsCones());
     }
 
@@ -185,8 +184,8 @@ public class GameScene extends BorderPane implements Runnable {
         for (int r = 0; r < worldMap.getSize(); r++) {
             for (int c = 0; c < worldMap.getSize(); c++) {
                 TileView tmpView = new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c));
-                tmpView.setCache(true);
-                tmpView.setCacheHint(CacheHint.SPEED);
+//                tmpView.setCache(true);
+//                tmpView.setCacheHint(CacheHint.SPEED);
                 tileViews.add(c + (r * worldMap.getSize()), tmpView);
                 grid.add(tmpView, c, r);tileViews.set(c + (r * worldMap.getSize()),  new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c)));
             }
@@ -203,8 +202,8 @@ public class GameScene extends BorderPane implements Runnable {
                 } else {
                     tmpView = tileViews.get(c + (r * worldMap.getSize()));
                 }
-                tmpView.setCache(true);
-                tmpView.setCacheHint(CacheHint.SPEED);
+//                tmpView.setCache(true);
+//                tmpView.setCacheHint(CacheHint.SPEED);
                 tileViews.set(c + (r * worldMap.getSize()), tmpView);
                 grid.add(tmpView, c, r);
             }
@@ -361,7 +360,13 @@ public class GameScene extends BorderPane implements Runnable {
         Image entryPointTileImg = new Image(new File("src/Assets/entryPointTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
         Image openDoorTileImg = new Image(new File("src/Assets/openDoorTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
         Image openWindowTileImg = new Image(new File("src/Assets/openWindowTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
-        this.tileImgArray = new Image[]{emptyTileImg, structureTileImg, doorTileImg, windowTileImg, targetTileImg, sentryTileImg, decreasedVisRangeTileImg, wallTileImg, entryPointTileImg, openDoorTileImg, openWindowTileImg};
+        Image marker1TileImg = new Image(new File("src/Assets/redTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        Image marker2TileImg = new Image(new File("src/Assets/greenTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        Image marker3TileImg = new Image(new File("src/Assets/marker3.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        Image marker4TileImg = new Image(new File("src/Assets/marker4.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        Image marker5TileImg = new Image(new File("src/Assets/marker5.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        this.tileImgArray = new Image[]{emptyTileImg, structureTileImg, doorTileImg, windowTileImg, targetTileImg, sentryTileImg, decreasedVisRangeTileImg, wallTileImg,
+                entryPointTileImg, openDoorTileImg, openWindowTileImg, marker1TileImg, marker2TileImg, marker3TileImg, marker4TileImg, marker5TileImg};
     }
 
     /**

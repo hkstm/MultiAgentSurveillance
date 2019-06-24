@@ -375,6 +375,10 @@ public class Agent implements Runnable {
     }
 
     public Shape createCone(double minVisRange, double maxVisRange, double viewingAngle) {
+        return createCone(minVisRange, maxVisRange, this.viewingAngle, this.direction);
+    }
+
+    public Shape createCone(double minVisRange, double maxVisRange, double viewingAngle, double direction) {
         double x = position.getX();
         double y = position.getY();
         double visualRangeMin = minVisRange * SCALING_FACTOR; //max visionRange
@@ -389,16 +393,18 @@ public class Agent implements Runnable {
                 double xLeftBotLine = x;
                 double yLeftBotLine = y;
                 if(visualRangeMin != 0) {
-                    xLeftBotLine = x + (visualRangeMin * Math.cos(Math.toRadians((direction - viewingAngle/2) + (viewingAngle/AMOUNT_OF_VISION_TENTACLES)*i)));
-                    yLeftBotLine = y + (visualRangeMin * Math.sin(Math.toRadians((direction - viewingAngle/2) + (viewingAngle/AMOUNT_OF_VISION_TENTACLES)*i)));
+                    double angdeg = (direction - viewingAngle / 2) + (viewingAngle / AMOUNT_OF_VISION_TENTACLES) * i;
+                    xLeftBotLine = x + (visualRangeMin * Math.cos(Math.toRadians(angdeg)));
+                    yLeftBotLine = y + (visualRangeMin * Math.sin(Math.toRadians(angdeg)));
                     tentacle.setStartX(xLeftBotLine);
                     tentacle.setStartY(yLeftBotLine);
                 } else {
                     tentacle.setStartX(x);
                     tentacle.setStartY(y);
                 }
-                double xLeftTopLine = x + (visualRangeMax * (double)j/(double)(TENTACLE_INCREMENTS-1) * Math.cos(Math.toRadians((direction - viewingAngle/2) + (viewingAngle/(AMOUNT_OF_VISION_TENTACLES-1))*i)));
-                double yLeftTopLine = y + (visualRangeMax * (double)j/(double)(TENTACLE_INCREMENTS-1) * Math.sin(Math.toRadians((direction - viewingAngle/2) + (viewingAngle/(AMOUNT_OF_VISION_TENTACLES-1))*i)));
+                double angdeg = (direction - viewingAngle / 2) + (viewingAngle / (AMOUNT_OF_VISION_TENTACLES - 1)) * i;
+                double xLeftTopLine = x + (visualRangeMax * (double)j/(double)(TENTACLE_INCREMENTS-1) * Math.cos(Math.toRadians(angdeg)));
+                double yLeftTopLine = y + (visualRangeMax * (double)j/(double)(TENTACLE_INCREMENTS-1) * Math.sin(Math.toRadians(angdeg)));
                 xLeftTopLine = (Math.abs(x - xLeftTopLine) < Math.abs(x - xLeftBotLine)) ? xLeftBotLine : xLeftTopLine;
                 yLeftTopLine = (Math.abs(y - yLeftTopLine) < Math.abs(y - yLeftBotLine)) ? yLeftBotLine : yLeftTopLine;
                 tentacle.setEndX(xLeftTopLine);

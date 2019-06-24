@@ -120,7 +120,6 @@ public class WorldBuilder extends BorderPane {
      * @param event triggered by keypress
      */
     public void makeAButtonInteractive(ActionEvent event) {
-        System.out.println("Making buttons interactive");
         TileButton button = (TileButton) event.getSource();
         if (!currentlyActiveKeys.containsKey("Q") && !selectingRegion) {
             worldMap.updateTile(button.getRow(), button.getColumn(), activeTile);
@@ -194,6 +193,9 @@ public class WorldBuilder extends BorderPane {
     /**
      * Loads all images for the world and stores them in an array
      */
+    /**
+     * Loads all images for the world and stores them in an array
+     */
     public void initTileImgArray(){
         Image emptyTileImg = new Image(new File("src/Assets/emptyTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
         Image structureTileImg = new Image(new File("src/Assets/structureTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
@@ -206,7 +208,13 @@ public class WorldBuilder extends BorderPane {
         Image entryPointTileImg = new Image(new File("src/Assets/entryPointTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
         Image openDoorTileImg = new Image(new File("src/Assets/openDoorTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
         Image openWindowTileImg = new Image(new File("src/Assets/openWindowTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
-        this.tileImgArray = new Image[]{emptyTileImg, structureTileImg, doorTileImg, windowTileImg, targetTileImg, sentryTileImg, decreasedVisRangeTileImg, wallTileImg, entryPointTileImg, openDoorTileImg, openWindowTileImg};
+        Image marker1TileImg = new Image(new File("src/Assets/redTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        Image marker2TileImg = new Image(new File("src/Assets/greenTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        Image marker3TileImg = new Image(new File("src/Assets/marker3.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        Image marker4TileImg = new Image(new File("src/Assets/marker4.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        Image marker5TileImg = new Image(new File("src/Assets/marker5.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        this.tileImgArray = new Image[]{emptyTileImg, structureTileImg, doorTileImg, windowTileImg, targetTileImg, sentryTileImg, decreasedVisRangeTileImg, wallTileImg,
+                entryPointTileImg, openDoorTileImg, openWindowTileImg, marker1TileImg, marker2TileImg, marker3TileImg, marker4TileImg, marker5TileImg};
     }
 
     /**
