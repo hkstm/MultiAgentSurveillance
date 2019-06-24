@@ -389,13 +389,11 @@ public class Agent implements Runnable{
     }
 
     public Shape createCone(double minVisRange, double maxVisRange, double viewingAngle, double direction) {
-
         double x = position.getX();
         double y = position.getY();
         double visualRangeMin = minVisRange * SCALING_FACTOR; //max visionRange
         double visualRangeMax = maxVisRange * SCALING_FACTOR; //max visionRange
         double[] collisionPoints = new double[((AMOUNT_OF_VISION_TENTACLES) * 2)];
-        long initTime = System.nanoTime();
         for(int i = 1; i < AMOUNT_OF_VISION_TENTACLES; i++) {
             double decreaseInVision = 0;
             for(int j = 1; j < TENTACLE_INCREMENTS; j++) {
@@ -424,8 +422,6 @@ public class Agent implements Runnable{
                 }
             }
         }
-        long tentacleTime = System.nanoTime();
-        System.out.println("init-tent: " + (tentacleTime-initTime)/1e9);
         collisionPoints[collisionPoints.length-1] = y + (visualRangeMin * Math.sin(Math.toRadians(direction - viewingAngle/2)));
         collisionPoints[collisionPoints.length-2] = x + (visualRangeMin * Math.cos(Math.toRadians(direction - viewingAngle/2)));
         collisionPoints[collisionPoints.length-3] = y + (visualRangeMin * Math.sin(Math.toRadians(direction + viewingAngle/2)));

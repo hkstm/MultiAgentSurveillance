@@ -214,7 +214,7 @@ public class WorldMap implements Serializable {
         for(Agent agent : agents) {
             if(agent instanceof Intruder) {
                 if(coordinatesToCell(agent.getPosition()) == TARGET) {
-                    System.out.println("agent intruderInTargetPos: " + agent.getPosition().toString());
+//                    System.out.println("agent intruderInTargetPos: " + agent.getPosition().toString());
                     return true;
                 }
             }

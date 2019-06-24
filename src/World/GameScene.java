@@ -53,7 +53,8 @@ public class GameScene extends BorderPane implements Runnable {
 
     private boolean gameStarted; //used for start and stop button
     private int mode; //modes for different gameModes e.g. multiple intruders/guards and what the end game conditions are
-    public static final int ASSUMED_WORLDSIZE = 100;
+    public static final double SIMULATION_SPEEDUP_FACTOR = 1;
+    public static final int ASSUMED_WORLDSIZE = 200;
     public static final double SCALING_FACTOR = WINDOW_SIZE/ASSUMED_WORLDSIZE; //ASSUMING WORLD IS ALWAYS 100 X 100 AND THAT WINDOWSIZE IS 1000
     public static Random random = new Random();
     private long currentTimeCountDown;
@@ -291,7 +292,7 @@ public class GameScene extends BorderPane implements Runnable {
                     double angleBetweenPoints = Math.toDegrees(Math.atan2((agent.getPosition().getY() - randomNoiseLocation.getY()), (agent.getPosition().getX() - randomNoiseLocation.getX())));
                     angleBetweenPoints += new Random().nextGaussian()*SOUND_NOISE_STDEV;
                     agent.getAudioLogs().add(new AudioLog(System.nanoTime(), angleBetweenPoints, new Point2D(agent.getPosition().getX(), agent.getPosition().getY())));
-                    System.out.println("Agent heard sound");
+//                    System.out.println("Agent heard sound");
                 }
             }
         }

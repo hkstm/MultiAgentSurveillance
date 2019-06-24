@@ -31,6 +31,8 @@ public class RunSimulation extends Application {
     private Pheromones pher;
     private boolean pherActive = true;
 
+
+
     public static void main(String[] args) {
         launch(args);
     }
@@ -76,7 +78,9 @@ public class RunSimulation extends Application {
                 long currentTime = System.nanoTime();
                 worldMap.forceUpdateAgents();
                 long delta = (currentTime - previousTime);
-                System.out.println("delta: " + delta/1e9);
+                delta /= 1e9;
+//                if(delta > 0.02) System.out.println("delta: " + delta);
+//                System.out.println();
                 previousTime = currentTime;
                 pher.update(delta);
                 generateRandomSound(delta);
@@ -147,7 +151,7 @@ public class RunSimulation extends Application {
                     double soundDirection = Math.toDegrees(Math.atan2((agent.getPosition().getY() - randomNoiseLocation.getY()), (agent.getPosition().getX() - randomNoiseLocation.getX())));
                     soundDirection += new Random().nextGaussian()*SOUND_NOISE_STDEV;
                     agent.getAudioLogs().add(new AudioLog(System.nanoTime(), soundDirection, new Point2D(agent.getPosition().getX(), agent.getPosition().getY())));
-                    System.out.println("Agent heard sound");
+//                    System.out.println("Agent heard sound");
                 }
             }
         }

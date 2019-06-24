@@ -98,9 +98,9 @@ public class StraightLiner extends Intruder{
             }
             if (legalMoveCheck(walkingDistance)){
                 move(walkingDistance);
-            } else System.out.println("not legal move - straightline");
+            }
         } else {
-            System.out.println("elapsed time not larger than freeze time");
+//            System.out.println("elapsed time not larger than freeze time");
         }
     }
 }
