@@ -68,9 +68,6 @@ public class Intruder extends Agent{
 
     public void gameTreeIntruder(double timeStep)
     {
-        //TODO check for guards
-        //TODO make noise
-        //TODO add weights to flags and other types of squares, try manually an possibly with a genetic algorithm
         double walkingDistance = (BASE_SPEED *SCALING_FACTOR*timeStep);
         double sprintingDistance = (SPRINT_SPEED *SCALING_FACTOR*timeStep);
         updateWalls();
@@ -173,7 +170,7 @@ public class Intruder extends Agent{
                 }
             }
             modify = false;
-            if(tempOldPos.x != (int)(position.getX()/SCALING_FACTOR) || tempOldPos.y != (int)(position.getY()/SCALING_FACTOR)) //new cell entered
+            if(tempOldPos.x != (int)(position.getX()/SCALING_FACTOR) || tempOldPos.y != (int)(position.getY()/SCALING_FACTOR))
             {
                 if(!first && oldPos.x == (int)(position.getX()/SCALING_FACTOR) && oldPos.y == (int)(position.getY()/SCALING_FACTOR))
                 {

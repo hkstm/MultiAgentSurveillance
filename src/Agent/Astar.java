@@ -6,6 +6,14 @@ import java.util.ArrayList;
 import java.util.PriorityQueue;
 import static World.GameScene.ASSUMED_WORLDSIZE;
 import static World.GameScene.SCALING_FACTOR;
+import static World.WorldMap.STRUCTURE;
+import static World.WorldMap.DOOR;
+import static World.WorldMap.WINDOW;
+import static World.WorldMap.TARGET;
+import static World.WorldMap.SENTRY;
+import static World.WorldMap.DECREASED_VIS_RANGE;
+import static World.WorldMap.WALL;
+import static World.WorldMap.UNEXPLORED;
 
 import java.awt.Point;
 
@@ -208,63 +216,63 @@ public class Astar {
         {
             weightToAdd -= 6;
         }
-        for(int i = row ; i < row+16 ; i++)
+        for(int i = row+2 ; i < row+16 ; i++)
         {
-            for(int j = column ; j < column+16 ; j++)
+            for(int j = column+2 ; j < column+16 ; j++)
             {
-                if(i >= 0 && j >= 0 && i < ASSUMED_WORLDSIZE && j < ASSUMED_WORLDSIZE && knownTerrain[i][j] == 5)
+                if(i >= 0 && j >= 0 && i < ASSUMED_WORLDSIZE && j < ASSUMED_WORLDSIZE && knownTerrain[i][j] == SENTRY)
                 {
                     weightToAdd += 30;
                 }
             }
         }
-        for(int i = row ; i < row+16 ; i++)
+        for(int i = row+2 ; i < row+16 ; i++)
         {
-            for(int j = column ; j > column-16 ; j--)
+            for(int j = column-2 ; j > column-16 ; j--)
             {
-                if(i >= 0 && j >= 0 && i < ASSUMED_WORLDSIZE && j < ASSUMED_WORLDSIZE && knownTerrain[i][j] == 5)
+                if(i >= 0 && j >= 0 && i < ASSUMED_WORLDSIZE && j < ASSUMED_WORLDSIZE && knownTerrain[i][j] == SENTRY)
                 {
                     weightToAdd += 30;
                 }
             }
         }
-        for(int i = row ; i > row-16 ; i--)
+        for(int i = row-2 ; i > row-16 ; i--)
         {
-            for(int j = column ; j < column+16 ; j++)
+            for(int j = column+2 ; j < column+16 ; j++)
             {
-                if(i >= 0 && j >= 0 && i < ASSUMED_WORLDSIZE && j < ASSUMED_WORLDSIZE && knownTerrain[i][j] == 5)
+                if(i >= 0 && j >= 0 && i < ASSUMED_WORLDSIZE && j < ASSUMED_WORLDSIZE && knownTerrain[i][j] == SENTRY)
                 {
                     weightToAdd += 30;
                 }
             }
         }
-        for(int i = row ; i > row-16 ; i--)
+        for(int i = row-2 ; i > row-16 ; i--)
         {
-            for(int j = column ; j > column-16 ; j--)
+            for(int j = column-2 ; j > column-16 ; j--)
             {
-                if(i >= 0 && j >= 0 && i < ASSUMED_WORLDSIZE && j < ASSUMED_WORLDSIZE && knownTerrain[i][j] == 5)
+                if(i >= 0 && j >= 0 && i < ASSUMED_WORLDSIZE && j < ASSUMED_WORLDSIZE && knownTerrain[i][j] == SENTRY)
                 {
                     weightToAdd += 30;
                 }
             }
         }
-        if(knownTerrain[row][column] == 6)
+        if(knownTerrain[row][column] == DECREASED_VIS_RANGE)
         {
             weightToAdd -= 10;
         }
-        else if(knownTerrain[row][column] == 12)
+        else if(knownTerrain[row][column] == UNEXPLORED)
         {
             weightToAdd -= 1;
         }
-        else if(knownTerrain[row][column] == 4)
+        else if(knownTerrain[row][column] == TARGET)
         {
             weightToAdd -= 999;
         }
-        else if(knownTerrain[row][column] == 2)
+        else if(knownTerrain[row][column] == DOOR)
         {
             weightToAdd += 2;
         }
-        else if(knownTerrain[row][column] == 3)
+        else if(knownTerrain[row][column] == WINDOW)
         {
             weightToAdd += 3;
         }
@@ -273,7 +281,7 @@ public class Astar {
 
     public boolean coverCheck(int[][] knownTerrain, int row, int column)
     {
-        if(row >= 0 && column >= 0 && row < ASSUMED_WORLDSIZE && column < ASSUMED_WORLDSIZE && (knownTerrain[row][column] == 1 || knownTerrain[row][column] == 2 || knownTerrain[row][column] == 3 || knownTerrain[row][column] == 7 || knownTerrain[row][column] == 5))
+        if(row >= 0 && column >= 0 && row < ASSUMED_WORLDSIZE && column < ASSUMED_WORLDSIZE && (knownTerrain[row][column] == STRUCTURE || knownTerrain[row][column] == DOOR || knownTerrain[row][column] == WINDOW || knownTerrain[row][column] == WALL || knownTerrain[row][column] == SENTRY))
         {
             return true;
         }
