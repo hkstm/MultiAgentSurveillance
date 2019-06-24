@@ -58,8 +58,12 @@ public class StupidGuard extends Guard{
             }
         } else {
             System.out.println("turning to direction: " + directionToGo);
+            System.out.println("current direction: " + direction);
             updateDirection(directionToGo);
-            if(Math.abs(direction - directionToGo) < 0.1) turningToDirection = false;
+
+            double abs = Math.abs(direction - directionToGo);
+            System.out.println("Math.abs(direction - directionToGo): " + abs);
+            if(abs < 0.1 || abs > 359.9) turningToDirection = false;
         }
         updatePerformanceCriteria();
     }
