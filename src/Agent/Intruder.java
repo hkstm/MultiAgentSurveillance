@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import static World.GameScene.SCALING_FACTOR;
 import static World.WorldMap.EMPTY;
+import static World.WorldMap.WALL;
 
 /**
  * A subclass of Agent for the Intruders
@@ -25,6 +26,7 @@ public class Intruder extends Agent{
     private boolean first;
     private int alternatingCounter;
     private boolean modify;
+
 
 
     /**
@@ -139,8 +141,21 @@ public class Intruder extends Agent{
                 tempOldPos = new Point((int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR));
                 first = false;
             }
+            int wallCount = 0;
+            int sprintPercent = 0;
+//            for (int i = locationToWorldgrid(position.getX() - 2 ); i < locationToWorldgrid(position.getX() + 2 ); i++){
+//                for (int j = locationToWorldgrid(position.getY() - 2); j < locationToWorldgrid(position.getY() + 2); j++){
+//                    if (knownTerrain[i][j] == WALL){
+//                        wallCount++;
+//                    }
+//                    if (wallCount > 10 ){
+//                        sprintPercent = Math.random()
+//                    }
+//                }
+//            }
             if(!tired)
             {
+
                 if(legalMoveCheck(sprintingDistance))
                 {
                     long nowMillis = System.currentTimeMillis();
@@ -209,6 +224,7 @@ public class Intruder extends Agent{
             else
             {
                 freezeTime = 5;
+                doorNoise = true;
                 //HERE A NOISE MUST BE MADE!!!!!
             }
             frozen = true;

@@ -96,6 +96,7 @@ public class Agent implements Runnable {
     private boolean goalSet = false;
     private int alternatingCounter = 0;
     protected Point[] points = new Point[2];
+    protected boolean doorNoise;
 
     /**
      * Constructor for Agent
@@ -346,6 +347,8 @@ public class Agent implements Runnable {
                 } else if(position.distance(agent.getPosition()) < SOUNDRANGE_MEDIUM && agent.currentSpeed > WALK_SPEED_MEDIUM) {
                     soundHeard = true;
                 } else if(position.distance(agent.getPosition()) < SOUNDRANGE_CLOSE && agent.currentSpeed > WALK_SPEED_SLOW) {
+                    soundHeard = true;
+                } else if(agent.doorNoise == true){
                     soundHeard = true;
                 }
                 if(soundHeard){
