@@ -778,4 +778,9 @@ public class Agent implements Runnable{
         if(blind) return false;
         else return viewingCone.contains(x, y);
     }
+
+    public void clearAudioLog()
+    {
+        audioLogs.clear();
+    }
 }
