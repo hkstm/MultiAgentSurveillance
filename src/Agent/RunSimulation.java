@@ -40,12 +40,12 @@ public class RunSimulation extends Application {
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Multi-Agent Surveillance - Simulation Only");
-        int amountOfSims = 25;
+        int amountOfSims = 2;
         int guardsWins = 0;
         int intruderWins = 0;
-        int amountOfGuards = 7;
+        int amountOfGuards = 3;
         worldFile = loadFile(primaryStage);
-        double[][] summary = new double[amountOfSims][amountOfGuards*2];
+        double[][] summary = new double[amountOfSims][(amountOfGuards*2)+2];
         for(int i = 0; i < amountOfSims; i++) {
             worldMap = loadMap(worldFile);
             Agent.worldMap = worldMap;
@@ -99,6 +99,8 @@ public class RunSimulation extends Application {
                 summary[i][guards * 2] = guardList.get(guards).getTimeCost();
                 summary[i][guards * 2 + 1] = guardList.get(guards).getDistanceCost();
             }
+            summary[i][amountOfGuards] = guardsWins;
+            summary[i][amountOfGuards+1] = intruderWins;
         }
         printSummary(summary, guardsWins, intruderWins, amountOfGuards, "ez");
     }
