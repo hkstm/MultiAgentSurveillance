@@ -445,7 +445,7 @@ public class Agent implements Runnable{
      * @return column or row that can be looked up in worldArray
      */
     public static int locationToWorldgrid(double toBeConverted) {
-        return (int)(toBeConverted * (1/((ASSUMED_WORLDSIZE/worldMap.getWorldGrid().length)*SCALING_FACTOR)));
+        return (int)(toBeConverted * (1/((ASSUMED_WORLDSIZE/worldMap.getSize())*SCALING_FACTOR)));
     }
 
     public Point2D getPosition() {

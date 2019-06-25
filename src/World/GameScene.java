@@ -88,20 +88,23 @@ public class GameScene extends BorderPane implements Runnable {
 
         this.startGameBut = new Button("Start/Stop Game"); //should stop and start game, not properly working atm
         Agent.worldMap = worldMap;
-        Guard guard1  = new Guard(new Point2D(200, 450), 70);
-        Guard guard2  = new Guard(new Point2D(500, 400), 100);
-        Intruder intruder = new Intruder(new Point2D(500, 500), 0);
-        AreaOptimizer areaOptimzer = new AreaOptimizer(new Point2D(500, 400), 0);
-        //       Guard guard1  = new Guard(new Point2D(200, 300), 70);
-//        Guard guard2  = new Guard(new Point2D(500, 100), 100);
-        AreaOptimizer areaOptimizer = new AreaOptimizer(new Point2D(500, 400), 0);
-        Guard stupidGuard = new StupidGuard(new Point2D(800, 300), 315);
-        StraightLiner straightLiner = new StraightLiner(new Point2D(20, 20), -45);
-//        worldMap.addAgent(guard);
-//        worldMap.addOnlyAgent(areaOptimizer);
-//        worldMap.addOnlyAgent(stupidGuard);
+
+        StraightLiner straightLiner = new StraightLiner(new Point2D(10, 10), 45);
         worldMap.addAgent(straightLiner);
+        int amountOfStupidGuards = 2;
+        for(int n = 0; n < amountOfStupidGuards; n++) {
+            double x = 0;
+            double y = 0;
+            do{
+                x = new Random().nextDouble()*worldMap.getSize()*SCALING_FACTOR;
+                y = new Random().nextDouble()*worldMap.getSize()*SCALING_FACTOR;
+            }while(!worldMap.isEmpty(worldMap.getTileState(locationToWorldgrid(y), locationToWorldgrid(x))));
+            worldMap.addAgent(new StupidGuard(new Point2D(x, y), new Random().nextDouble()*360));
+        }
         this.pher = new Pheromones(worldMap);
+        System.out.println("doing simulation");
+
+
 
         //worldMap.addOnlyAgent(areaOptimzer);
         //Actual game "loop" in here

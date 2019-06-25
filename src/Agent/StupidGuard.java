@@ -50,11 +50,11 @@ public class StupidGuard extends Guard{
                 turningToDirection = true;
             }
         } else {
-            System.out.println("turning to direction: " + directionToGo);
+//            System.out.println("turning to direction: " + directionToGo);
             updateDirection(directionToGo);
 
             double abs = Math.abs(direction - directionToGo);
-            System.out.println("Math.abs(direction - directionToGo): " + abs);
+//            System.out.println("Math.abs(direction - directionToGo): " + abs);
             if(abs < 0.1 || abs > 359.9) turningToDirection = false;
         }
 
