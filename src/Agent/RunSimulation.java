@@ -40,12 +40,12 @@ public class RunSimulation extends Application {
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Multi-Agent Surveillance - Simulation Only");
-        int amountOfSims = 5;
+        int amountOfSims = 1;
         int guardsWins = 0;
         int intruderWins = 0;
-        int amountOfGuards = 7;
+        int amountOfGuards = 3;
         worldFile = loadFile(primaryStage);
-        double[][] summary = new double[amountOfSims][amountOfGuards*2];
+        double[][] summary = new double[amountOfSims][(amountOfGuards*2)+2];
         for(int i = 0; i < amountOfSims; i++) {
             worldMap = loadMap(worldFile);
             Agent.worldMap = worldMap;
@@ -62,7 +62,7 @@ public class RunSimulation extends Application {
             Agent.worldMap = worldMap;
 
             StraightLiner straightLiner = new StraightLiner(new Point2D(10, 10), 45);
-            worldMap.addAgent(straightLiner);
+            worldMap.addOnlyAgent(straightLiner);
             for(int n = 0; n < amountOfGuards; n++) {
                 double x = 0;
                 double y = 0;
@@ -70,14 +70,14 @@ public class RunSimulation extends Application {
                     x = new Random().nextDouble()*worldMap.getSize()*SCALING_FACTOR;
                     y = new Random().nextDouble()*worldMap.getSize()*SCALING_FACTOR;
                 }while(!worldMap.isEmpty(worldMap.getTileState(locationToWorldgrid(y), locationToWorldgrid(x))));
-                worldMap.addAgent(new StupidGuard(new Point2D(x, y), new Random().nextDouble()*360));
+                worldMap.addOnlyAgent(new StupidGuard(new Point2D(x, y), new Random().nextDouble()*360));
             }
             this.pher = new Pheromones(worldMap);
             System.out.println("doing simulation");
-            worldMap.startAgents();
+//            worldMap.startAgents();
             while(!gameEnded){
                 long currentTime = System.nanoTime();
-//                worldMap.forceUpdateAgents();
+                worldMap.forceUpdateAgents();
                 long delta = (currentTime - previousTime);
                 delta *= SIMULATION_SPEEDUP_FACTOR;
 //                System.out.println();
@@ -96,9 +96,11 @@ public class RunSimulation extends Application {
             ArrayList<Guard> guardList = new ArrayList<>();
             for(Agent agent : worldMap.getAgents()) if (agent instanceof Guard) guardList.add((Guard)agent);
             for(int guards = 0; guards < amountOfGuards; guards++) {
-                summary[i][guards*2] = guardList.get(guards).getTimeCost();
-                summary[i][guards*2+1] = guardList.get(guards).getDistanceCost();
+                summary[i][guards * 2] = guardList.get(guards).getTimeCost();
+                summary[i][guards * 2 + 1] = guardList.get(guards).getDistanceCost();
             }
+            summary[i][amountOfGuards*2] = guardsWins;
+            summary[i][(amountOfGuards*2)+1] = intruderWins;
         }
         printSummary(summary, guardsWins, intruderWins, amountOfGuards, "ez");
     }
