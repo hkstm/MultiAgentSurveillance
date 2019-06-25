@@ -29,7 +29,7 @@ public class Intruder extends Agent{
     protected boolean first;
     protected int alternatingCounter;
     protected boolean modify;
-
+    protected Point toSave;
 
 
     /**
@@ -168,16 +168,16 @@ public class Intruder extends Agent{
                 {
                     alternatingCounter = 0;
                 }
+                toSave = oldPos;
+                oldPos = tempOldPos;
             }
             if(alternatingCounter == 4)
             {
-                System.out.println("modify");
                 alternatingCounter = 0;
                 modify = true;
-                points[0] = oldPos;
+                points[0] = toSave;
                 points[1] = tempOldPos;
             }
-            oldPos = tempOldPos;
             if(audioLogs.size() > 0)
             {
                 modify = true;
