@@ -24,14 +24,12 @@ public class Intruder extends Agent{
     protected int sprintCounter = 5;
     protected int walkCounter = 15;
     protected List<Point> tempWalls = new ArrayList<Point>();
-    private Point tempOldPos = null;
-    private Point oldPos = null;
-    private boolean first;
-    private int alternatingCounter;
-    private boolean modify;
-    private double runTime = 5;
-    private double walkTime = 10;
-
+    protected Point tempOldPos = null;
+    protected Point oldPos = null;
+    protected boolean first;
+    protected int alternatingCounter;
+    protected boolean modify;
+    protected Point toSave;
 
 
     /**
@@ -129,95 +127,33 @@ public class Intruder extends Agent{
                 tempOldPos = new Point((int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR));
                 first = false;
             }
-            int wallCount = 0;
-            double sprintPercent = 0;
-            double random = Math.random();
-            int rangeYTop = 2;
-            int rangeXLeft = 2;
-            int rangeXRight = 2;
-            int rangeYButtom = 2;
-            //System.out.println("x: " + locationToWorldgrid(position.getX()) + "y: " + locationToWorldgrid(position.getY()));
-            if(locationToWorldgrid(position.getX()) - 2 < 0 ){
-                rangeXLeft = 1;
-            }else if (locationToWorldgrid(position.getY()) - 2 < 0){
-                rangeYTop = 1;
-            }else if (locationToWorldgrid(position.getX()) + 2 > knownTerrain.length){
-                rangeXRight = 1;
-            }else if (locationToWorldgrid(position.getY()) + 2 > knownTerrain[0].length){
-                rangeYButtom = 1;
-            }
-            for (int r = locationToWorldgrid(position.getY()) - rangeYTop; r < locationToWorldgrid(position.getY()) + rangeYButtom; r++) {
-                for (int c = locationToWorldgrid(position.getX()) - rangeXLeft; c < locationToWorldgrid(position.getX()) + rangeXRight; c++) {
-                    // System.out.println(knownTerrain[r][c]);
-                    if (knownTerrain[r][c] == WALL) {
-                        wallCount++;
-                    }
-                }
-            }
-            if (wallCount == 0) {
-                sprintPercent = 1.0;
-            } else if (wallCount < 5) {
-                sprintPercent = 0.9;
-            } else if (wallCount > 5 && wallCount < 10) {
-                sprintPercent = 0.5;
-            } else if (wallCount > 10) {
-                sprintPercent = 0.0;
-            }
-            //  System.out.println("wall cout" + wallCount);
-//            System.out.println("sprint percent" + sprintPercent);
-            for (Agent agent : worldMap.getAgents()) {
-                if (agent instanceof Guard && viewingCone.contains(agent.getPosition()) && !tired) {
-                    updateDirection(direction + 180);
-                    System.out.println("seeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
-                    if (legalMoveCheck(sprintingDistance)) {
-                        runTime -= timeStep;
+            if(!tired)
+            {
+                if(legalMoveCheck(sprintingDistance))
+                {
+                    long nowMillis = System.currentTimeMillis();
+                    int countSec = (int)((nowMillis - this.createdMillis) / 1000);
+                    if (countSec != sprintCounter){
                         move(sprintingDistance);
-                        if (runTime < 0){
-                            tired = true;
-                            runTime = 5;
-                        }
+                    }
+                    else{
+                        tired = true;
+                        sprintCounter = sprintCounter + 15;
                     }
                 }
-                else if (agent instanceof Guard && viewingCone.contains(agent.getPosition()) && tired){
-                    updateDirection(direction + 180);
-                    System.out.println("seeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
-                    if (legalMoveCheck(walkingDistance)){
-                        walkTime -= timeStep;
+            }
+            if (tired)
+            {
+                if(legalMoveCheck(walkingDistance))
+                {
+                    long nowMillis = System.currentTimeMillis();
+                    int countSec = (int)((nowMillis - this.createdMillis) / 1000);
+                    if (countSec != walkCounter) {
                         move(walkingDistance);
-                        if (walkTime < 0){
-                            tired = false;
-                            walkTime = 10;
-                        }
                     }
-                }
-                else if (random <= sprintPercent && !tired) {
-                    if (legalMoveCheck(sprintingDistance)) {
-                        runTime = runTime - timeStep;
-                        // System.out.println("sprint time" + runTime);
-                        move(sprintingDistance);
-                        // System.out.println("sprint percent: " + sprintPercent + "tired?: " + tired + "im sprinting");
-                        if (runTime < 0) {
-                            tired = true;
-                            runTime = 5;
-                        }
-                    }
-                } else if (tired) {
-                    if (legalMoveCheck(walkingDistance)) {
-                        walkTime -= timeStep;
-                        //  System.out.println("walk time" + walkTime);
-                        // System.out.println("sprint percent: " + sprintPercent + "tired?: " + tired + "im walking");
-                        move(walkingDistance);
-                        if (walkTime < 0) {
-                            tired = false;
-                            walkTime = 10;
-                        }
-                    }
-                } else if (viewingCone.contains(goalPosition) && !tired) {
-                    move(walkingDistance);
-                } else {
-                    if (legalMoveCheck(walkingDistance)) {
-                        //  System.out.println("sprint percent: " + sprintPercent + "tired?: " + tired + "im walking");
-                        move(walkingDistance);
+                    else{
+                        tired = false;
+                        walkCounter += 15;
                     }
                 }
             }
@@ -232,15 +168,20 @@ public class Intruder extends Agent{
                 {
                     alternatingCounter = 0;
                 }
+                toSave = oldPos;
+                oldPos = tempOldPos;
             }
-            if(alternatingCounter == 6)
+            if(alternatingCounter == 4)
             {
                 alternatingCounter = 0;
                 modify = true;
-                points[0] = oldPos;
+                points[0] = toSave;
                 points[1] = tempOldPos;
             }
-            oldPos = tempOldPos;
+            if(audioLogs.size() > 0)
+            {
+                modify = true;
+            }
         }
     }
 

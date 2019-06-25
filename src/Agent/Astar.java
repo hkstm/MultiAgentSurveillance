@@ -14,6 +14,7 @@ import static World.WorldMap.SENTRY;
 import static World.WorldMap.DECREASED_VIS_RANGE;
 import static World.WorldMap.WALL;
 import static World.WorldMap.UNEXPLORED;
+import javafx.geometry.Point2D;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ public class Astar {
     private int ei, ej;
     private Agent agent;
     private static List<Point> pointsToModify = new ArrayList<Point>();
+    private static List<Point> pointsToModifyNoise = new ArrayList<Point>();
 
     public Astar(int width, int height, int si, int sj, int ei, int ej, int[][] blocks, Agent agent, boolean modify){
         this.si = si;
@@ -41,6 +43,36 @@ public class Astar {
         {
             pointsToModify.add(agent.points[0]);
             pointsToModify.add(agent.points[1]);
+            pointsToModify.add(new Point(agent.points[0].x + 1, agent.points[0].y));
+            pointsToModify.add(new Point(agent.points[0].x + 1, agent.points[0].y + 1));
+            pointsToModify.add(new Point(agent.points[0].x, agent.points[0].y + 1));
+            pointsToModify.add(new Point(agent.points[0].x - 1, agent.points[0].y + 1));
+            pointsToModify.add(new Point(agent.points[0].x - 1, agent.points[0].y));
+            pointsToModify.add(new Point(agent.points[0].x - 1, agent.points[0].y - 1));
+            pointsToModify.add(new Point(agent.points[0].x, agent.points[0].y - 1));
+            pointsToModify.add(new Point(agent.points[0].x + 1, agent.points[0].y - 1));
+
+            for(int i = 0 ; i < agent.getAudioLogs().size() ; i ++)
+            {
+                double actualDirection = agent.audioLogs.get(i).getDirection();
+                if(actualDirection < 0)
+                {
+                    actualDirection += 360;
+                }
+                Point2D source = agent.getMove(50, actualDirection);
+                Point gridSource = new Point(agent.locationToWorldgrid(source.getX()), agent.locationToWorldgrid(source.getY()));
+                pointsToModifyNoise.add(new Point(gridSource.x, gridSource.y));
+                pointsToModifyNoise.add(new Point(gridSource.x+1, gridSource.y));
+                pointsToModifyNoise.add(new Point(gridSource.x+1, gridSource.y+1));
+                pointsToModifyNoise.add(new Point(gridSource.x, gridSource.y+1));
+                pointsToModifyNoise.add(new Point(gridSource.x-1, gridSource.y+1));
+                pointsToModifyNoise.add(new Point(gridSource.x-1, gridSource.y));
+                pointsToModifyNoise.add(new Point(gridSource.x-1, gridSource.y-1));
+                pointsToModifyNoise.add(new Point(gridSource.x, gridSource.y-1));
+                pointsToModifyNoise.add(new Point(gridSource.x+1, gridSource.y-1));
+            }
+            agent.clearAudioLog();
+
         }
         grid = new Node[width][height];
         closeCell = new boolean[width][height];
@@ -56,9 +88,26 @@ public class Astar {
                 }
             }
         }
-        for(int i = 0 ; i < pointsToModify.size() ; i++)
+        if(agent.getClass() == Intruder.class)
         {
-            grid[pointsToModify.get(i).x][pointsToModify.get(i).y].heuristic += 100;
+            for(int i = 0 ; i < pointsToModify.size() ; i++)
+            {
+                if(agent.getWorldGrid()[pointsToModify.get(i).y][pointsToModify.get(i).x] != WALL && agent.getWorldGrid()[pointsToModify.get(i).y][pointsToModify.get(i).x] != SENTRY && agent.getWorldGrid()[pointsToModify.get(i).y][pointsToModify.get(i).x] != STRUCTURE)
+                {
+                    //if(!nextToEntrance(new Point(pointsToModify.get(i).x, pointsToModify.get(i).y)))
+                    //{
+                    grid[pointsToModify.get(i).x][pointsToModify.get(i).y].heuristic += 50;
+                    //}
+                    //System.out.println(grid[pointsToModify.get(i).x][pointsToModify.get(i).y].heuristic);
+                }
+            }
+            for(int i = 0 ; i < pointsToModifyNoise.size() ; i++)
+            {
+                if(agent.getWorldGrid()[pointsToModifyNoise.get(i).y][pointsToModifyNoise.get(i).x] != WALL && agent.getWorldGrid()[pointsToModifyNoise.get(i).y][pointsToModifyNoise.get(i).x] != SENTRY && agent.getWorldGrid()[pointsToModifyNoise.get(i).y][pointsToModifyNoise.get(i).x] != STRUCTURE)
+                {
+                    grid[pointsToModifyNoise.get(i).x][pointsToModifyNoise.get(i).y].heuristic += 30;
+                }
+            }
         }
         grid[si][sj].fCost = 0;
         for (int i = 0; i < blocks.length; i++){
@@ -186,35 +235,35 @@ public class Astar {
         double weightToAdd = 0;
         if(coverCheck(knownTerrain, row+1, column-1))
         {
-            weightToAdd -= 6;
+            weightToAdd -= 5;
         }
         if(coverCheck(knownTerrain, row+1, column))
         {
-            weightToAdd -= 6;
+            weightToAdd -= 5;
         }
         if(coverCheck(knownTerrain, row, column-1))
         {
-            weightToAdd -= 6;
+            weightToAdd -= 5;
         }
         if(coverCheck(knownTerrain, row-1, column-1))
         {
-            weightToAdd -= 6;
+            weightToAdd -= 5;
         }
         if(coverCheck(knownTerrain, row-1, column))
         {
-            weightToAdd -= 6;
+            weightToAdd -= 5;
         }
         if(coverCheck(knownTerrain, row-1, column+1))
         {
-            weightToAdd -= 6;
+            weightToAdd -= 5;
         }
         if(coverCheck(knownTerrain, row, column+1))
         {
-            weightToAdd -= 6;
+            weightToAdd -= 5;
         }
         if(coverCheck(knownTerrain, row+1, column+1))
         {
-            weightToAdd -= 6;
+            weightToAdd -= 5;
         }
         for(int i = row ; i < row+16 ; i++)
         {
@@ -262,7 +311,7 @@ public class Astar {
         }
         else if(knownTerrain[row][column] == UNEXPLORED)
         {
-            weightToAdd -= 1;
+            weightToAdd -= 5;
         }
         else if(knownTerrain[row][column] == TARGET)
         {
@@ -270,11 +319,11 @@ public class Astar {
         }
         else if(knownTerrain[row][column] == DOOR)
         {
-            weightToAdd += 2;
+            weightToAdd -= 10;
         }
         else if(knownTerrain[row][column] == WINDOW)
         {
-            weightToAdd += 3;
+            weightToAdd -= 10;
         }
         return weightToAdd;
     }
@@ -287,4 +336,13 @@ public class Astar {
         }
         return false;
     }
+
+    //public boolean nextToEntrance(Point point)
+    //{
+    //    if(agent.getWorldGrid()[point.x+1][point.y] == DOOR || agent.getWorldGrid()[point.x+1][point.y] == WINDOW)
+    //    {
+    //        return true;
+    //    }
+    //    else if()
+    //}
 }

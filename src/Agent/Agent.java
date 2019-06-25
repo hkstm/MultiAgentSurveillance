@@ -12,8 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static World.GameScene.ASSUMED_WORLDSIZE;
-import static World.GameScene.SCALING_FACTOR;
+import static World.GameScene.*;
 import static World.WorldMap.*;
 
 /**
@@ -21,7 +20,7 @@ import static World.WorldMap.*;
  * @author Benjamin, Kailhan, Thibaut
  */
 
-public class Agent implements Runnable {
+public class Agent implements Runnable{
     public static final double WALK_SPEED_SLOW = 0; //speed <0.5m/s
     public static final double WALK_SPEED_MEDIUM = 0.5; //speed >0.5 & <1 m/s
     public static final double WALK_SPEED_MEDIUMFAST = 1; //speed >1 & 2 m/s
@@ -33,8 +32,8 @@ public class Agent implements Runnable {
     public static final double SOUND_NOISE_STDEV =  10;  //stndard dev of normal distributed noise
     public static final double STRUCTURE_VIS_RANGE = 10;
     public static final double SENTRY_VIS_RANGE = 18;
-    public static final int AMOUNT_OF_VISION_TENTACLES = 100;
-    public static final int TENTACLE_INCREMENTS = 1000;
+    public static final int AMOUNT_OF_VISION_TENTACLES = 80;
+    public static final int TENTACLE_INCREMENTS = 80;
     public static final double MAX_TURNING_PER_SECOND = 180; //degrees
     public static final double MAX_NONBLIND_TURNING_PER_SECOND = 45; //degrees
     public static final double MAX_TURNING_WHILE_SPRINTING = 10;
@@ -96,6 +95,7 @@ public class Agent implements Runnable {
     private boolean goalSet = false;
     protected Point[] points = new Point[2];
     protected boolean doorNoise;
+    protected boolean windowNoise;
 
     /**
      * Constructor for Agent
@@ -104,7 +104,6 @@ public class Agent implements Runnable {
      */
 
     public Agent(Point2D position, double direction) {
-        System.out.println("agent constructor called");
         this.position = position;
         this.direction = direction;
         this.color = Color.LIGHTSEAGREEN;
@@ -117,9 +116,6 @@ public class Agent implements Runnable {
                 }
             }
         }
-        if(goalSet == false) {
-            System.out.println("No Target");
-        }
         this.visualRange = new double[2];
         this.firstRun = true;
         for (int i = 0; i < knownTerrain.length; i++) {
@@ -128,6 +124,7 @@ public class Agent implements Runnable {
             }
         }
     }
+
 
     /**
      * Default run method
@@ -159,6 +156,7 @@ public class Agent implements Runnable {
         currentTime = System.nanoTime();
         delta = currentTime - previousTime;
         delta /= 1e9; //makes it in seconds
+        delta *= SIMULATION_SPEEDUP_FACTOR;
         previousTime = currentTime;
         previousDirection = direction;
         //System.out.println("currentSpeed:" + currentSpeed);
@@ -179,7 +177,7 @@ public class Agent implements Runnable {
         if((Math.abs(previousDirection - direction) * delta) > (MAX_NONBLIND_TURNING_PER_SECOND * delta)) {
             startTimeFastTurn = System.nanoTime();
             blind = true;
-        } else if((System.nanoTime() - startTimeFastTurn)/1e9 > (TIME_BLINDED + delta)) blind = false; //TIME_BLINDED in seconds so have to convert nanoTime()
+        } else if((System.nanoTime() - startTimeFastTurn)/1e9 > (TIME_BLINDED/SIMULATION_SPEEDUP_FACTOR + delta)) blind = false; //TIME_BLINDED in seconds so have to convert nanoTime()
         if(worldMap.checkTile(locationToWorldgrid(position.getX()), locationToWorldgrid(position.getX()), DECREASED_VIS_RANGE) && !hiddenInDecreasedVis){
             hiddenInDecreasedVis = true;
             startTimeDecreasedVis = System.nanoTime();
@@ -191,7 +189,7 @@ public class Agent implements Runnable {
         }
         if(turningLeft <= 0) turnedMaxWhileSprinting = true;
         else turnedMaxWhileSprinting = false;
-        if(hiddenInDecreasedVis && ((System.nanoTime() - startTimeDecreasedVis)/1e9) > MIN_TIME_BEFORE_SHORT_DETECT_IN_DECREASEDVIS) shortDetectionRange = true;
+        if(hiddenInDecreasedVis && ((System.nanoTime() - startTimeDecreasedVis)/1e9) > MIN_TIME_BEFORE_SHORT_DETECT_IN_DECREASEDVIS/SIMULATION_SPEEDUP_FACTOR) shortDetectionRange = true;
         else shortDetectionRange = false;
         if(!hiddenInDecreasedVis) shortDetectionRange = false;
         currentSpeed = ((position.distance(previousPosition) / SCALING_FACTOR) / delta);
@@ -217,8 +215,16 @@ public class Agent implements Runnable {
      * @param directionToGo direction you are trying to face (in degrees 0 - 360, I think)
      */
     public void updateDirection(double directionToGo) {
+        updateDirectionGeneral(directionToGo, MAX_TURNING_PER_SECOND);
+    }
+
+    public void updateDirectionNoBlind(double directionToGo) {
+        updateDirectionGeneral(directionToGo, MAX_NONBLIND_TURNING_PER_SECOND);
+    }
+
+    private void updateDirectionGeneral(double directionToGo, double maxNonblindTurningPerSecond) {
         if(!turnedMaxWhileSprinting) {
-            double maxTurn = MAX_TURNING_WHILE_SPRINTING * delta;
+            double maxTurn = maxNonblindTurningPerSecond * delta;
             double angle = directionToGo - direction;
             angle = (angle > 180) ? angle - 360 : angle;
             angle = (angle < -180) ? angle + 360 : angle;
@@ -287,7 +293,7 @@ public class Agent implements Runnable {
     public void updateKnownTerrain(){
         for(int r = 0; r < worldMap.getSize(); r++) {
             for(int c = 0; c < worldMap.getSize(); c++){
-                if(viewingCone.contains(worldMap.convertArrayToWorld(c) + 0.5 * worldMap.convertArrayToWorld(1), //changed from *0.5 to *1
+                if(this.inVision(worldMap.convertArrayToWorld(c) + 0.5 * worldMap.convertArrayToWorld(1), //changed from *0.5 to *1
                         worldMap.convertArrayToWorld(r) + 0.5 * worldMap.convertArrayToWorld(1))) { //changed from *0.5 to *1
                     knownTerrain[r][c] = worldMap.getTileState(r, c);
                     //System.out.println("r: "+r+" c: "+c);
@@ -331,26 +337,27 @@ public class Agent implements Runnable {
      * Checks if we can hear other agents and if so add it personal memory with noise
      */
     public void checkForAgentSound(){
-        Point2D tmpPoint = getMove(1000, direction);
         for(Agent agent : worldMap.getAgents()) {
             if(position.distance(agent.getPosition()) != 0) { //to not add hearing "ourselves" to our log tho a path that we have taken might be something that we want store in the end
                 boolean soundHeard = false;
-                double angleBetweenPoints = Math.toDegrees(Math.atan2((agent.getPosition().getY() - position.getY()), (agent.getPosition().getX() - position.getX())));
-                angleBetweenPoints += new Random().nextGaussian()*SOUND_NOISE_STDEV;
-                if(position.distance(agent.getPosition()) < SOUNDRANGE_FAR && agent.currentSpeed > WALK_SPEED_FAST) {
+                double soundDirection = Math.toDegrees(Math.atan2((agent.getPosition().getY() - position.getY()), (agent.getPosition().getX() - position.getX())));
+                soundDirection += new Random().nextGaussian()*SOUND_NOISE_STDEV;
+                if(position.distance(agent.getPosition()) < SCALING_FACTOR * SOUNDRANGE_FAR && agent.currentSpeed > WALK_SPEED_FAST) {
                     soundHeard = true;
-                } else if(position.distance(agent.getPosition()) < SOUNDRANGE_MEDIUMFAR && agent.currentSpeed > WALK_SPEED_MEDIUMFAST) {
+                } else if(position.distance(agent.getPosition()) < SCALING_FACTOR * SOUNDRANGE_MEDIUMFAR && agent.currentSpeed > WALK_SPEED_MEDIUMFAST) {
                     soundHeard = true;
-                } else if(position.distance(agent.getPosition()) < SOUNDRANGE_MEDIUM && agent.currentSpeed > WALK_SPEED_MEDIUM) {
+                } else if(position.distance(agent.getPosition()) < SCALING_FACTOR * SOUNDRANGE_MEDIUM && agent.currentSpeed > WALK_SPEED_MEDIUM) {
                     soundHeard = true;
-                } else if(position.distance(agent.getPosition()) < SOUNDRANGE_CLOSE && agent.currentSpeed > WALK_SPEED_SLOW) {
+                } else if(position.distance(agent.getPosition()) < SCALING_FACTOR * SOUNDRANGE_CLOSE && agent.currentSpeed > WALK_SPEED_SLOW) {
                     soundHeard = true;
-                } else if(agent.doorNoise == true){
+                } else if(agent.doorNoise && position.distance(agent.getPosition()) < SCALING_FACTOR * SOUNDRANGE_MEDIUMFAR){
+                    soundHeard = true;
+                } else if(agent.windowNoise && position.distance(agent.getPosition()) < SCALING_FACTOR * SOUNDRANGE_FAR) {
                     soundHeard = true;
                 }
                 if(soundHeard){
-                    audioLogs.add(new AudioLog(System.nanoTime(), angleBetweenPoints, new Point2D(position.getX(), position.getY())));
-                    System.out.println("Agent heard sound");
+                    audioLogs.add(new AudioLog(System.nanoTime(), soundDirection, new Point2D(position.getX(), position.getY())));
+
                 }
             }
 
@@ -358,7 +365,7 @@ public class Agent implements Runnable {
     }
 
     public boolean sees(int r, int c) {
-        return viewingCone.contains((c*(ASSUMED_WORLDSIZE/(double)worldMap.getSize())*SCALING_FACTOR), (r*(ASSUMED_WORLDSIZE/(double)worldMap.getSize())*SCALING_FACTOR));
+        return this.inVision((c*(ASSUMED_WORLDSIZE/(double)worldMap.getSize())*SCALING_FACTOR), (r*(ASSUMED_WORLDSIZE/(double)worldMap.getSize())*SCALING_FACTOR));
     }
 
     /**
@@ -384,50 +391,44 @@ public class Agent implements Runnable {
         double visualRangeMin = minVisRange * SCALING_FACTOR; //max visionRange
         double visualRangeMax = maxVisRange * SCALING_FACTOR; //max visionRange
         double[] collisionPoints = new double[((AMOUNT_OF_VISION_TENTACLES) * 2)];
-
         for(int i = 1; i < AMOUNT_OF_VISION_TENTACLES; i++) {
             double decreaseInVision = 0;
-            tentacleincrementloop:
             for(int j = 1; j < TENTACLE_INCREMENTS; j++) {
-                Line tentacle = new Line();
                 double xLeftBotLine = x;
                 double yLeftBotLine = y;
                 if(visualRangeMin != 0) {
                     double angdeg = (direction - viewingAngle / 2) + (viewingAngle / AMOUNT_OF_VISION_TENTACLES) * i;
                     xLeftBotLine = x + (visualRangeMin * Math.cos(Math.toRadians(angdeg)));
                     yLeftBotLine = y + (visualRangeMin * Math.sin(Math.toRadians(angdeg)));
-                    tentacle.setStartX(xLeftBotLine);
-                    tentacle.setStartY(yLeftBotLine);
-                } else {
-                    tentacle.setStartX(x);
-                    tentacle.setStartY(y);
                 }
                 double angdeg = (direction - viewingAngle / 2) + (viewingAngle / (AMOUNT_OF_VISION_TENTACLES - 1)) * i;
                 double xLeftTopLine = x + (visualRangeMax * (double)j/(double)(TENTACLE_INCREMENTS-1) * Math.cos(Math.toRadians(angdeg)));
                 double yLeftTopLine = y + (visualRangeMax * (double)j/(double)(TENTACLE_INCREMENTS-1) * Math.sin(Math.toRadians(angdeg)));
-                xLeftTopLine = (Math.abs(x - xLeftTopLine) < Math.abs(x - xLeftBotLine)) ? xLeftBotLine : xLeftTopLine;
-                yLeftTopLine = (Math.abs(y - yLeftTopLine) < Math.abs(y - yLeftBotLine)) ? yLeftBotLine : yLeftTopLine;
-                tentacle.setEndX(xLeftTopLine);
-                tentacle.setEndY(yLeftTopLine);
+                if(visualRangeMin != 0) {
+                    xLeftTopLine = (Math.abs(x - xLeftTopLine) < Math.abs(x - xLeftBotLine)) ? xLeftBotLine : xLeftTopLine;
+                    yLeftTopLine = (Math.abs(y - yLeftTopLine) < Math.abs(y - yLeftBotLine)) ? yLeftBotLine : yLeftTopLine;
+                }
                 if(worldMap.checkTile(locationToWorldgrid(yLeftTopLine), locationToWorldgrid(xLeftTopLine), DECREASED_VIS_RANGE)) {
                     decreaseInVision += (1*DECREASE_IN_VISION);
                 }
                 if(isVisionObscuring(worldMap.getWorldGrid()[locationToWorldgrid(yLeftTopLine)][locationToWorldgrid(xLeftTopLine)]) || j >= TENTACLE_INCREMENTS-(decreaseInVision)-1) {
                     collisionPoints[((i-1)*2)+0] = xLeftTopLine; //(i-1 instead of i because outer for loop starts at 1)
                     collisionPoints[((i-1)*2)+1] = yLeftTopLine;
-                    knownTerrain[locationToWorldgrid(yLeftTopLine)][locationToWorldgrid(xLeftTopLine)] = worldMap.getWorldGrid()[locationToWorldgrid(yLeftTopLine)][locationToWorldgrid(xLeftTopLine)];
-                    break tentacleincrementloop;
+                    knownTerrain[locationToWorldgrid(yLeftTopLine)][locationToWorldgrid(xLeftTopLine)] = worldMap.getTileState(locationToWorldgrid(yLeftTopLine), locationToWorldgrid(xLeftTopLine));
+                    break;
                 }
             }
         }
-        collisionPoints[collisionPoints.length-2] = x + (visualRangeMin * Math.cos(Math.toRadians(direction - viewingAngle/2)));
         collisionPoints[collisionPoints.length-1] = y + (visualRangeMin * Math.sin(Math.toRadians(direction - viewingAngle/2)));
-        collisionPoints[collisionPoints.length-4] = x + (visualRangeMin * Math.cos(Math.toRadians(direction + viewingAngle/2)));
+        collisionPoints[collisionPoints.length-2] = x + (visualRangeMin * Math.cos(Math.toRadians(direction - viewingAngle/2)));
         collisionPoints[collisionPoints.length-3] = y + (visualRangeMin * Math.sin(Math.toRadians(direction + viewingAngle/2)));
+        collisionPoints[collisionPoints.length-4] = x + (visualRangeMin * Math.cos(Math.toRadians(direction + viewingAngle/2)));
+
 
         Polygon cutout = new Polygon(collisionPoints);
         cutout.setFill(color);
         return cutout;
+//        return new Polygon(collisionPoints);
     }
 
     public Shape getCone() {
@@ -441,7 +442,9 @@ public class Agent implements Runnable {
      * @return column or row that can be looked up in worldArray
      */
     public static int locationToWorldgrid(double toBeConverted) {
-        return (int)(toBeConverted * (1/((ASSUMED_WORLDSIZE/worldMap.getWorldGrid().length)*SCALING_FACTOR)));
+        if(toBeConverted < 0) return 0;
+        if(toBeConverted > worldMap.getSize()*SCALING_FACTOR) return worldMap.getSize()-1;
+        return (int)(toBeConverted * (1/((ASSUMED_WORLDSIZE/worldMap.getSize())*SCALING_FACTOR)));
     }
 
     public Point2D getPosition() {
@@ -763,5 +766,20 @@ public class Agent implements Runnable {
         {
             turnToFace(270-turnAngle);
         }
+    }
+
+    public boolean inVision(Point2D location) {
+        if(blind) return false;
+        else return viewingCone.contains(location);
+    }
+
+    public boolean inVision(double x, double y) {
+        if(blind) return false;
+        else return viewingCone.contains(x, y);
+    }
+
+    public void clearAudioLog()
+    {
+        audioLogs.clear();
     }
 }

@@ -13,6 +13,7 @@ import java.util.TimerTask;
 import static Agent.MoveTo.destX;
 import static Agent.MoveTo.destY;
 import static World.GameScene.SCALING_FACTOR;
+import static World.GameScene.SIMULATION_SPEEDUP_FACTOR;
 import static World.WorldMap.SENTRY;
 import static World.WorldMap.TARGET;
 
@@ -33,6 +34,10 @@ public class Guard extends Agent {
     protected double directCommsCost; //message size in "bytes"
     protected double indirectCommsCost; //number of markers placed;
     protected Intruder intruder;
+    private int count = 0;
+    protected boolean chasing;
+
+    protected Blackboard blackboard;
 
     private boolean firstRunBehaviourTreeGuardLogic;
 
@@ -46,18 +51,20 @@ public class Guard extends Agent {
 //        this.viewingAngle = 60;
         this.visualRange[0] = 0;
         this.visualRange[1] = 8;
+        this.chasing = false;
 //        this.visualRange[1] = 20;
         this.color = Color.AZURE;
         this.firstRunBehaviourTreeGuardLogic = true;
         Routine guard1 = Routines.sequence(
-                Routines.moveTo(locationToWorldgrid(500.0),locationToWorldgrid(600.0))
+                Routines.moveTo(locationToWorldgrid(600.0),locationToWorldgrid(200.0))
 
                 // Routines.wander(worldMap,this)
         );
         this.setRoutine(guard1);
-        System.out.println("Guard initialized");
+//        System.out.println("Guard initialized");
 
         //this.knownTerrain = worldMap.getWorldGrid();
+        this.blackboard = Blackboard.getBlackboard(this); // "this"
     }
 
     public void updatePerformanceCriteria() {
@@ -76,6 +83,7 @@ public class Guard extends Agent {
         currentTime = System.nanoTime();
         delta = currentTime - previousTime;
         delta /= 1e9; //makes it in seconds
+        delta *= SIMULATION_SPEEDUP_FACTOR;
         System.out.println("y: " + locationToWorldgrid( getPosition().getX() )+ "x: " + locationToWorldgrid( getPosition().getY()));
         update();
         updatePerformanceCriteria();
@@ -118,7 +126,7 @@ public class Guard extends Agent {
             TimerTask openTower = new OpenTower();
 
 
-                timer.schedule(openTower, 3000);
+                timer.schedule(openTower, (int)(3000/SIMULATION_SPEEDUP_FACTOR));
             timer.cancel();
         }
     }
@@ -129,8 +137,8 @@ public class Guard extends Agent {
         }
         routine.act(this, worldMap);
     }
-    public Routine getRoutine() {
-        return routine;
+    public String getRoutine() {
+        return routine.getClass().getSimpleName();
     }
 
     public void setRoutine(Routine routine) {
@@ -139,8 +147,8 @@ public class Guard extends Agent {
 
     public void gameTree(double timeStep)
     {
-
-        double walkingDistance = (BASE_SPEED *SCALING_FACTOR);
+//        double walkingDistance = (BASE_SPEED * SCALING_FACTOR; //this washere but i think its wrong? ~kailhan
+        double walkingDistance = (BASE_SPEED * SCALING_FACTOR * timeStep);
         updateWalls();
         if(oldTempGoal != null) {
             checkChangedStatus();
@@ -156,28 +164,36 @@ public class Guard extends Agent {
             Astar pathMaker = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR),
                     (int)(position.getY()/SCALING_FACTOR), (int)destY, (int)destX, blocks, this,false);
             List<Node> path = pathMaker.findPath();
-            
-            if (path.size() <1 && "sss" != "chase") {
-                //find a way to keep destx and desty in bounds
-                //change directon
-                double changedestX = (locationToWorldgrid(100)*(-1));
-                double changedestY = locationToWorldgrid(100)*(-1);
-                destX += changedestX;
-                destY += changedestY;
-                double divisor = Math.abs(tempGoal.getY()-position.getY());
-                double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.getX()-position.getX())/divisor));
-                turnToFace(turnAngle-90);
-                updatePath();
+        System.out.println(path.size());
+            if(!chasing) {
+                if (path.size() <= 2) {
+                    if (count % 2 == 0) {
+                        System.out.println("-600");
+                        count += 1;
+                        System.out.println("count: " + count);
+                        destX -= locationToWorldgrid(600);
+                        destY += locationToWorldgrid(100);
+                        updateDirection(direction + 90);
+                        updatePath();
 
-                updateDirection(direction+90);
+                        return;
+                    } else {
+                        System.out.println("+600");
+                        count += 1;
+                        System.out.println("count: " + count);
+                        destX += locationToWorldgrid(600);
+                        destY += locationToWorldgrid(100);
+                        updateDirection(direction - 90);
+                        updatePath();
 
-                updatePath();
-                return;
+                        return;
+                    }
+                }
             }
-            
+
             if(!changed)
             {
-                tempGoal = new Point2D((path.get(path.size()-1).row*SCALING_FACTOR)+(SCALING_FACTOR/2),
+                tempGoal = new Point2D((path.get(path.size()-1).row*SCALING_FACTOR)+worldMap.convertArrayToWorld(1)/2,
                         (path.get(path.size()-1).column*SCALING_FACTOR)+(SCALING_FACTOR/2));
                 if (path.size() > 1) {
                     previousTempGoal = new Point2D((path.get(path.size() - 2).row * SCALING_FACTOR) + (SCALING_FACTOR / 2),
@@ -187,7 +203,7 @@ public class Guard extends Agent {
                     previousTempGoal = tempGoal;
                 }
             }
-        //    wallPhaseDetection();
+            wallPhaseDetection();
             cornerCorrection();
             double divisor = Math.abs(tempGoal.getY()-position.getY());
             double preDivisor = Math.abs(previousTempGoal.getY()-tempGoal.getY());
@@ -207,4 +223,20 @@ public class Guard extends Agent {
                 }
         //    }
         }
+
+    public double getTimeCost() {
+        return timeCost;
     }
+
+    public double getDistanceCost() {
+        return distanceCost;
+    }
+
+    public double getDirectCommsCost() {
+        return directCommsCost;
+    }
+
+    public double getIndirectCommsCost() {
+        return indirectCommsCost;
+    }
+}

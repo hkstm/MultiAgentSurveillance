@@ -12,12 +12,11 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
+import java.util.ArrayList;
 import java.util.Random;
 
-import static Agent.Agent.DISTANCE_TO_CATCH;
-import static Agent.Agent.SOUND_NOISE_STDEV;
-import static World.GameScene.ASSUMED_WORLDSIZE;
-import static World.GameScene.SCALING_FACTOR;
+import static Agent.Agent.*;
+import static World.GameScene.*;
 
 public class RunSimulation extends Application {
 
@@ -29,6 +28,11 @@ public class RunSimulation extends Application {
     private long firstVisitTime;
     private File worldFile;
 
+    private Pheromones pher;
+    private boolean pherActive = true;
+
+
+
     public static void main(String[] args) {
         launch(args);
     }
@@ -36,8 +40,12 @@ public class RunSimulation extends Application {
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Multi-Agent Surveillance - Simulation Only");
-        int amountOfSims = 3;
+        int amountOfSims = 1;
+        int guardsWins = 0;
+        int intruderWins = 0;
+        int amountOfGuards = 3;
         worldFile = loadFile(primaryStage);
+        double[][] summary = new double[amountOfSims][(amountOfGuards*2)+2];
         for(int i = 0; i < amountOfSims; i++) {
             worldMap = loadMap(worldFile);
             Agent.worldMap = worldMap;
@@ -51,29 +59,50 @@ public class RunSimulation extends Application {
             countDown = false;
             visitedTarget = false;
             firstVisitTime = 0;
+            Agent.worldMap = worldMap;
 
-            Guard guard = new Guard(new Point2D(200, 300), 70);
-            Intruder intruder = new Intruder(new Point2D(500, 300), 0);
-            AreaOptimizer areaOptimzer = new AreaOptimizer(new Point2D(500, 400), 0);
-//        worldMap.addAgent(guard);
-//        worldMap.addAgent(intruder);
-//        worldMap.addOnlyAgent(guard);
-            worldMap.addOnlyAgent(intruder);
-            worldMap.addOnlyAgent(areaOptimzer);
-            //Actual game "loop" in here
+            StraightLiner straightLiner = new StraightLiner(new Point2D(10, 10), 45);
+            worldMap.addOnlyAgent(straightLiner);
+            for(int n = 0; n < amountOfGuards; n++) {
+                double x = 0;
+                double y = 0;
+                do{
+                    x = new Random().nextDouble()*worldMap.getSize()*SCALING_FACTOR;
+                    y = new Random().nextDouble()*worldMap.getSize()*SCALING_FACTOR;
+                }while(!worldMap.isEmpty(worldMap.getTileState(locationToWorldgrid(y), locationToWorldgrid(x))));
+                worldMap.addOnlyAgent(new StupidGuard(new Point2D(x, y), new Random().nextDouble()*360));
+            }
+            this.pher = new Pheromones(worldMap);
             System.out.println("doing simulation");
+//            worldMap.startAgents();
             while(!gameEnded){
                 long currentTime = System.nanoTime();
                 worldMap.forceUpdateAgents();
                 long delta = (currentTime - previousTime);
+                delta *= SIMULATION_SPEEDUP_FACTOR;
+//                System.out.println();
                 previousTime = currentTime;
+                pher.update(delta);
                 generateRandomSound(delta);
-                gameEnded = haveGuardsCapturedIntruder(mode, delta);
-                if(!gameEnded) gameEnded = haveIntrudersWon(mode, delta);
+                if(haveGuardsCapturedIntruder(mode, delta)) {
+                    guardsWins++;
+                    gameEnded = true;
+                }
+                if(haveIntrudersWon(mode, delta)) {
+                    intruderWins++;
+                    gameEnded = true;
+                }
             }
-            System.out.println("game ended");
+            ArrayList<Guard> guardList = new ArrayList<>();
+            for(Agent agent : worldMap.getAgents()) if (agent instanceof Guard) guardList.add((Guard)agent);
+            for(int guards = 0; guards < amountOfGuards; guards++) {
+                summary[i][guards * 2] = guardList.get(guards).getTimeCost();
+                summary[i][guards * 2 + 1] = guardList.get(guards).getDistanceCost();
+            }
+            summary[i][amountOfGuards*2] = guardsWins;
+            summary[i][(amountOfGuards*2)+1] = intruderWins;
         }
-        System.out.println("done");
+        printSummary(summary, guardsWins, intruderWins, amountOfGuards, "ez");
     }
 
     public boolean haveIntrudersWon(int mode, long delta) {
@@ -86,14 +115,14 @@ public class RunSimulation extends Application {
                 firstVisitTime = System.nanoTime();
                 visitedTarget = true;
             }
-            if((System.nanoTime() - currentTimeCountDown) > (3*1e9)) {
+            if((System.nanoTime() - currentTimeCountDown) > (3*1e9/SIMULATION_SPEEDUP_FACTOR)) {
                 intrudersWon = true;
             }
             countDown = true;
         } else {
             countDown = false;
         }
-        if(visitedTarget && (System.nanoTime() - firstVisitTime) > (3*1e9)) {
+        if(visitedTarget && (System.nanoTime() - firstVisitTime) > (3*1e9/SIMULATION_SPEEDUP_FACTOR)) {
             intrudersWon = true;
         }
         return intrudersWon;
@@ -121,6 +150,20 @@ public class RunSimulation extends Application {
         return false;
     }
 
+    public void printSummary(double[][] summary, int guardWins, int intruderWins, int numberOfGuards, String map){
+        for(int r = 0; r < summary.length; r++) {
+            for(int c = 0; c < summary[0].length; c++) {
+                System.out.print(summary[r][c]);
+                if(c != summary[0].length-1) System.out.print(",");
+            }
+            System.out.println();
+        }
+        System.out.println("guard: " + guardWins);
+        System.out.println("intruder: " + intruderWins);
+        System.out.println("numberOfGuards: " + numberOfGuards);
+        System.out.println("map: " + map);
+    }
+
 
     /**
      * Random sound according to sort of poisson process (more binomial with low probability which should approximate it probs&stat stuff
@@ -131,11 +174,11 @@ public class RunSimulation extends Application {
         if(random.nextDouble() < occurenceRate/(delta)) {
             Point2D randomNoiseLocation = new Point2D(random.nextInt((int)(ASSUMED_WORLDSIZE*SCALING_FACTOR)), random.nextInt((int)(ASSUMED_WORLDSIZE*SCALING_FACTOR))); //prolly not right
             for(Agent agent : worldMap.getAgents()) {
-                if(randomNoiseLocation.distance(agent.getPosition())/SCALING_FACTOR < 5) {
-                    double angleBetweenPoints = Math.toDegrees(Math.atan2((agent.getPosition().getY() - randomNoiseLocation.getY()), (agent.getPosition().getX() - randomNoiseLocation.getX())));
-                    angleBetweenPoints += new Random().nextGaussian()*SOUND_NOISE_STDEV;
-                    agent.getAudioLogs().add(new AudioLog(System.nanoTime(), angleBetweenPoints, new Point2D(agent.getPosition().getX(), agent.getPosition().getY())));
-                    System.out.println("Agent heard sound");
+                if(randomNoiseLocation.distance(agent.getPosition()) < SOUNDRANGE_MEDIUMFAR * SCALING_FACTOR) {
+                    double soundDirection = Math.toDegrees(Math.atan2((agent.getPosition().getY() - randomNoiseLocation.getY()), (agent.getPosition().getX() - randomNoiseLocation.getX())));
+                    soundDirection += new Random().nextGaussian()*SOUND_NOISE_STDEV;
+                    agent.getAudioLogs().add(new AudioLog(System.nanoTime(), soundDirection, new Point2D(agent.getPosition().getX(), agent.getPosition().getY())));
+//                    System.out.println("Agent heard sound");
                 }
             }
         }

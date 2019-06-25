@@ -54,17 +54,20 @@ public class MoveTo extends Routine {
 
     public void Move(Guard guard) {
         delta = guard.delta;
-        if(!isAtDestination(guard)) {
+        if (!isAtDestination(guard)) {
             guard.gameTree(delta);
 
             System.out.println("destx: " + destX + " destY: " + destY);
             if (!guard.firstRun) {
                 if (seen(guard)) {
                     System.out.println("intruder seen");
+                    guard.chasing = true;
                     Routine guard2 = Routines.sequence(
-                            Routines.chase(guard,intruder)
+                            Routines.chase(guard, intruder)
                     );
                     guard.setRoutine(guard2);
+                    // update blackboard
+                    guard.blackboard.chaseIntruder(intruder);
                     guard.routine.start();
                 }
                 System.out.println("didnt find it yet");
@@ -74,12 +77,12 @@ public class MoveTo extends Routine {
     }
 
     private boolean isAtDestination(Guard guard) {
-        return destX == locationToWorldgrid( guard.getPosition().getY() ) &&
-                destY == locationToWorldgrid( guard.getPosition().getX());
+        return destX == locationToWorldgrid(guard.getPosition().getY()) &&
+                destY == locationToWorldgrid(guard.getPosition().getX());
     }
 
     private boolean seen(Guard guard) {
-      //  this.guard = guard;
+        //  this.guard = guard;
 //        //this.agents = guard.worldMap.getAgents();
 //        this.cones = guard.worldMap.getAgentsCones();
 //        // System.out.println("cone size: " + cones.size());
@@ -89,9 +92,9 @@ public class MoveTo extends Routine {
 //
 //            }
 //        }
-        for(Agent intruder : guard.worldMap.getAgents()) {
-            if(intruder instanceof Intruder) {
-                if(guard.viewingCone.contains(intruder.getPosition())){
+        for (Agent intruder : guard.worldMap.getAgents()) {
+            if (intruder instanceof Intruder) {
+                if (guard.inVision(intruder.getPosition())) {
                     destX = locationToWorldgrid(intruder.getPosition().getY());
                     destY = locationToWorldgrid(intruder.getPosition().getX());
                     return true;

@@ -70,7 +70,7 @@ public class AreaOptimizer extends Guard {
 //        double newWeight = 5;
 //        double totalWeight = previousWeight + newWeight;
 //        updateDirection(((direction*previousWeight)+(getMoveDirection()*newWeight)/totalWeight));
-        updateDirection(getMoveDirection());
+        updateDirectionNoBlind(getMoveDirection());
         double walkingDistance = (BASE_SPEED * SCALING_FACTOR) * (delta);
         Point2D newPosition = new Point2D((position.getX() + (walkingDistance * Math.cos(Math.toRadians(direction)))), (position.getY() + (walkingDistance * Math.sin(Math.toRadians(direction)))));
         if(isEmpty(worldMap.getTileState(locationToWorldgrid(newPosition.getY()), locationToWorldgrid(newPosition.getX())))) {
@@ -95,17 +95,23 @@ public class AreaOptimizer extends Guard {
 //                    worldAreaReward[r][c].resetReward();
                     worldAreaReward[r][c].updateReward(-1 * NOT_SEEN_REWARD * delta);
 //                    System.out.println("reward seen: " + worldAreaReward[r][c] + worldAreaReward[r][c].getReward());
-                    for (Agent agent : worldMap.getAgents()) {
-                        if (agent instanceof Intruder) {
-                            if ((locationToWorldgrid(agent.getPosition().getX()) == c) && (locationToWorldgrid(agent.getPosition().getY()) == r)) {
-                                worldAreaReward[r][c].updateReward(INTRUDER_BONUS_REWARD * delta);
-                            }
-                        }
-                    }
-//                    worldAreaReward[r][c].updateReward(RECENT_AREA_PENALTY * delta);
-//                    System.out.println("reward: " + worldAreaReward[r][c].getReward());
-//                    System.out.println("reward reset for r: " + r + " c: " + c);
-//                    System.out.println("viewingcone contains tile: " + worldMap.convertArrayToWorld(c-1) + 1 * worldMap.convertArrayToWorld(1) + " r/y: " + worldMap.convertArrayToWorld(r-1) + 1 * worldMap.convertArrayToWorld(1));
+//                    for (Agent agent : worldMap.getAgents()) {
+//                        if (agent instanceof Intruder) {
+//                            if ((locationToWorldgrid(agent.getPosition().getX()) == c) && (locationToWorldgrid(agent.getPosition().getY()) == r)) {
+//                                worldAreaReward[r][c].updateReward(INTRUDER_BONUS_REWARD * delta);
+//                            }
+//                        }
+//                    }
+//                    if(worldMap.getTileStatePhero(r, c) == MARKER_1){
+//                        worldAreaReward[r][c].updateReward(INTRUDER_BONUS_REWARD * delta);
+//                    }
+//                    if(worldMap.getTileStatePhero(r, c) == MARKER_2) {
+//                        worldAreaReward[r][c].updateReward(-INTRUDER_BONUS_REWARD * delta);
+//                    }
+////                    worldAreaReward[r][c].updateReward(RECENT_AREA_PENALTY * delta);
+////                    System.out.println("reward: " + worldAreaReward[r][c].getReward());
+////                    System.out.println("reward reset for r: " + r + " c: " + c);
+////                    System.out.println("viewingcone contains tile: " + worldMap.convertArrayToWorld(c-1) + 1 * worldMap.convertArrayToWorld(1) + " r/y: " + worldMap.convertArrayToWorld(r-1) + 1 * worldMap.convertArrayToWorld(1));
                 } else if(worldAreaCone.contains(worldMap.convertArrayToWorld(c-1) + 1 * worldMap.convertArrayToWorld(1),
                         worldMap.convertArrayToWorld(r-1) + 1 * worldMap.convertArrayToWorld(1))){
 //                        worldAreaReward[r][c].updateReward(-2*NOT_SEEN_REWARD * delta);
@@ -116,14 +122,14 @@ public class AreaOptimizer extends Guard {
                 } else {
                     if(isEmpty(worldMap.getTileState(r, c))) {
 //                        System.out.println("rewardnotseen: " + worldAreaReward[r][c].getReward());
-                        worldAreaReward[r][c].updateReward(NOT_SEEN_REWARD * delta);
+//                        worldAreaReward[r][c].updateReward(NOT_SEEN_REWARD * delta);
                     }
                 }
 //                System.out.println("reward: " + worldAreaReward[r][c].getReward());
             }
         }
-        updateWorldAreaRewardPOI(delta);
-        updateWorldAreaRewardAudio(delta);
+//        updateWorldAreaRewardPOI(delta);
+//        updateWorldAreaRewardAudio(delta);
     }
 
     public void updateWorldAreaRewardAudio(double delta) {
@@ -168,9 +174,16 @@ public class AreaOptimizer extends Guard {
      * @return the angle between the best point to go and current position
      */
     public double getMoveDirection() {
-        for(Agent intruder : worldMap.getAgents()) {
-            if(intruder instanceof Intruder) {
-                if(viewingCone.contains(intruder.getPosition())) return Math.toDegrees(Math.atan2((intruder.getPosition().getY() - position.getY()), (intruder.getPosition().getX() - position.getX())));
+        chasing = false;
+        for(Agent agent: worldMap.getAgents()){
+            if(agent instanceof Intruder && this.inVision(agent.getPosition())) {
+                Point2D posFacing = new Point2D(position.getX() + (10 * Math.cos(Math.toRadians(direction))), position.getY() + (10 * Math.sin(Math.toRadians(direction))));
+//        System.out.println("degrees: " + result);
+                double angle = Math.toDegrees(Math.atan2(agent.getPosition().getY() - position.getY(), agent.getPosition().getX() - position.getX()) - Math.atan2(posFacing.getY() - position.getY(), posFacing.getX() - position.getX()));
+                angle = (angle > 180) ? angle - 360 : angle;
+                angle = (angle < -180) ? angle + 360 : angle;
+                this.direction += angle;
+                chasing = true;
             }
         }
         double x = 0;
@@ -203,7 +216,22 @@ public class AreaOptimizer extends Guard {
         Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, locationToWorldgrid(position.getX()), locationToWorldgrid(position.getY()),
                 locationToWorldgrid(prevGoalPosition.getX()), locationToWorldgrid(prevGoalPosition.getY()), blocks, this, false);
         List<Node> path = pathFinder.findPath();
-        goalPositionPath = new Point2D((path.get(path.size()-1).row*SCALING_FACTOR)+(SCALING_FACTOR/2), (path.get(path.size()-1).column*SCALING_FACTOR)+(SCALING_FACTOR/2));
+        boolean exception =false;
+        try{
+            goalPositionPath = new Point2D((path.get(path.size()-1).row*SCALING_FACTOR)+(SCALING_FACTOR/2), (path.get(path.size()-1).column*SCALING_FACTOR)+(SCALING_FACTOR/2));
+        } catch(Exception e){
+            System.out.println("OOB");
+            exception = true;
+            for(int r = 0; r < worldMap.getSize(); r++) {
+                for(int c = 0; c < worldMap.getSize(); c++) {
+                    //initializing reward array with fixed flat reward
+                    worldAreaReward[r][c] = new Point2DReward(c, r, 10);
+                }
+            }
+            pointsOfInterest.clear();
+            prevGoalPosition = null;
+        }
+        if(exception) System.out.println("continue");
 
         double angle = Math.toDegrees(Math.atan2(goalPositionPath.getY() - position.getY(), goalPositionPath.getX() - position.getX()) - Math.atan2(posFacing.getY() - position.getY(), posFacing.getX() - position.getX()));
         angle = (angle > 180) ? angle - 360 : angle;
@@ -231,7 +259,7 @@ public class AreaOptimizer extends Guard {
         for (int r = 0; r < worldAreaReward.length; r++) {
             for (int c = 0; c < worldAreaReward[0].length; c++) {
                 //check if middle of tile is in cone
-                if (viewingCone.contains(worldMap.convertArrayToWorld(c) + 0.5 * worldMap.convertArrayToWorld(1),
+                if (this.inVision(worldMap.convertArrayToWorld(c) + 0.5 * worldMap.convertArrayToWorld(1),
                         worldMap.convertArrayToWorld(r) + 0.5 * worldMap.convertArrayToWorld(1))) {
                     int tileState = worldMap.getTileState(r, c);
                     PointOfInterest tmpPoint = null;
