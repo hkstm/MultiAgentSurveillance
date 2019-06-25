@@ -94,7 +94,7 @@ public class Astar {
             {
                 //if(!nextToEntrance(new Point(pointsToModify.get(i).x, pointsToModify.get(i).y)))
                 //{
-                    grid[pointsToModify.get(i).x][pointsToModify.get(i).y].heuristic += 50;
+                grid[pointsToModify.get(i).x][pointsToModify.get(i).y].heuristic += 50;
                 //}
                 //System.out.println(grid[pointsToModify.get(i).x][pointsToModify.get(i).y].heuristic);
             }

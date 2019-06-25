@@ -105,7 +105,6 @@ public class Agent implements Runnable{
      */
 
     public Agent(Point2D position, double direction) {
-//        System.out.println("agent constructor called");
         this.position = position;
         this.direction = direction;
         this.color = Color.LIGHTSEAGREEN;
@@ -118,9 +117,6 @@ public class Agent implements Runnable{
                 }
             }
         }
-        if(goalSet == false) {
-//            System.out.println("No Target");
-        }
         this.visualRange = new double[2];
         this.firstRun = true;
         for (int i = 0; i < knownTerrain.length; i++) {
@@ -129,6 +125,7 @@ public class Agent implements Runnable{
             }
         }
     }
+
 
     /**
      * Default run method
