@@ -88,14 +88,13 @@ public class GameScene extends BorderPane implements Runnable {
         this.startGameBut = new Button("Start/Stop Game"); //should stop and start game, not properly working atm
         Agent.worldMap = worldMap;
 //        Guard guard1  = new Guard(new Point2D(200, 300), 70);
-//        Guard guard2  = new Guard(new Point2D(500, 100), 100);
-        Intruder intruder = new Intruder(new Point2D(500, 520), 0);
-        AreaOptimizer areaOptimizer = new AreaOptimizer(new Point2D(500, 400), 0);
-        Guard stupidGuard = new StupidGuard(new Point2D(500, 500), 90);
-//        worldMap.addAgent(guard);
+        Guard guard2  = new Guard(new Point2D(500, 470), 0);
         Intruder intruder = new Intruder(new Point2D(500, 500), 0);
+       // AreaOptimizer areaOptimizer = new AreaOptimizer(new Point2D(500, 470), 0);
+        //Guard stupidGuard = new StupidGuard(new Point2D(500, 500), 90);
+        worldMap.addAgent(guard2);
         worldMap.addOnlyAgent(intruder);
-        worldMap.addOnlyAgent(areaOptimizer);
+//        worldMap.addOnlyAgent(areaOptimizer);
 //        worldMap.addOnlyAgent(stupidGuard);
         this.pher = new Pheromones(worldMap);
 
