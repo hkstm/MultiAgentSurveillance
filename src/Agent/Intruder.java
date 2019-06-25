@@ -24,13 +24,13 @@ public class Intruder extends Agent{
     protected int sprintCounter = 5;
     protected int walkCounter = 15;
     protected List<Point> tempWalls = new ArrayList<Point>();
-    private Point tempOldPos = null;
-    private Point oldPos = null;
-    private boolean first;
-    private int alternatingCounter;
-    private boolean modify;
-    private double runTime = 5;
-    private double walkTime = 10;
+    protected Point tempOldPos = null;
+    protected Point oldPos = null;
+    protected boolean first;
+    protected int alternatingCounter;
+    protected boolean modify;
+    protected double runTime = 5;
+    protected double walkTime = 10;
 
 
 
