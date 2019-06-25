@@ -168,6 +168,7 @@ public class Intruder extends Agent{
             for (Agent agent : worldMap.getAgents()) {
                 if (agent instanceof Guard && viewingCone.contains(agent.getPosition()) && !tired) {
                     updateDirection(direction + 180);
+                    System.out.println("seeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
                     if (legalMoveCheck(sprintingDistance)) {
                         runTime -= timeStep;
                         move(sprintingDistance);
@@ -179,6 +180,7 @@ public class Intruder extends Agent{
                 }
                 else if (agent instanceof Guard && viewingCone.contains(agent.getPosition()) && tired){
                     updateDirection(direction + 180);
+                    System.out.println("seeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
                     if (legalMoveCheck(walkingDistance)){
                         walkTime -= timeStep;
                         move(walkingDistance);

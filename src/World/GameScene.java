@@ -93,6 +93,7 @@ public class GameScene extends BorderPane implements Runnable {
         AreaOptimizer areaOptimizer = new AreaOptimizer(new Point2D(500, 400), 0);
         Guard stupidGuard = new StupidGuard(new Point2D(500, 500), 90);
 //        worldMap.addAgent(guard);
+        Intruder intruder = new Intruder(new Point2D(500, 500), 0);
         worldMap.addOnlyAgent(intruder);
         worldMap.addOnlyAgent(areaOptimizer);
 //        worldMap.addOnlyAgent(stupidGuard);
