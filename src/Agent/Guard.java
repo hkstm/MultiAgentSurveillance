@@ -36,6 +36,8 @@ public class Guard extends Agent {
     private int count = 0;
     protected boolean chasing;
 
+    protected Blackboard blackboard;
+
     private boolean firstRunBehaviourTreeGuardLogic;
 
     public Guard(Point2D position, double direction) {
@@ -61,6 +63,7 @@ public class Guard extends Agent {
 //        System.out.println("Guard initialized");
 
         //this.knownTerrain = worldMap.getWorldGrid();
+        this.blackboard = Blackboard.getBlackboard(this); // "this"
     }
 
     public void updatePerformanceCriteria() {

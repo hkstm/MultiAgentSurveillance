@@ -66,6 +66,8 @@ public class MoveTo extends Routine {
                             Routines.chase(guard, intruder)
                     );
                     guard.setRoutine(guard2);
+                    // update blackboard
+                    guard.blackboard.chaseIntruder(intruder);
                     guard.routine.start();
                 }
                 System.out.println("didnt find it yet");
@@ -97,10 +99,10 @@ public class MoveTo extends Routine {
                     destY = locationToWorldgrid(intruder.getPosition().getX());
                     return true;
 
-                    }
                 }
             }
-
-            return false;
         }
+
+        return false;
     }
+}
