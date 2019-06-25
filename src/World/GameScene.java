@@ -91,8 +91,8 @@ public class GameScene extends BorderPane implements Runnable {
 
         int amountOfGuards = 3;
         StraightLiner straightLiner = new StraightLiner(new Point2D(10, 10), 45);
-        worldMap.addAgent(straightLiner);
-        Intruder intruder = new Intruder(new Point2D(900, 500), 45);
+        //worldMap.addAgent(straightLiner);
+        Intruder intruder = new Intruder(new Point2D(40, 40), 45);
         worldMap.addAgent(intruder);
         for(int n = 0; n < amountOfGuards; n++) {
             double x = 0;
@@ -236,7 +236,7 @@ public class GameScene extends BorderPane implements Runnable {
                 currentTimeCountDown = System.nanoTime();
             }
             if(worldMap.intruderInTarget()) {
-                System.out.println("intruder in target");
+                //System.out.println("intruder in target");
                 if(!visitedTarget) {
                     firstVisitTime = System.nanoTime();
                     visitedTarget = true;

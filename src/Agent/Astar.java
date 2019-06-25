@@ -235,35 +235,35 @@ public class Astar {
         double weightToAdd = 0;
         if(coverCheck(knownTerrain, row+1, column-1))
         {
-            weightToAdd -= 10;
+            weightToAdd -= 5;
         }
         if(coverCheck(knownTerrain, row+1, column))
         {
-            weightToAdd -= 10;
+            weightToAdd -= 5;
         }
         if(coverCheck(knownTerrain, row, column-1))
         {
-            weightToAdd -= 10;
+            weightToAdd -= 5;
         }
         if(coverCheck(knownTerrain, row-1, column-1))
         {
-            weightToAdd -= 10;
+            weightToAdd -= 5;
         }
         if(coverCheck(knownTerrain, row-1, column))
         {
-            weightToAdd -= 10;
+            weightToAdd -= 5;
         }
         if(coverCheck(knownTerrain, row-1, column+1))
         {
-            weightToAdd -= 10;
+            weightToAdd -= 5;
         }
         if(coverCheck(knownTerrain, row, column+1))
         {
-            weightToAdd -= 10;
+            weightToAdd -= 5;
         }
         if(coverCheck(knownTerrain, row+1, column+1))
         {
-            weightToAdd -= 10;
+            weightToAdd -= 5;
         }
         for(int i = row ; i < row+16 ; i++)
         {
