@@ -100,7 +100,8 @@ public class GameScene extends BorderPane implements Runnable {
 //        worldMap.addAgent(guard);
 //        worldMap.addOnlyAgent(areaOptimizer);
 //        worldMap.addOnlyAgent(stupidGuard);
-        worldMap.addAgent(straightLiner);
+//        worldMap.addAgent(straightLiner);
+        worldMap.addAgent(intruder);
         this.pher = new Pheromones(worldMap);
 
         //worldMap.addOnlyAgent(areaOptimzer);
