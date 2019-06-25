@@ -221,4 +221,20 @@ public class Guard extends Agent {
                 }
         //    }
         }
+
+    public double getTimeCost() {
+        return timeCost;
     }
+
+    public double getDistanceCost() {
+        return distanceCost;
+    }
+
+    public double getDirectCommsCost() {
+        return directCommsCost;
+    }
+
+    public double getIndirectCommsCost() {
+        return indirectCommsCost;
+    }
+}

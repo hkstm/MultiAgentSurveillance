@@ -89,10 +89,10 @@ public class GameScene extends BorderPane implements Runnable {
         this.startGameBut = new Button("Start/Stop Game"); //should stop and start game, not properly working atm
         Agent.worldMap = worldMap;
 
+        int amountOfGuards = 2;
         StraightLiner straightLiner = new StraightLiner(new Point2D(10, 10), 45);
         worldMap.addAgent(straightLiner);
-        int amountOfStupidGuards = 2;
-        for(int n = 0; n < amountOfStupidGuards; n++) {
+        for(int n = 0; n < amountOfGuards; n++) {
             double x = 0;
             double y = 0;
             do{
@@ -102,9 +102,6 @@ public class GameScene extends BorderPane implements Runnable {
             worldMap.addAgent(new StupidGuard(new Point2D(x, y), new Random().nextDouble()*360));
         }
         this.pher = new Pheromones(worldMap);
-        System.out.println("doing simulation");
-
-
 
         //worldMap.addOnlyAgent(areaOptimzer);
         //Actual game "loop" in here
@@ -132,6 +129,7 @@ public class GameScene extends BorderPane implements Runnable {
 
 
                             long delta = (currentTime - previousTime);
+                            delta *= SIMULATION_SPEEDUP_FACTOR;
     //                        System.out.println("drawing tick in: " + (delta/1e9));
                             previousTime = currentTime;
                             pher.update(delta);
@@ -241,14 +239,14 @@ public class GameScene extends BorderPane implements Runnable {
                     firstVisitTime = System.nanoTime();
                     visitedTarget = true;
                 }
-                if((System.nanoTime() - currentTimeCountDown) > (3*1e9)) {
+                if((System.nanoTime() - currentTimeCountDown) > (3*1e9/SIMULATION_SPEEDUP_FACTOR)) {
                     intrudersWon = true;
                 }
                 countDown = true;
             } else {
                 countDown = false;
             }
-            if(visitedTarget && (System.nanoTime() - firstVisitTime) > (3*1e9)) {
+            if(visitedTarget && (System.nanoTime() - firstVisitTime) > (3*1e9/SIMULATION_SPEEDUP_FACTOR)) {
                 intrudersWon = true;
             }
             if(intrudersWon) {

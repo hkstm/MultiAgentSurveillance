@@ -12,11 +12,11 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
+import java.util.ArrayList;
 import java.util.Random;
 
 import static Agent.Agent.*;
-import static World.GameScene.ASSUMED_WORLDSIZE;
-import static World.GameScene.SCALING_FACTOR;
+import static World.GameScene.*;
 
 public class RunSimulation extends Application {
 
@@ -40,8 +40,12 @@ public class RunSimulation extends Application {
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Multi-Agent Surveillance - Simulation Only");
-        int amountOfSims = 100;
+        int amountOfSims = 2;
+        int guardsWins = 0;
+        int intruderWins = 0;
+        int amountOfGuards = 3;
         worldFile = loadFile(primaryStage);
+        double[][] summary = new double[amountOfSims][amountOfGuards*2];
         for(int i = 0; i < amountOfSims; i++) {
             worldMap = loadMap(worldFile);
             Agent.worldMap = worldMap;
@@ -58,9 +62,8 @@ public class RunSimulation extends Application {
             Agent.worldMap = worldMap;
 
             StraightLiner straightLiner = new StraightLiner(new Point2D(10, 10), 45);
-            worldMap.addOnlyAgent(straightLiner);
-            int amountOfStupidGuards = 4;
-            for(int n = 0; n < amountOfStupidGuards; n++) {
+            worldMap.addAgent(straightLiner);
+            for(int n = 0; n < amountOfGuards; n++) {
                 double x = 0;
                 double y = 0;
                 do{
@@ -76,17 +79,30 @@ public class RunSimulation extends Application {
                 long currentTime = System.nanoTime();
 //                worldMap.forceUpdateAgents();
                 long delta = (currentTime - previousTime);
-                delta /= 1e9;
-//                if(delta > 0.02) System.out.println("delta: " + delta);
+                delta *= SIMULATION_SPEEDUP_FACTOR;
 //                System.out.println();
                 previousTime = currentTime;
                 pher.update(delta);
                 generateRandomSound(delta);
-                if(haveGuardsCapturedIntruder(mode, delta) || haveIntrudersWon(mode, delta)) gameEnded = true;
+                if(haveGuardsCapturedIntruder(mode, delta)) {
+                    guardsWins++;
+                    gameEnded = true;
+                }
+                if(haveIntrudersWon(mode, delta)) {
+                    intruderWins++;
+                    gameEnded = true;
+                }
             }
+            ArrayList<Guard> guardList = new ArrayList<>();
+            for(Agent agent : worldMap.getAgents()) if (agent instanceof Guard) guardList.add((Guard)agent);
+            for(int guards = 0; guards < amountOfGuards; guards++) {
+                summary[i][guards*2] = guardList.get(guards).getTimeCost();
+                summary[i][guards*2+1] = guardList.get(guards).getDistanceCost();
+            }
+            worldMap.removeAllAgents();
             System.out.println("game ended");
         }
-        System.out.println("done");
+        printSummary(summary, guardsWins, intruderWins, amountOfGuards, "ez");
     }
 
     public boolean haveIntrudersWon(int mode, long delta) {
@@ -99,14 +115,14 @@ public class RunSimulation extends Application {
                 firstVisitTime = System.nanoTime();
                 visitedTarget = true;
             }
-            if((System.nanoTime() - currentTimeCountDown) > (3*1e9)) {
+            if((System.nanoTime() - currentTimeCountDown) > (3*1e9/SIMULATION_SPEEDUP_FACTOR)) {
                 intrudersWon = true;
             }
             countDown = true;
         } else {
             countDown = false;
         }
-        if(visitedTarget && (System.nanoTime() - firstVisitTime) > (3*1e9)) {
+        if(visitedTarget && (System.nanoTime() - firstVisitTime) > (3*1e9/SIMULATION_SPEEDUP_FACTOR)) {
             intrudersWon = true;
         }
         return intrudersWon;
@@ -132,6 +148,20 @@ public class RunSimulation extends Application {
             }
         }
         return false;
+    }
+
+    public void printSummary(double[][] summary, int guardWins, int intruderWins, int numberOfGuards, String map){
+        for(int r = 0; r < summary.length; r++) {
+            for(int c = 0; c < summary[0].length; c++) {
+                System.out.print(summary[r][c]);
+                if(c != summary[0].length-1) System.out.print(",");
+            }
+            System.out.println();
+        }
+        System.out.println("guard: " + guardWins);
+        System.out.println("intruder: " + intruderWins);
+        System.out.println("numberOfGuards: " + numberOfGuards);
+        System.out.println("map: " + map);
     }
 
 

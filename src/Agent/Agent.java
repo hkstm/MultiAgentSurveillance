@@ -12,8 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static World.GameScene.ASSUMED_WORLDSIZE;
-import static World.GameScene.SCALING_FACTOR;
+import static World.GameScene.*;
 import static World.WorldMap.*;
 
 /**
@@ -157,6 +156,7 @@ public class Agent implements Runnable{
         currentTime = System.nanoTime();
         delta = currentTime - previousTime;
         delta /= 1e9; //makes it in seconds
+        delta *= SIMULATION_SPEEDUP_FACTOR;
         previousTime = currentTime;
         previousDirection = direction;
         //System.out.println("currentSpeed:" + currentSpeed);
@@ -177,7 +177,7 @@ public class Agent implements Runnable{
         if((Math.abs(previousDirection - direction) * delta) > (MAX_NONBLIND_TURNING_PER_SECOND * delta)) {
             startTimeFastTurn = System.nanoTime();
             blind = true;
-        } else if((System.nanoTime() - startTimeFastTurn)/1e9 > (TIME_BLINDED + delta)) blind = false; //TIME_BLINDED in seconds so have to convert nanoTime()
+        } else if((System.nanoTime() - startTimeFastTurn)/1e9 > (TIME_BLINDED/SIMULATION_SPEEDUP_FACTOR + delta)) blind = false; //TIME_BLINDED in seconds so have to convert nanoTime()
         if(worldMap.checkTile(locationToWorldgrid(position.getX()), locationToWorldgrid(position.getX()), DECREASED_VIS_RANGE) && !hiddenInDecreasedVis){
             hiddenInDecreasedVis = true;
             startTimeDecreasedVis = System.nanoTime();
@@ -189,7 +189,7 @@ public class Agent implements Runnable{
         }
         if(turningLeft <= 0) turnedMaxWhileSprinting = true;
         else turnedMaxWhileSprinting = false;
-        if(hiddenInDecreasedVis && ((System.nanoTime() - startTimeDecreasedVis)/1e9) > MIN_TIME_BEFORE_SHORT_DETECT_IN_DECREASEDVIS) shortDetectionRange = true;
+        if(hiddenInDecreasedVis && ((System.nanoTime() - startTimeDecreasedVis)/1e9) > MIN_TIME_BEFORE_SHORT_DETECT_IN_DECREASEDVIS/SIMULATION_SPEEDUP_FACTOR) shortDetectionRange = true;
         else shortDetectionRange = false;
         if(!hiddenInDecreasedVis) shortDetectionRange = false;
         currentSpeed = ((position.distance(previousPosition) / SCALING_FACTOR) / delta);
@@ -442,6 +442,8 @@ public class Agent implements Runnable{
      * @return column or row that can be looked up in worldArray
      */
     public static int locationToWorldgrid(double toBeConverted) {
+        if(toBeConverted < 0) return 0;
+        if(toBeConverted > worldMap.getSize()*SCALING_FACTOR) return worldMap.getSize()-1;
         return (int)(toBeConverted * (1/((ASSUMED_WORLDSIZE/worldMap.getSize())*SCALING_FACTOR)));
     }
 
