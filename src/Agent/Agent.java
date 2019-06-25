@@ -764,4 +764,9 @@ public class Agent implements Runnable {
             turnToFace(270-turnAngle);
         }
     }
+
+    public void clearAudioLog()
+    {
+        audioLogs.clear();
+    }
 }
