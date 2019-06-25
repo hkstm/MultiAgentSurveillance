@@ -70,7 +70,7 @@ public class AreaOptimizer extends Guard {
 //        double newWeight = 5;
 //        double totalWeight = previousWeight + newWeight;
 //        updateDirection(((direction*previousWeight)+(getMoveDirection()*newWeight)/totalWeight));
-        updateDirection(getMoveDirection());
+        updateDirectionNoBlind(getMoveDirection());
         double walkingDistance = (BASE_SPEED * SCALING_FACTOR) * (delta);
         Point2D newPosition = new Point2D((position.getX() + (walkingDistance * Math.cos(Math.toRadians(direction)))), (position.getY() + (walkingDistance * Math.sin(Math.toRadians(direction)))));
         if(isEmpty(worldMap.getTileState(locationToWorldgrid(newPosition.getY()), locationToWorldgrid(newPosition.getX())))) {
@@ -168,9 +168,16 @@ public class AreaOptimizer extends Guard {
      * @return the angle between the best point to go and current position
      */
     public double getMoveDirection() {
-        for(Agent intruder : worldMap.getAgents()) {
-            if(intruder instanceof Intruder) {
-                if(viewingCone.contains(intruder.getPosition())) return Math.toDegrees(Math.atan2((intruder.getPosition().getY() - position.getY()), (intruder.getPosition().getX() - position.getX())));
+        chasing = false;
+        for(Agent agent: worldMap.getAgents()){
+            if(agent instanceof Intruder && this.inVision(agent.getPosition())) {
+                Point2D posFacing = new Point2D(position.getX() + (10 * Math.cos(Math.toRadians(direction))), position.getY() + (10 * Math.sin(Math.toRadians(direction))));
+//        System.out.println("degrees: " + result);
+                double angle = Math.toDegrees(Math.atan2(agent.getPosition().getY() - position.getY(), agent.getPosition().getX() - position.getX()) - Math.atan2(posFacing.getY() - position.getY(), posFacing.getX() - position.getX()));
+                angle = (angle > 180) ? angle - 360 : angle;
+                angle = (angle < -180) ? angle + 360 : angle;
+                this.direction += angle;
+                chasing = true;
             }
         }
         double x = 0;
@@ -231,7 +238,7 @@ public class AreaOptimizer extends Guard {
         for (int r = 0; r < worldAreaReward.length; r++) {
             for (int c = 0; c < worldAreaReward[0].length; c++) {
                 //check if middle of tile is in cone
-                if (viewingCone.contains(worldMap.convertArrayToWorld(c) + 0.5 * worldMap.convertArrayToWorld(1),
+                if (this.inVision(worldMap.convertArrayToWorld(c) + 0.5 * worldMap.convertArrayToWorld(1),
                         worldMap.convertArrayToWorld(r) + 0.5 * worldMap.convertArrayToWorld(1))) {
                     int tileState = worldMap.getTileState(r, c);
                     PointOfInterest tmpPoint = null;

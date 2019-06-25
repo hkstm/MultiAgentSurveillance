@@ -53,7 +53,8 @@ public class GameScene extends BorderPane implements Runnable {
 
     private boolean gameStarted; //used for start and stop button
     private int mode; //modes for different gameModes e.g. multiple intruders/guards and what the end game conditions are
-    public static final int ASSUMED_WORLDSIZE = 100;
+    public static final double SIMULATION_SPEEDUP_FACTOR = 1;
+    public static final int ASSUMED_WORLDSIZE = 200;
     public static final double SCALING_FACTOR = WINDOW_SIZE/ASSUMED_WORLDSIZE; //ASSUMING WORLD IS ALWAYS 100 X 100 AND THAT WINDOWSIZE IS 1000
     public static Random random = new Random();
     private long currentTimeCountDown;
@@ -87,16 +88,20 @@ public class GameScene extends BorderPane implements Runnable {
 
         this.startGameBut = new Button("Start/Stop Game"); //should stop and start game, not properly working atm
         Agent.worldMap = worldMap;
-//        Guard guard1  = new Guard(new Point2D(200, 300), 70);
+        Guard guard1  = new Guard(new Point2D(200, 450), 70);
+        Guard guard2  = new Guard(new Point2D(500, 400), 100);
+        Intruder intruder = new Intruder(new Point2D(500, 500), 0);
+        AreaOptimizer areaOptimzer = new AreaOptimizer(new Point2D(500, 400), 0);
+        //       Guard guard1  = new Guard(new Point2D(200, 300), 70);
 //        Guard guard2  = new Guard(new Point2D(500, 100), 100);
-        Intruder intruder = new Intruder(new Point2D(900, 500), 0);
         AreaOptimizer areaOptimizer = new AreaOptimizer(new Point2D(500, 400), 0);
-        Guard stupidGuard = new StupidGuard(new Point2D(500, 500), 90);
+        Guard stupidGuard = new StupidGuard(new Point2D(800, 300), 315);
+        StraightLiner straightLiner = new StraightLiner(new Point2D(20, 20), -45);
 //        worldMap.addAgent(guard);
-        worldMap.addOnlyAgent(intruder);
-        worldMap.addOnlyAgent(areaOptimizer);
+//        worldMap.addOnlyAgent(areaOptimizer);
 //        worldMap.addOnlyAgent(stupidGuard);
-        //this.pher = new Pheromones(worldMap);
+        worldMap.addAgent(straightLiner);
+        this.pher = new Pheromones(worldMap);
 
         //worldMap.addOnlyAgent(areaOptimzer);
         //Actual game "loop" in here
@@ -104,7 +109,7 @@ public class GameScene extends BorderPane implements Runnable {
             currentTimeCountDown = System.nanoTime();
             if(!gameStarted) {
                 gameStarted = true;
-//                worldMap.startAgents();
+                worldMap.startAgents();
                 System.out.println("Started agents");
                 new AnimationTimer() {
                     long currentTimeCalc = System.nanoTime();
@@ -113,20 +118,20 @@ public class GameScene extends BorderPane implements Runnable {
                     public void handle(long currentTime) {
                         if(gameStarted && !paused){
 //                        long beforeUpdatingAgents = System.nanoTime();
-                            worldMap.forceUpdateAgents();
+//                            worldMap.forceUpdateAgents();
 //                        long afterUpdatingAgents = System.nanoTime();
 //                        System.out.println("updating agentstook: " + ((afterUpdatingAgents-beforeUpdatingAgents)/1e9));
 
 //                        long beforeDrawingBoard = System.nanoTime();
                             redrawBoard();
-//                        long afterDrawingBoard = System.nanoTime();
-//                        System.out.println("redrawing board took: " + ((afterDrawingBoard-beforeDrawingBoard)/1e9));
+    //                        long afterDrawingBoard = System.nanoTime();
+    //                        System.out.println("redrawing board took: " + ((afterDrawingBoard-beforeDrawingBoard)/1e9));
 
 
                             long delta = (currentTime - previousTime);
-//                        System.out.println("drawing tick in: " + (delta/1e9));
+    //                        System.out.println("drawing tick in: " + (delta/1e9));
                             previousTime = currentTime;
-                            //pher.update(delta);
+                            pher.update(delta);
                             generateRandomSound(delta);
                             haveGuardsCapturedIntruder(mode, delta);
                             haveIntrudersWon(mode, delta);
@@ -189,11 +194,12 @@ public class GameScene extends BorderPane implements Runnable {
     public void initTiles() {
         for (int r = 0; r < worldMap.getSize(); r++) {
             for (int c = 0; c < worldMap.getSize(); c++) {
-                TileView tmpView = new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c));
+                TileView tmpView = new TileView(tileImgArray[worldMap.getTileStatePhero(r, c)], r, c, worldMap.getTileStatePhero(r, c));
                 tmpView.setCache(true);
                 tmpView.setCacheHint(CacheHint.SPEED);
                 tileViews.add(c + (r * worldMap.getSize()), tmpView);
-                grid.add(tmpView, c, r);tileViews.set(c + (r * worldMap.getSize()),  new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c)));
+                grid.add(tmpView, c, r);
+                tileViews.set(c + (r * worldMap.getSize()),  new TileView(tileImgArray[worldMap.getTileStatePhero(r, c)], r, c, worldMap.getTileStatePhero(r, c)));
             }
         }
     }
@@ -202,8 +208,8 @@ public class GameScene extends BorderPane implements Runnable {
         for (int r = 0; r < worldMap.getSize(); r++) {
             for (int c = 0; c < worldMap.getSize(); c++) {
                 TileView tmpView = null;
-                if(tileViews.get(c + (r * worldMap.getSize())).getState() != worldMap.getTileState(r, c)) {
-                    tmpView = new TileView(tileImgArray[worldMap.getTileState(r, c)], r, c, worldMap.getTileState(r, c));
+                if(tileViews.get(c + (r * worldMap.getSize())).getState() != worldMap.getTileStatePhero(r, c)) {
+                    tmpView = new TileView(tileImgArray[worldMap.getTileStatePhero(r, c)], r, c, worldMap.getTileStatePhero(r, c));
                 } else {
                     tmpView = tileViews.get(c + (r * worldMap.getSize()));
                 }
@@ -227,6 +233,7 @@ public class GameScene extends BorderPane implements Runnable {
                 currentTimeCountDown = System.nanoTime();
             }
             if(worldMap.intruderInTarget()) {
+                System.out.println("intruder in target");
                 if(!visitedTarget) {
                     firstVisitTime = System.nanoTime();
                     visitedTarget = true;
@@ -262,7 +269,7 @@ public class GameScene extends BorderPane implements Runnable {
             if(agentGuard instanceof Guard) {
                 for(Agent agentIntruder : agentIntruders) {
                     if(agentIntruder instanceof Intruder) {
-                        if(agentGuard.getPosition().distance(agentIntruder.getPosition()) < (DISTANCE_TO_CATCH * SCALING_FACTOR)) {
+                        if(agentGuard.getPosition().distance(agentIntruder.getPosition()) < (DISTANCE_TO_CATCH * SCALING_FACTOR)){
                             createAlert("GUARDS have found INTRUDER");
                         }
                     }
@@ -281,11 +288,11 @@ public class GameScene extends BorderPane implements Runnable {
         if(random.nextDouble() < occurenceRate/(delta)) {
             Point2D randomNoiseLocation = new Point2D(random.nextInt(windowSize), random.nextInt(windowSize));
             for(Agent agent : worldMap.getAgents()) {
-                if(randomNoiseLocation.distance(agent.getPosition())/SCALING_FACTOR < 5) {
+                if(randomNoiseLocation.distance(agent.getPosition()) < SOUNDRANGE_MEDIUMFAR * SCALING_FACTOR) {
                     double angleBetweenPoints = Math.toDegrees(Math.atan2((agent.getPosition().getY() - randomNoiseLocation.getY()), (agent.getPosition().getX() - randomNoiseLocation.getX())));
                     angleBetweenPoints += new Random().nextGaussian()*SOUND_NOISE_STDEV;
                     agent.getAudioLogs().add(new AudioLog(System.nanoTime(), angleBetweenPoints, new Point2D(agent.getPosition().getX(), agent.getPosition().getY())));
-                    System.out.println("Agent heard sound");
+//                    System.out.println("Agent heard sound");
                 }
             }
         }
