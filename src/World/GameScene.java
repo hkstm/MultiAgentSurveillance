@@ -89,7 +89,7 @@ public class GameScene extends BorderPane implements Runnable {
         this.startGameBut = new Button("Start/Stop Game"); //should stop and start game, not properly working atm
         Agent.worldMap = worldMap;
 
-        int amountOfGuards = 2;
+        int amountOfGuards = 3;
         StraightLiner straightLiner = new StraightLiner(new Point2D(10, 10), 45);
         worldMap.addAgent(straightLiner);
         for(int n = 0; n < amountOfGuards; n++) {
@@ -99,7 +99,7 @@ public class GameScene extends BorderPane implements Runnable {
                 x = new Random().nextDouble()*worldMap.getSize()*SCALING_FACTOR;
                 y = new Random().nextDouble()*worldMap.getSize()*SCALING_FACTOR;
             }while(!worldMap.isEmpty(worldMap.getTileState(locationToWorldgrid(y), locationToWorldgrid(x))));
-            worldMap.addAgent(new StupidGuard(new Point2D(x, y), new Random().nextDouble()*360));
+            worldMap.addAgent(new AreaOptimizer(new Point2D(x, y), new Random().nextDouble()*360));
         }
         this.pher = new Pheromones(worldMap);
 
