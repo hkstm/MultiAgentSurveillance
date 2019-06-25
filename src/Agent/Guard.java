@@ -13,6 +13,7 @@ import java.util.TimerTask;
 import static Agent.MoveTo.destX;
 import static Agent.MoveTo.destY;
 import static World.GameScene.SCALING_FACTOR;
+import static World.GameScene.SIMULATION_SPEEDUP_FACTOR;
 import static World.WorldMap.SENTRY;
 import static World.WorldMap.TARGET;
 
@@ -82,6 +83,7 @@ public class Guard extends Agent {
         currentTime = System.nanoTime();
         delta = currentTime - previousTime;
         delta /= 1e9; //makes it in seconds
+        delta *= SIMULATION_SPEEDUP_FACTOR;
         System.out.println("y: " + locationToWorldgrid( getPosition().getX() )+ "x: " + locationToWorldgrid( getPosition().getY()));
         update();
         updatePerformanceCriteria();
@@ -124,7 +126,7 @@ public class Guard extends Agent {
             TimerTask openTower = new OpenTower();
 
 
-                timer.schedule(openTower, 3000);
+                timer.schedule(openTower, (int)(3000/SIMULATION_SPEEDUP_FACTOR));
             timer.cancel();
         }
     }
@@ -145,8 +147,8 @@ public class Guard extends Agent {
 
     public void gameTree(double timeStep)
     {
-
-        double walkingDistance = (BASE_SPEED *SCALING_FACTOR);
+//        double walkingDistance = (BASE_SPEED * SCALING_FACTOR; //this washere but i think its wrong? ~kailhan
+        double walkingDistance = (BASE_SPEED * SCALING_FACTOR * timeStep);
         updateWalls();
         if(oldTempGoal != null) {
             checkChangedStatus();
@@ -221,4 +223,20 @@ public class Guard extends Agent {
                 }
         //    }
         }
+
+    public double getTimeCost() {
+        return timeCost;
     }
+
+    public double getDistanceCost() {
+        return distanceCost;
+    }
+
+    public double getDirectCommsCost() {
+        return directCommsCost;
+    }
+
+    public double getIndirectCommsCost() {
+        return indirectCommsCost;
+    }
+}
