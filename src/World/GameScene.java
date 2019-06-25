@@ -92,7 +92,7 @@ public class GameScene extends BorderPane implements Runnable {
         int amountOfGuards = 3;
         StraightLiner straightLiner = new StraightLiner(new Point2D(10, 10), 45);
         worldMap.addAgent(straightLiner);
-        Intruder intruder = new Intruder(new Point2D(500, 500), 45);
+        Intruder intruder = new Intruder(new Point2D(900, 500), 45);
         worldMap.addAgent(intruder);
         for(int n = 0; n < amountOfGuards; n++) {
             double x = 0;

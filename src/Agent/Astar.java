@@ -88,22 +88,25 @@ public class Astar {
                 }
             }
         }
-        for(int i = 0 ; i < pointsToModify.size() ; i++)
+        if(agent.getClass() == Intruder.class)
         {
-            if(agent.getWorldGrid()[pointsToModify.get(i).y][pointsToModify.get(i).x] != WALL && agent.getWorldGrid()[pointsToModify.get(i).y][pointsToModify.get(i).x] != SENTRY && agent.getWorldGrid()[pointsToModify.get(i).y][pointsToModify.get(i).x] != STRUCTURE)
+            for(int i = 0 ; i < pointsToModify.size() ; i++)
             {
-                //if(!nextToEntrance(new Point(pointsToModify.get(i).x, pointsToModify.get(i).y)))
-                //{
-                grid[pointsToModify.get(i).x][pointsToModify.get(i).y].heuristic += 50;
-                //}
-                //System.out.println(grid[pointsToModify.get(i).x][pointsToModify.get(i).y].heuristic);
+                if(agent.getWorldGrid()[pointsToModify.get(i).y][pointsToModify.get(i).x] != WALL && agent.getWorldGrid()[pointsToModify.get(i).y][pointsToModify.get(i).x] != SENTRY && agent.getWorldGrid()[pointsToModify.get(i).y][pointsToModify.get(i).x] != STRUCTURE)
+                {
+                    //if(!nextToEntrance(new Point(pointsToModify.get(i).x, pointsToModify.get(i).y)))
+                    //{
+                    grid[pointsToModify.get(i).x][pointsToModify.get(i).y].heuristic += 50;
+                    //}
+                    //System.out.println(grid[pointsToModify.get(i).x][pointsToModify.get(i).y].heuristic);
+                }
             }
-        }
-        for(int i = 0 ; i < pointsToModifyNoise.size() ; i++)
-        {
-            if(agent.getWorldGrid()[pointsToModifyNoise.get(i).y][pointsToModifyNoise.get(i).x] != WALL && agent.getWorldGrid()[pointsToModifyNoise.get(i).y][pointsToModifyNoise.get(i).x] != SENTRY && agent.getWorldGrid()[pointsToModifyNoise.get(i).y][pointsToModifyNoise.get(i).x] != STRUCTURE)
+            for(int i = 0 ; i < pointsToModifyNoise.size() ; i++)
             {
-                grid[pointsToModifyNoise.get(i).x][pointsToModifyNoise.get(i).y].heuristic += 30;
+                if(agent.getWorldGrid()[pointsToModifyNoise.get(i).y][pointsToModifyNoise.get(i).x] != WALL && agent.getWorldGrid()[pointsToModifyNoise.get(i).y][pointsToModifyNoise.get(i).x] != SENTRY && agent.getWorldGrid()[pointsToModifyNoise.get(i).y][pointsToModifyNoise.get(i).x] != STRUCTURE)
+                {
+                    grid[pointsToModifyNoise.get(i).x][pointsToModifyNoise.get(i).y].heuristic += 30;
+                }
             }
         }
         grid[si][sj].fCost = 0;
