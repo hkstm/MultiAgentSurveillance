@@ -40,10 +40,10 @@ public class RunSimulation extends Application {
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Multi-Agent Surveillance - Simulation Only");
-        int amountOfSims = 1;
+        int amountOfSims = 25;
         int guardsWins = 0;
         int intruderWins = 0;
-        int amountOfGuards = 3;
+        int amountOfGuards = 7;
         worldFile = loadFile(primaryStage);
         double[][] summary = new double[amountOfSims][(amountOfGuards*2)+2];
         for(int i = 0; i < amountOfSims; i++) {
