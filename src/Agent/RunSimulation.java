@@ -77,7 +77,7 @@ public class RunSimulation extends Application {
 //            worldMap.startAgents();
             while(!gameEnded){
                 long currentTime = System.nanoTime();
-//                worldMap.forceUpdateAgents();
+                worldMap.forceUpdateAgents();
                 long delta = (currentTime - previousTime);
                 delta *= SIMULATION_SPEEDUP_FACTOR;
 //                System.out.println();
