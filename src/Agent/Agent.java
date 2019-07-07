@@ -3,7 +3,6 @@ package Agent;
 import World.WorldMap;
 import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Shape;
 
@@ -92,7 +91,6 @@ public class Agent implements Runnable{
     protected boolean turnedMaxWhileSprinting;
     protected double turningLeft;
 
-    private boolean goalSet = false;
     protected Point[] points = new Point[2];
     protected boolean doorNoise;
     protected boolean windowNoise;
@@ -108,14 +106,6 @@ public class Agent implements Runnable{
         this.direction = direction;
         this.color = Color.LIGHTSEAGREEN;
         this.knownTerrain = new int[worldMap.getSize()][worldMap.getSize()];
-        for(int i = 0; i < knownTerrain[0].length; i++) {
-            for(int j = 0; j < knownTerrain.length; j++) {
-                if(worldMap.worldGrid[i][j] == TARGET) {
-                    goalPosition = new Point2D(j, i);
-                    goalSet = true;
-                }
-            }
-        }
         this.visualRange = new double[2];
         this.firstRun = true;
         for (int i = 0; i < knownTerrain.length; i++) {

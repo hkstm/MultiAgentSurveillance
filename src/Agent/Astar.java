@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
 import static World.GameScene.ASSUMED_WORLDSIZE;
-import static World.GameScene.SCALING_FACTOR;
 import static World.WorldMap.STRUCTURE;
 import static World.WorldMap.DOOR;
 import static World.WorldMap.WINDOW;
@@ -41,17 +40,19 @@ public class Astar {
         this.agent = agent;
         if(modify)
         {
-            pointsToModify.add(agent.points[0]);
-            pointsToModify.add(agent.points[1]);
-            pointsToModify.add(new Point(agent.points[0].x + 1, agent.points[0].y));
-            pointsToModify.add(new Point(agent.points[0].x + 1, agent.points[0].y + 1));
-            pointsToModify.add(new Point(agent.points[0].x, agent.points[0].y + 1));
-            pointsToModify.add(new Point(agent.points[0].x - 1, agent.points[0].y + 1));
-            pointsToModify.add(new Point(agent.points[0].x - 1, agent.points[0].y));
-            pointsToModify.add(new Point(agent.points[0].x - 1, agent.points[0].y - 1));
-            pointsToModify.add(new Point(agent.points[0].x, agent.points[0].y - 1));
-            pointsToModify.add(new Point(agent.points[0].x + 1, agent.points[0].y - 1));
-
+            if(agent.points[0] != null && agent.points[1] != null)
+            {
+                pointsToModify.add(agent.points[0]);
+                pointsToModify.add(agent.points[1]);
+                pointsToModify.add(new Point(agent.points[0].x + 1, agent.points[0].y));
+                pointsToModify.add(new Point(agent.points[0].x + 1, agent.points[0].y + 1));
+                pointsToModify.add(new Point(agent.points[0].x, agent.points[0].y + 1));
+                pointsToModify.add(new Point(agent.points[0].x - 1, agent.points[0].y + 1));
+                pointsToModify.add(new Point(agent.points[0].x - 1, agent.points[0].y));
+                pointsToModify.add(new Point(agent.points[0].x - 1, agent.points[0].y - 1));
+                pointsToModify.add(new Point(agent.points[0].x, agent.points[0].y - 1));
+                pointsToModify.add(new Point(agent.points[0].x + 1, agent.points[0].y - 1));
+            }
             for(int i = 0 ; i < agent.getAudioLogs().size() ; i ++)
             {
                 double actualDirection = agent.audioLogs.get(i).getDirection();
@@ -72,7 +73,6 @@ public class Astar {
                 pointsToModifyNoise.add(new Point(gridSource.x+1, gridSource.y-1));
             }
             agent.clearAudioLog();
-
         }
         grid = new Node[width][height];
         closeCell = new boolean[width][height];
@@ -101,13 +101,22 @@ public class Astar {
                     //System.out.println(grid[pointsToModify.get(i).x][pointsToModify.get(i).y].heuristic);
                 }
             }
-            for(int i = 0 ; i < pointsToModifyNoise.size() ; i++)
+            if(pointsToModifyNoise.size() > 0)
             {
-                if(agent.getWorldGrid()[pointsToModifyNoise.get(i).y][pointsToModifyNoise.get(i).x] != WALL && agent.getWorldGrid()[pointsToModifyNoise.get(i).y][pointsToModifyNoise.get(i).x] != SENTRY && agent.getWorldGrid()[pointsToModifyNoise.get(i).y][pointsToModifyNoise.get(i).x] != STRUCTURE)
+                //System.out.println(pointsToModifyNoise.size());
+                for(int i = 0 ; i < pointsToModifyNoise.size() ; i++)
                 {
-                    grid[pointsToModifyNoise.get(i).x][pointsToModifyNoise.get(i).y].heuristic += 30;
+                    //System.out.println(i);
+                    if(pointsToModifyNoise.get(i).y < 100 && pointsToModifyNoise.get(i).y > 0 && pointsToModifyNoise.get(i).x < 100 && pointsToModifyNoise.get(i).x > 0)
+                    {
+                        if(agent.getWorldGrid()[pointsToModifyNoise.get(i).y][pointsToModifyNoise.get(i).x] != WALL && agent.getWorldGrid()[pointsToModifyNoise.get(i).y][pointsToModifyNoise.get(i).x] != SENTRY && agent.getWorldGrid()[pointsToModifyNoise.get(i).y][pointsToModifyNoise.get(i).x] != STRUCTURE)
+                        {
+                            grid[pointsToModifyNoise.get(i).x][pointsToModifyNoise.get(i).y].heuristic += 30;
+                        }
+                    }
                 }
             }
+            //System.out.println();
         }
         grid[si][sj].fCost = 0;
         for (int i = 0; i < blocks.length; i++){
@@ -235,35 +244,35 @@ public class Astar {
         double weightToAdd = 0;
         if(coverCheck(knownTerrain, row+1, column-1))
         {
-            weightToAdd -= 5;
+            weightToAdd -= 8;
         }
         if(coverCheck(knownTerrain, row+1, column))
         {
-            weightToAdd -= 5;
+            weightToAdd -= 8;
         }
         if(coverCheck(knownTerrain, row, column-1))
         {
-            weightToAdd -= 5;
+            weightToAdd -= 8;
         }
         if(coverCheck(knownTerrain, row-1, column-1))
         {
-            weightToAdd -= 5;
+            weightToAdd -= 8;
         }
         if(coverCheck(knownTerrain, row-1, column))
         {
-            weightToAdd -= 5;
+            weightToAdd -= 8;
         }
         if(coverCheck(knownTerrain, row-1, column+1))
         {
-            weightToAdd -= 5;
+            weightToAdd -= 8;
         }
         if(coverCheck(knownTerrain, row, column+1))
         {
-            weightToAdd -= 5;
+            weightToAdd -= 8;
         }
         if(coverCheck(knownTerrain, row+1, column+1))
         {
-            weightToAdd -= 5;
+            weightToAdd -= 8;
         }
         for(int i = row ; i < row+16 ; i++)
         {
@@ -301,7 +310,7 @@ public class Astar {
             {
                 if(i >= 0 && j >= 0 && i < ASSUMED_WORLDSIZE && j < ASSUMED_WORLDSIZE && knownTerrain[i][j] == SENTRY)
                 {
-                    weightToAdd += 30;
+                    weightToAdd += 40;
                 }
             }
         }
@@ -319,11 +328,11 @@ public class Astar {
         }
         else if(knownTerrain[row][column] == DOOR)
         {
-            weightToAdd -= 10;
+            weightToAdd -= 1;
         }
         else if(knownTerrain[row][column] == WINDOW)
         {
-            weightToAdd -= 10;
+            weightToAdd -= 1;
         }
         return weightToAdd;
     }

@@ -1,34 +1,25 @@
 package World;
 
 import javafx.animation.AnimationTimer;
-import javafx.application.Platform;
 import javafx.scene.CacheHint;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Line;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.Shape;
 import javafx.stage.Stage;
 
-import java.awt.*;
 import javafx.geometry.Point2D;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Random;
 import Agent.*;
-import Agent.Routine;
-
 
 import static Agent.Agent.*;
 import static World.StartWorldBuilder.WINDOW_SIZE;
+import static World.WorldMap.EMPTY;
+import static World.WorldMap.DECREASED_VIS_RANGE;
 
 /**
  * Main in game screen
@@ -89,10 +80,10 @@ public class GameScene extends BorderPane implements Runnable {
         this.startGameBut = new Button("Start/Stop Game"); //should stop and start game, not properly working atm
         Agent.worldMap = worldMap;
 
-        int amountOfGuards = 3;
-        StraightLiner straightLiner = new StraightLiner(new Point2D(10, 10), 45);
+        int amountOfGuards = 20;
+        //StraightLiner straightLiner = new StraightLiner(new Point2D(10, 10), 45);
         //worldMap.addAgent(straightLiner);
-        Intruder intruder = new Intruder(new Point2D(40, 40), 45);
+        Intruder intruder = new Intruder(getEntrancePoint(), 180);
         worldMap.addAgent(intruder);
         for(int n = 0; n < amountOfGuards; n++) {
             double x = 0;
@@ -101,7 +92,7 @@ public class GameScene extends BorderPane implements Runnable {
                 x = new Random().nextDouble()*worldMap.getSize()*SCALING_FACTOR;
                 y = new Random().nextDouble()*worldMap.getSize()*SCALING_FACTOR;
             }while(!worldMap.isEmpty(worldMap.getTileState(locationToWorldgrid(y), locationToWorldgrid(x))));
-            worldMap.addAgent(new AreaOptimizer(new Point2D(x, y), new Random().nextDouble()*360));
+            worldMap.addAgent(new StupidGuard(new Point2D(x, y), new Random().nextDouble()*360));
         }
         this.pher = new Pheromones(worldMap);
 
@@ -417,5 +408,182 @@ public class GameScene extends BorderPane implements Runnable {
 
     public Scene getGameScene() {
         return scene;
+    }
+
+    public Point2D getEntrancePoint()
+    {
+        double xStart = 500;
+        double yStart = 500;
+        double random = Math.random();
+        if(random < 0.25)
+        {
+            xStart = 985;
+            yStart = Math.random()*((985-15))+15;
+            if(worldMap.getWorldGrid()[Agent.locationToWorldgrid(xStart)][locationToWorldgrid(yStart)] !=   DECREASED_VIS_RANGE && worldMap.getWorldGrid()[Agent.locationToWorldgrid(xStart)][locationToWorldgrid(yStart)] != EMPTY)
+            {
+                if(yStart <= 500)
+                {
+                    while(true)
+                    {
+                        yStart += 10;
+                        if(worldMap.getWorldGrid()[Agent.locationToWorldgrid(xStart)][locationToWorldgrid(yStart)] ==   DECREASED_VIS_RANGE || worldMap.getWorldGrid()[Agent.locationToWorldgrid(xStart)][locationToWorldgrid(yStart)] == EMPTY)
+                        {
+                            return new Point2D(xStart, yStart);
+                        }
+                        if(yStart > 985)
+                        {
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    while(true)
+                    {
+                        yStart -= 10;
+                        if(worldMap.getWorldGrid()[Agent.locationToWorldgrid(xStart)][locationToWorldgrid(yStart)] ==   DECREASED_VIS_RANGE || worldMap.getWorldGrid()[Agent.locationToWorldgrid(xStart)][locationToWorldgrid(yStart)] == EMPTY)
+                        {
+                            return new Point2D(xStart, yStart);
+                        }
+                        if(yStart < 15)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                return new Point2D(xStart, yStart);
+            }
+        }
+        if(random < 0.5)
+        {
+            xStart = Math.random()*((985-15))+15;
+            yStart = 985;
+            if(worldMap.getWorldGrid()[Agent.locationToWorldgrid(xStart)][locationToWorldgrid(yStart)] !=   DECREASED_VIS_RANGE && worldMap.getWorldGrid()[Agent.locationToWorldgrid(xStart)][locationToWorldgrid(yStart)] != EMPTY)
+            {
+                if(xStart <= 500)
+                {
+                    while(true)
+                    {
+                        xStart += 10;
+                        if(worldMap.getWorldGrid()[Agent.locationToWorldgrid(xStart)][locationToWorldgrid(yStart)] ==   DECREASED_VIS_RANGE || worldMap.getWorldGrid()[Agent.locationToWorldgrid(xStart)][locationToWorldgrid(yStart)] == EMPTY)
+                        {
+                            return new Point2D(xStart, yStart);
+                        }
+                        if(xStart > 985)
+                        {
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    while(true)
+                    {
+                        xStart -= 10;
+                        if(worldMap.getWorldGrid()[Agent.locationToWorldgrid(xStart)][locationToWorldgrid(yStart)] ==   DECREASED_VIS_RANGE || worldMap.getWorldGrid()[Agent.locationToWorldgrid(xStart)][locationToWorldgrid(yStart)] == EMPTY)
+                        {
+                            return new Point2D(xStart, yStart);
+                        }
+                        if(xStart < 15)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                return new Point2D(xStart, yStart);
+            }
+        }
+        if(random < 0.75)
+        {
+            xStart = 15;
+            yStart = Math.random()*((985-15))+15;
+            if(worldMap.getWorldGrid()[Agent.locationToWorldgrid(xStart)][locationToWorldgrid(yStart)] !=   DECREASED_VIS_RANGE && worldMap.getWorldGrid()[Agent.locationToWorldgrid(xStart)][locationToWorldgrid(yStart)] != EMPTY)
+            {
+                if(yStart <= 500)
+                {
+                    while(true)
+                    {
+                        yStart += 10;
+                        if(worldMap.getWorldGrid()[Agent.locationToWorldgrid(xStart)][locationToWorldgrid(yStart)] ==   DECREASED_VIS_RANGE || worldMap.getWorldGrid()[Agent.locationToWorldgrid(xStart)][locationToWorldgrid(yStart)] == EMPTY)
+                        {
+                            return new Point2D(xStart, yStart);
+                        }
+                        if(yStart > 985)
+                        {
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    while(true)
+                    {
+                        yStart -= 10;
+                        if(worldMap.getWorldGrid()[Agent.locationToWorldgrid(xStart)][locationToWorldgrid(yStart)] ==   DECREASED_VIS_RANGE || worldMap.getWorldGrid()[Agent.locationToWorldgrid(xStart)][locationToWorldgrid(yStart)] == EMPTY)
+                        {
+                            return new Point2D(xStart, yStart);
+                        }
+                        if(yStart < 15)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                return new Point2D(xStart, yStart);
+            }
+        }
+        if(random < 1)
+        {
+            xStart = Math.random()*((985-15))+15;
+            yStart = 15;
+            if(worldMap.getWorldGrid()[Agent.locationToWorldgrid(xStart)][locationToWorldgrid(yStart)] !=   DECREASED_VIS_RANGE && worldMap.getWorldGrid()[Agent.locationToWorldgrid(xStart)][locationToWorldgrid(yStart)] != EMPTY)
+            {
+                if(xStart <= 500)
+                {
+                    while(true)
+                    {
+                        xStart += 10;
+                        if(worldMap.getWorldGrid()[Agent.locationToWorldgrid(xStart)][locationToWorldgrid(yStart)] ==   DECREASED_VIS_RANGE || worldMap.getWorldGrid()[Agent.locationToWorldgrid(xStart)][locationToWorldgrid(yStart)] == EMPTY)
+                        {
+                            return new Point2D(xStart, yStart);
+                        }
+                        if(xStart > 985)
+                        {
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    while(true)
+                    {
+                        xStart -= 10;
+                        if(worldMap.getWorldGrid()[Agent.locationToWorldgrid(xStart)][locationToWorldgrid(yStart)] ==   DECREASED_VIS_RANGE || worldMap.getWorldGrid()[Agent.locationToWorldgrid(xStart)][locationToWorldgrid(yStart)] == EMPTY)
+                        {
+                            return new Point2D(xStart, yStart);
+                        }
+                        if(xStart < 15)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                return new Point2D(xStart, yStart);
+            }
+        }
+        System.out.println("NO LEGAL STARTING POSITION FOUND, PLEASE EDIT TERRAIN");
+        return new Point2D(xStart, yStart);
     }
 }
