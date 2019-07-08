@@ -3,15 +3,14 @@ import javafx.scene.paint.Color;
 
 import javafx.geometry.Point2D;
 
-import javax.swing.*;
 import java.awt.Point;
 import java.util.Random;
 import java.util.ArrayList;
 import java.util.List;
 
-import static World.GameScene.ASSUMED_WORLDSIZE;
 import static World.GameScene.SCALING_FACTOR;
 import static World.WorldMap.*;
+
 
 /**
  * A subclass of Agent for the Intruders
@@ -23,13 +22,20 @@ public class Intruder extends Agent{
     protected final long createdMillis = System.currentTimeMillis();
     protected int sprintCounter = 5;
     protected int walkCounter = 15;
-    protected List<Point> tempWalls = new ArrayList<Point>();
     protected Point tempOldPos = null;
     protected Point oldPos = null;
     protected boolean first;
     protected int alternatingCounter;
     protected boolean modify;
     protected Point toSave;
+    private boolean escaping;
+    private boolean waiting;
+    private Agent threat;
+    private List<Node> escapePath;
+    private double escapeStartTime;
+    private Point2D escapeTempGoal;
+    private int escapePathIterator;
+    private boolean goalSet;
 
 
     /**
@@ -45,6 +51,18 @@ public class Intruder extends Agent{
         this.visualRange[1] = 7.5;
         this.color = Color.LIGHTGOLDENRODYELLOW;
         this.tired = false;
+        for(int i = 0; i < knownTerrain[0].length; i++) {
+            for(int j = 0; j < knownTerrain.length; j++) {
+                if(worldMap.worldGrid[i][j] == TARGET) {
+                    goalPosition = new Point2D(j, i);
+                    goalSet = true;
+                }
+            }
+        }
+        if(!goalSet)
+        {
+            System.out.println("no target added, please add one");
+        }
     }
 
     public boolean equals(Object obj) {
@@ -62,19 +80,124 @@ public class Intruder extends Agent{
      * The time taken is consistent (3 seconds for a window and 5 for a door), unless a door is to be opened quietly, in which case a normal distribution is used.
      */
 
-    public void executeAgentLogic() {
-        try {
-            gameTreeIntruder(delta);
+    public void executeAgentLogic()
+    {
+        double walkingDistance = (BASE_SPEED *SCALING_FACTOR*delta);
+        double sprintingDistance = (SPRINT_SPEED *SCALING_FACTOR*delta);
+        if(!escaping && !waiting)
+        {
+            for(int i = 0 ; i < worldMap.getAgents().size() ; i++)
+            {
+                if(inVision(worldMap.getAgents().get(i).position) && worldMap.getAgents().get(i) instanceof Guard)
+                {
+                    threat = worldMap.getAgents().get(i);
+                    if(threat.inVision(position))
+                    {
+                        System.out.println("seen each other");
+                        boolean freeTileFound = false;
+                        Point2D posToCheck = new Point2D(500, 500);
+                        while(!freeTileFound)
+                        {
+                            posToCheck = getMove(SCALING_FACTOR, direction+180);
+                            {
+                                if(locationToWorldgrid(posToCheck.getX()) == 1 || locationToWorldgrid(posToCheck.getX()) == 99 || locationToWorldgrid(posToCheck.getY()) == 1 || locationToWorldgrid(posToCheck.getY()) == 99)
+                                {
+                                    while(!freeTileFound)
+                                    {
+                                        if(isStructure(worldMap.getWorldGrid()[locationToWorldgrid(posToCheck.getX())][locationToWorldgrid(posToCheck.getY())]))
+                                        {
+                                            posToCheck = getMove(SCALING_FACTOR, direction);
+                                        }
+                                        else
+                                        {
+                                            freeTileFound = true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        int[][] escapeBlocks = aStarTerrain(knownTerrain);
+                        Astar escapePathGenerator = new Astar(worldMap.getWorldGrid()[0].length, worldMap.getWorldGrid().length, locationToWorldgrid(position.getX()), locationToWorldgrid(position.getY()), locationToWorldgrid(posToCheck.getX()), locationToWorldgrid(posToCheck.getY()), escapeBlocks, this, false);
+                        escapePath = escapePathGenerator.findPath();
+                        escapePathIterator = escapePath.size()-1;
+                        escapeTempGoal = new Point2D(worldMap.convertArrayToWorld(escapePath.get(escapePathIterator).row)+(SCALING_FACTOR/2), worldMap.convertArrayToWorld(escapePath.get(escapePathIterator).column)+(SCALING_FACTOR/2));
+                        escaping = true;
+                    }
+                    else
+                    {
+                        waiting = true;
+                    }
+                    escapeStartTime = System.currentTimeMillis();
+                }
+            }
+            if(!escaping && !waiting)
+            {
+                try
+                {
+                    gameTreeIntruder(walkingDistance, sprintingDistance);
+                }
+                catch(NullPointerException e)
+                {
+                    //first iteration
+                }
+            }
         }
-        catch(Exception e) {
-            //do something here :D
+        else if(escaping)
+        {
+            System.out.println("escaping");
+            double escapeTimeElapsed = (System.currentTimeMillis()- escapeStartTime)/1000;
+            if(escapeTimeElapsed < 3)
+            {
+                if(checkApproximateEquality(escapeTempGoal, position))
+                {
+                    escapePathIterator++;
+                    escapeTempGoal = new Point2D(worldMap.convertArrayToWorld(escapePath.get(escapePathIterator).row)+(SCALING_FACTOR/2), worldMap.convertArrayToWorld(escapePath.get(escapePathIterator).column)+(SCALING_FACTOR/2));
+                }
+                if(!tired)
+                {
+                    if(legalMoveCheck(sprintingDistance))
+                    {
+                        long nowMillis = System.currentTimeMillis();
+                        int countSec = (int)((nowMillis - this.createdMillis) / 1000);
+                        if (countSec != sprintCounter){
+                            move(sprintingDistance);
+                        }
+                        else{
+                            tired = true;
+                            sprintCounter = sprintCounter + 15;
+                        }
+                    }
+                }
+                if (tired)
+                {
+                    if(legalMoveCheck(walkingDistance))
+                    {
+                        long nowMillis = System.currentTimeMillis();
+                        int countSec = (int)((nowMillis - this.createdMillis) / 1000);
+                        if (countSec != walkCounter) {
+                            move(walkingDistance);
+                        }
+                        else{
+                            tired = false;
+                            walkCounter += 15;
+                        }
+                    }
+                }
+            }
+        }
+        else if(waiting)
+        {
+            //System.out.println("waiting");
+            double escapeTimeElapsed = (System.currentTimeMillis()- escapeStartTime)/1000;
+            if(escapeTimeElapsed > 3)
+            {
+                waiting = false;
+            }
         }
     }
 
-    public void gameTreeIntruder(double timeStep)
+    public void gameTreeIntruder(double walkingDistance, double sprintingDistance)
     {
-        double walkingDistance = (BASE_SPEED *SCALING_FACTOR*timeStep);
-        double sprintingDistance = (SPRINT_SPEED *SCALING_FACTOR*timeStep);
         updateWalls();
         if(!frozen)
         {
@@ -92,7 +215,17 @@ public class Intruder extends Agent{
             freezeTime = 0;
             oldTempGoal = tempGoal;
             int[][] blocks = aStarTerrain(knownTerrain);
-            Astar pathFinder = new Astar(knownTerrain[0].length, knownTerrain.length, (int)(position.getX()/SCALING_FACTOR), (int)(position.getY()/SCALING_FACTOR), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks, this, modify);
+            //System.out.println("1 "+worldMap.getWorldGrid()[0].length);
+            //System.out.println("2 "+worldMap.getWorldGrid().length);
+            //System.out.println("3 "+locationToWorldgrid(position.getX()));
+            //System.out.println("4 "+locationToWorldgrid(position.getY()));
+            //System.out.println("5 "+(int)goalPosition.getX());
+            //System.out.println("6 "+(int)goalPosition.getY());
+            //System.out.println("7 "+blocks.length);
+            //System.out.println("8 "+this);
+            //System.out.println("9 "+modify);
+            Astar pathFinder = new Astar(worldMap.getWorldGrid()[0].length, worldMap.getWorldGrid().length, locationToWorldgrid(position.getX()), locationToWorldgrid(position.getY()), (int)goalPosition.getX(), (int)goalPosition.getY(), blocks, this, modify);
+            //System.out.println();
             List<Node> path = pathFinder.findPath();
             if(!changed)
             {
