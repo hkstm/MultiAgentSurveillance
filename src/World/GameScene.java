@@ -362,17 +362,13 @@ public class GameScene extends BorderPane implements Runnable {
         Image targetTileImg = new Image(new File("src/Assets/targetTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
         Image sentryTileImg = new Image(new File("src/Assets/sentryTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
         Image decreasedVisRangeTileImg = new Image(new File("src/Assets/decreasedVisRangeTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
-        Image wallTileImg = new Image(new File("src/Assets/wallTile16.png").toURI().toString(), tileSize, tileSize, false, false, true);
-        Image entryPointTileImg = new Image(new File("src/Assets/entryPointTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        Image wallTileImg = new Image(new File("src/Assets/wallTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
         Image openDoorTileImg = new Image(new File("src/Assets/openDoorTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
         Image openWindowTileImg = new Image(new File("src/Assets/openWindowTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
-        Image marker1TileImg = new Image(new File("src/Assets/redTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
+        Image marker1TileImg = new Image(new File("src/Assets/orangeTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
         Image marker2TileImg = new Image(new File("src/Assets/greenTile.png").toURI().toString(), tileSize, tileSize, false, false, true);
-        Image marker3TileImg = new Image(new File("src/Assets/marker3.png").toURI().toString(), tileSize, tileSize, false, false, true);
-        Image marker4TileImg = new Image(new File("src/Assets/marker4.png").toURI().toString(), tileSize, tileSize, false, false, true);
-        Image marker5TileImg = new Image(new File("src/Assets/marker5.png").toURI().toString(), tileSize, tileSize, false, false, true);
         this.tileImgArray = new Image[]{emptyTileImg, structureTileImg, doorTileImg, windowTileImg, targetTileImg, sentryTileImg, decreasedVisRangeTileImg, wallTileImg,
-                entryPointTileImg, openDoorTileImg, openWindowTileImg, marker1TileImg, marker2TileImg, marker3TileImg, marker4TileImg, marker5TileImg};
+                openDoorTileImg, openWindowTileImg, marker1TileImg, marker2TileImg};
     }
 
     /**
