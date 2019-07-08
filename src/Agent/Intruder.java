@@ -140,7 +140,10 @@ public class Intruder extends Agent{
                         tired = true;
                         sprintCounter = sprintCounter + 15;
                     }
+                } else {
+                    System.out.println("no legal move");
                 }
+
             }
             if (tired)
             {
@@ -155,6 +158,8 @@ public class Intruder extends Agent{
                         tired = false;
                         walkCounter += 15;
                     }
+                } else {
+                    System.out.println("no legal move");
                 }
             }
             modify = false;

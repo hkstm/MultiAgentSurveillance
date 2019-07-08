@@ -40,67 +40,78 @@ public class RunSimulation extends Application {
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Multi-Agent Surveillance - Simulation Only");
-        int amountOfSims = 1;
+        int amountOfSims = 25;
         int guardsWins = 0;
         int intruderWins = 0;
-        int amountOfGuards = 3;
+        int amountOfGuards = 1;
+        double startingFactor = 0;
+        double endingFactor = 1;
+        double increments  = 5;
         worldFile = loadFile(primaryStage);
-        double[][] summary = new double[amountOfSims][(amountOfGuards*2)+2];
-        for(int i = 0; i < amountOfSims; i++) {
-            worldMap = loadMap(worldFile);
-            Agent.worldMap = worldMap;
-            int mode = 0;
+        double[][] summary = new double[amountOfSims * ((int)increments+1)][(amountOfGuards*2)+2+1];
+        int outerloop =0;
+        for(double j = startingFactor; j <= endingFactor; j+= (endingFactor-startingFactor)/increments ) {
 
-            long currentTimeCalc = System.nanoTime();
-            long previousTime = currentTimeCalc;
-            boolean gameStarted = false;
-            boolean gameEnded = false;
-            currentTimeCountDown = System.nanoTime();
-            countDown = false;
-            visitedTarget = false;
-            firstVisitTime = 0;
-            Agent.worldMap = worldMap;
+            for(int i = 0; i < amountOfSims; i++) {
+                worldMap = loadMap(worldFile);
+                Agent.worldMap = worldMap;
+                int mode = 0;
 
-            StraightLiner straightLiner = new StraightLiner(new Point2D(10, 10), 45);
-            worldMap.addOnlyAgent(straightLiner);
-            for(int n = 0; n < amountOfGuards; n++) {
-                double x = 0;
-                double y = 0;
-                do{
-                    x = new Random().nextDouble()*worldMap.getSize()*SCALING_FACTOR;
-                    y = new Random().nextDouble()*worldMap.getSize()*SCALING_FACTOR;
-                }while(!worldMap.isEmpty(worldMap.getTileState(locationToWorldgrid(y), locationToWorldgrid(x))));
-                worldMap.addOnlyAgent(new StupidGuard(new Point2D(x, y), new Random().nextDouble()*360));
-            }
-            this.pher = new Pheromones(worldMap);
-            System.out.println("doing simulation");
+                long currentTimeCalc = System.nanoTime();
+                long previousTime = currentTimeCalc;
+                boolean gameStarted = false;
+                boolean gameEnded = false;
+                currentTimeCountDown = System.nanoTime();
+                countDown = false;
+                visitedTarget = false;
+                firstVisitTime = 0;
+                Agent.worldMap = worldMap;
+
+                StraightLiner straightLiner = new StraightLiner(new Point2D(10, 10), 45);
+                worldMap.addOnlyAgent(straightLiner);
+                for(int n = 0; n < amountOfGuards; n++) {
+                    double x = 0;
+                    double y = 0;
+                    do{
+                        x = new Random().nextDouble()*worldMap.getSize()*SCALING_FACTOR;
+                        y = new Random().nextDouble()*worldMap.getSize()*SCALING_FACTOR;
+                    }while(!worldMap.isEmpty(worldMap.getTileState(locationToWorldgrid(y), locationToWorldgrid(x))));
+                    worldMap.addOnlyAgent(new AreaOptimizer(new Point2D(x, y), new Random().nextDouble()*360, j));
+                }
+                this.pher = new Pheromones(worldMap);
+                System.out.println("doing simulation: " + i + " out of: " + amountOfSims);
 //            worldMap.startAgents();
-            while(!gameEnded){
-                long currentTime = System.nanoTime();
-                worldMap.forceUpdateAgents();
-                long delta = (currentTime - previousTime);
-                delta *= SIMULATION_SPEEDUP_FACTOR;
+                while(!gameEnded){
+                    long currentTime = System.nanoTime();
+                    worldMap.forceUpdateAgents();
+                    long delta = (currentTime - previousTime);
+                    delta *= SIMULATION_SPEEDUP_FACTOR;
+//                System.out.println("delta: " + delta);
 //                System.out.println();
-                previousTime = currentTime;
-                pher.update(delta);
-                generateRandomSound(delta);
-                if(haveGuardsCapturedIntruder(mode, delta)) {
-                    guardsWins++;
-                    gameEnded = true;
+                    previousTime = currentTime;
+                    pher.update(delta);
+                    generateRandomSound(delta);
+                    if(haveGuardsCapturedIntruder(mode, delta)) {
+                        guardsWins++;
+                        gameEnded = true;
+                    }
+                    if(haveIntrudersWon(mode, delta)) {
+                        intruderWins++;
+                        gameEnded = true;
+                    }
                 }
-                if(haveIntrudersWon(mode, delta)) {
-                    intruderWins++;
-                    gameEnded = true;
+                ArrayList<Guard> guardList = new ArrayList<>();
+                for(Agent agent : worldMap.getAgents()) if (agent instanceof Guard) guardList.add((Guard)agent);
+                for(int guards = 0; guards < amountOfGuards; guards++) {
+                    summary[i+outerloop][guards * 2] = guardList.get(guards).getTimeCost();
+                    summary[i+outerloop][guards * 2 + 1] = guardList.get(guards).getDistanceCost();
                 }
+                summary[i+outerloop][amountOfGuards*2] = guardsWins;
+                summary[i+outerloop][(amountOfGuards*2)+1] = intruderWins;
+                summary[i+outerloop][summary[0].length-1] = j;
+                System.out.println("done sim: " + i + " factor: " + j);
             }
-            ArrayList<Guard> guardList = new ArrayList<>();
-            for(Agent agent : worldMap.getAgents()) if (agent instanceof Guard) guardList.add((Guard)agent);
-            for(int guards = 0; guards < amountOfGuards; guards++) {
-                summary[i][guards * 2] = guardList.get(guards).getTimeCost();
-                summary[i][guards * 2 + 1] = guardList.get(guards).getDistanceCost();
-            }
-            summary[i][amountOfGuards*2] = guardsWins;
-            summary[i][(amountOfGuards*2)+1] = intruderWins;
+            outerloop++;
         }
         printSummary(summary, guardsWins, intruderWins, amountOfGuards, "ez");
     }

@@ -27,26 +27,26 @@ public class AreaOptimizer extends Guard {
 
     private Point2DReward[][] worldAreaReward;
     private double score;
-    public static final double NOT_SEEN_REWARD = 100;
-    public static final double INTRUDER_BONUS_REWARD = 10;
+    public static final double NOT_SEEN_REWARD = 8;
+    public static final double INTRUDER_BONUS_REWARD = 16;
     public static final double RECENT_AREA_PENALTY = 0;
     public static final double MED_INTEREST = 2;
     public static final double HIGH_INTEREST = 8;
-    public static final double MAX_INTEREST = 64;
+    public static final double MAX_INTEREST = 16;
     public static final double AUDIO_REWARD = 8;
     private double explorationFactor = 1;
     private ArrayList<PointOfInterest> pointsOfInterest;
-
 
     /**
      * Calls normal Guard constructor and set rewards area
      * @param position
      * @param direction
      */
-    public AreaOptimizer(Point2D position, double direction) {
+    public AreaOptimizer(Point2D position, double direction, double explorationFactor) {
         super(position, direction);
         this.worldAreaReward = new Point2DReward[worldMap.getSize()][worldMap.getSize()];
         this.pointsOfInterest = new ArrayList<PointOfInterest>();
+        this.explorationFactor = explorationFactor;
         for(int r = 0; r < worldMap.getSize(); r++) {
             for(int c = 0; c < worldMap.getSize(); c++) {
                 //initializing reward array with fixed flat reward
@@ -59,6 +59,10 @@ public class AreaOptimizer extends Guard {
 //                worldAreaReward[r][c] = new Point2DReward(c, r, 100);
 //            }
 //        }
+    }
+
+    public AreaOptimizer(Point2D position, double direction){
+        this(position, direction, 1);
     }
 
     /**
@@ -85,51 +89,35 @@ public class AreaOptimizer extends Guard {
      */
     public void updateWorldAreaReward(double delta) {
         Shape worldAreaCone = createCone(visualRange[0], visualRange[1]*10, viewingAngle*2);
-        Shape worldAreaConeTiny = createCone(visualRange[0], visualRange[1]*5, viewingAngle/4);
         for(int r = 0; r < worldAreaReward.length; r++) {
             for(int c = 0; c < worldAreaReward[0].length; c++) {
                 //check if middle of tile is in cone
                 if(worldAreaCone.contains(worldMap.convertArrayToWorld(c) + 0.5 * worldMap.convertArrayToWorld(1),
                         worldMap.convertArrayToWorld(r) + 0.5 * worldMap.convertArrayToWorld(1))) {
                     score += worldAreaReward[r][c].getReward();
-//                    worldAreaReward[r][c].resetReward();
-                    worldAreaReward[r][c].updateReward(-1 * NOT_SEEN_REWARD * delta);
+                    worldAreaReward[r][c].resetReward();
+//                    worldAreaReward[r][c].updateReward(-1 * NOT_SEEN_REWARD * delta);
 //                    System.out.println("reward seen: " + worldAreaReward[r][c] + worldAreaReward[r][c].getReward());
-//                    for (Agent agent : worldMap.getAgents()) {
-//                        if (agent instanceof Intruder) {
-//                            if ((locationToWorldgrid(agent.getPosition().getX()) == c) && (locationToWorldgrid(agent.getPosition().getY()) == r)) {
-//                                worldAreaReward[r][c].updateReward(INTRUDER_BONUS_REWARD * delta);
-//                            }
-//                        }
-//                    }
-//                    if(worldMap.getTileStatePhero(r, c) == MARKER_1){
-//                        worldAreaReward[r][c].updateReward(INTRUDER_BONUS_REWARD * delta);
-//                    }
-//                    if(worldMap.getTileStatePhero(r, c) == MARKER_2) {
-//                        worldAreaReward[r][c].updateReward(-INTRUDER_BONUS_REWARD * delta);
-//                    }
-////                    worldAreaReward[r][c].updateReward(RECENT_AREA_PENALTY * delta);
-////                    System.out.println("reward: " + worldAreaReward[r][c].getReward());
-////                    System.out.println("reward reset for r: " + r + " c: " + c);
-////                    System.out.println("viewingcone contains tile: " + worldMap.convertArrayToWorld(c-1) + 1 * worldMap.convertArrayToWorld(1) + " r/y: " + worldMap.convertArrayToWorld(r-1) + 1 * worldMap.convertArrayToWorld(1));
-                } else if(worldAreaCone.contains(worldMap.convertArrayToWorld(c-1) + 1 * worldMap.convertArrayToWorld(1),
-                        worldMap.convertArrayToWorld(r-1) + 1 * worldMap.convertArrayToWorld(1))){
-//                        worldAreaReward[r][c].updateReward(-2*NOT_SEEN_REWARD * delta);
-
-                } else if(worldAreaConeTiny.contains(worldMap.convertArrayToWorld(c-1) + 1 * worldMap.convertArrayToWorld(1),
-                    worldMap.convertArrayToWorld(r-1) + 1 * worldMap.convertArrayToWorld(1))){
-//                    worldAreaReward[r][c].updateReward(2*NOT_SEEN_REWARD * delta);
-                } else {
-                    if(isEmpty(worldMap.getTileState(r, c))) {
-//                        System.out.println("rewardnotseen: " + worldAreaReward[r][c].getReward());
-//                        worldAreaReward[r][c].updateReward(NOT_SEEN_REWARD * delta);
+                    for (Agent agent : worldMap.getAgents()) {
+                        if (agent instanceof Intruder) {
+                            if ((locationToWorldgrid(agent.getPosition().getX()) == c) && (locationToWorldgrid(agent.getPosition().getY()) == r)) {
+                                worldAreaReward[r][c].updateReward(INTRUDER_BONUS_REWARD * delta);
+                            }
+                        }
+                    }
+                    if(worldMap.getTileStatePhero(r, c) == MARKER_1){
+                        worldAreaReward[r][c].updateReward(INTRUDER_BONUS_REWARD * delta);
+                    }
+                    if(worldMap.getTileStatePhero(r, c) == MARKER_2) {
+                        worldAreaReward[r][c].resetReward();
+                    } else if(isEmpty(worldMap.getTileState(r, c))) {
+                        worldAreaReward[r][c].updateReward(NOT_SEEN_REWARD * delta);
                     }
                 }
-//                System.out.println("reward: " + worldAreaReward[r][c].getReward());
             }
         }
-//        updateWorldAreaRewardPOI(delta);
-//        updateWorldAreaRewardAudio(delta);
+        updateWorldAreaRewardPOI(delta);
+        updateWorldAreaRewardAudio(delta);
     }
 
     public void updateWorldAreaRewardAudio(double delta) {
@@ -220,7 +208,7 @@ public class AreaOptimizer extends Guard {
         try{
             goalPositionPath = new Point2D((path.get(path.size()-1).row*SCALING_FACTOR)+(SCALING_FACTOR/2), (path.get(path.size()-1).column*SCALING_FACTOR)+(SCALING_FACTOR/2));
         } catch(Exception e){
-            System.out.println("OOB");
+//            System.out.println("OOB");
             exception = true;
             for(int r = 0; r < worldMap.getSize(); r++) {
                 for(int c = 0; c < worldMap.getSize(); c++) {
@@ -231,7 +219,7 @@ public class AreaOptimizer extends Guard {
             pointsOfInterest.clear();
             prevGoalPosition = null;
         }
-        if(exception) System.out.println("continue");
+//        if(exception) System.out.println("continue");
 
         double angle = Math.toDegrees(Math.atan2(goalPositionPath.getY() - position.getY(), goalPositionPath.getX() - position.getX()) - Math.atan2(posFacing.getY() - position.getY(), posFacing.getX() - position.getX()));
         angle = (angle > 180) ? angle - 360 : angle;

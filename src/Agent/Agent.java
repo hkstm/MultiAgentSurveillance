@@ -32,8 +32,8 @@ public class Agent implements Runnable{
     public static final double SOUND_NOISE_STDEV =  10;  //stndard dev of normal distributed noise
     public static final double STRUCTURE_VIS_RANGE = 10;
     public static final double SENTRY_VIS_RANGE = 18;
-    public static final int AMOUNT_OF_VISION_TENTACLES = 80;
-    public static final int TENTACLE_INCREMENTS = 80;
+    public static final int AMOUNT_OF_VISION_TENTACLES = 100;
+    public static final int TENTACLE_INCREMENTS = 100;
     public static final double MAX_TURNING_PER_SECOND = 180; //degrees
     public static final double MAX_NONBLIND_TURNING_PER_SECOND = 45; //degrees
     public static final double MAX_TURNING_WHILE_SPRINTING = 10;

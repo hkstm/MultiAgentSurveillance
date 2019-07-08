@@ -78,6 +78,7 @@ public class StraightLiner extends Intruder{
             }
             double turnAngle = Math.toDegrees(Math.atan(Math.abs(tempGoal.getX() - position.getX()) / divisor));
             performTurn(turnAngle);
+            updateDirection(turnAngle);
             //if (oldPos == null) {
             //    tempOldPos = new Point((int) (position.getX() / SCALING_FACTOR), (int) (position.getY() / SCALING_FACTOR));
             //    first = true;

@@ -89,20 +89,20 @@ public class GameScene extends BorderPane implements Runnable {
         this.startGameBut = new Button("Start/Stop Game"); //should stop and start game, not properly working atm
         Agent.worldMap = worldMap;
 
-        int amountOfGuards = 3;
-        StraightLiner straightLiner = new StraightLiner(new Point2D(10, 10), 45);
+        int amountOfGuards = 4;
+        StraightLiner straightLiner = new StraightLiner(new Point2D(300, 500), 0);
         //worldMap.addAgent(straightLiner);
-        Intruder intruder = new Intruder(new Point2D(40, 40), 45);
-        worldMap.addAgent(intruder);
-        for(int n = 0; n < amountOfGuards; n++) {
-            double x = 0;
-            double y = 0;
-            do{
-                x = new Random().nextDouble()*worldMap.getSize()*SCALING_FACTOR;
-                y = new Random().nextDouble()*worldMap.getSize()*SCALING_FACTOR;
-            }while(!worldMap.isEmpty(worldMap.getTileState(locationToWorldgrid(y), locationToWorldgrid(x))));
-            worldMap.addAgent(new AreaOptimizer(new Point2D(x, y), new Random().nextDouble()*360));
-        }
+        Intruder intruder = new Intruder(new Point2D(300, 500), 0);
+        worldMap.addOnlyAgent(straightLiner);
+//        for(int n = 0; n < amountOfGuards; n++) {
+//            double x = 0;
+//            double y = 0;
+//            do{
+//                x = new Random().nextDouble()*worldMap.getSize()*SCALING_FACTOR;
+//                y = new Random().nextDouble()*worldMap.getSize()*SCALING_FACTOR;
+//            }while(!worldMap.isEmpty(worldMap.getTileState(locationToWorldgrid(y), locationToWorldgrid(x))));
+//            worldMap.addOnlyAgent(new AreaOptimizer(new Point2D(x, y), new Random().nextDouble()*360));
+//        }
         this.pher = new Pheromones(worldMap);
 
         //worldMap.addOnlyAgent(areaOptimzer);
@@ -111,7 +111,7 @@ public class GameScene extends BorderPane implements Runnable {
             currentTimeCountDown = System.nanoTime();
             if(!gameStarted) {
                 gameStarted = true;
-                worldMap.startAgents();
+//                worldMap.startAgents();
                 System.out.println("Started agents");
                 new AnimationTimer() {
                     long currentTimeCalc = System.nanoTime();
@@ -120,7 +120,7 @@ public class GameScene extends BorderPane implements Runnable {
                     public void handle(long currentTime) {
                         if(gameStarted && !paused){
 //                        long beforeUpdatingAgents = System.nanoTime();
-//                            worldMap.forceUpdateAgents();
+                            worldMap.forceUpdateAgents();
 //                        long afterUpdatingAgents = System.nanoTime();
 //                        System.out.println("updating agentstook: " + ((afterUpdatingAgents-beforeUpdatingAgents)/1e9));
 
